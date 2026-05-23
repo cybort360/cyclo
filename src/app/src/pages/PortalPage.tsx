@@ -16,7 +16,7 @@ import {
     usePortalSubscriptions,
     type PortalSubscription,
 } from '../hooks/usePortalSubscriptions'
-import { fromUsdcUnits } from '../utils/formatting'
+import { fromUsdcUnits, intervalToLabel } from '../utils/formatting'
 import { SUBSCRIPTION_MANAGER_ABI } from '../constants/abis'
 import { CONTRACT_ADDRESS, DEPLOY_BLOCK } from '../constants/addresses'
 
@@ -39,18 +39,6 @@ const fmtDate = (ts: bigint) =>
     })
 
 const fmtAddress = (addr: string) => `${addr.slice(0, 6)}…${addr.slice(-4)}`
-
-function formatInterval(seconds: bigint): string {
-    const days = Number(seconds) / 86_400
-    if (days === 1)   return 'day'
-    if (days === 7)   return 'week'
-    if (days === 14)  return '2 weeks'
-    if (days === 30)  return 'month'
-    if (days === 90)  return 'quarter'
-    if (days === 365) return 'year'
-    if (Number.isInteger(days)) return `${days} days`
-    return `${Number(seconds)}s`
-}
 
 /** Returns "14-day trial", "1-day trial", etc. Empty string if no trial. */
 function formatTrialDuration(seconds: bigint): string {
@@ -311,7 +299,7 @@ function SwitchPlanModal({ subscription, isPending, onConfirm, onDismiss }: Swit
                                         </p>
                                         <p className="text-sm font-semibold text-gray-900 leading-tight">
                                             {fmtUsdc(plan.price)}
-                                            <span className="text-gray-400 font-normal"> / {formatInterval(plan.interval)}</span>
+                                            <span className="text-gray-400 font-normal"> / {intervalToLabel(Number(plan.interval))}</span>
                                         </p>
                                     </div>
                                     <div className="flex items-center gap-2 shrink-0">
@@ -490,7 +478,7 @@ function SubscriptionCard({
                     {fmtUsdc(plan.price)}
                 </p>
                 <p className="text-sm text-gray-500 mt-1">
-                    / {formatInterval(plan.interval)}
+                    / {intervalToLabel(Number(plan.interval))}
                 </p>
             </div>
 
