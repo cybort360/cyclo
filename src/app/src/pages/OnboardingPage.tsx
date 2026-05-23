@@ -51,6 +51,7 @@ const ONBOARDING_STEPS: OnboardingStep[] = [
 const STEP_COUNT = ONBOARDING_STEPS.length
 
 const ARC_FAUCET_URL: string = import.meta.env.VITE_ARC_FAUCET_URL ?? 'https://faucet.circle.com/'
+const APP_BASE_URL: string = import.meta.env.VITE_APP_URL ?? ''
 
 // 5 seconds: responsive enough to feel near-instant after visiting the faucet,
 // without hammering the RPC on every render.
