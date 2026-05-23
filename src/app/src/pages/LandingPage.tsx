@@ -7,6 +7,7 @@
  * Sticky top nav with logo left, "Launch App" CTA right.
  */
 import { Link } from 'wouter'
+import { useProtocolStats } from '../hooks/useProtocolStats'
 
 // ── Nav ───────────────────────────────────────────────────────────────────────
 
@@ -162,35 +163,98 @@ function HowItWorks() {
     )
 }
 
+// ── Formatting helpers ────────────────────────────────────────────────────────
+
+/** Formats a dollar amount with comma grouping and two decimal places. */
+function fmtUsdc(n: number): string {
+    return n.toLocaleString('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 2 })
+}
+
+/** Formats an integer with comma grouping. */
+function fmtInt(n: number): string {
+    return n.toLocaleString('en-US')
+}
+
+// ── Protocol stats section ────────────────────────────────────────────────────
+
+/** Skeleton placeholder for a single stat card while data is loading. */
+function StatSkeleton() {
+    return (
+        <div className="bg-gray-50 border border-gray-100 rounded-2xl p-6 text-center">
+            <div className="h-9 bg-gray-200 rounded-lg w-28 mx-auto animate-pulse" />
+            <div className="h-3 bg-gray-100 rounded w-20 mx-auto mt-3 animate-pulse" />
+        </div>
+    )
+}
+
 function ProtocolStats() {
+    const { stats, loading } = useProtocolStats()
+
     return (
         <section
             id="protocol-stats"
             className="py-24 px-6 bg-white border-t border-gray-100"
         >
-            <div className="max-w-6xl mx-auto space-y-12">
+            <div className="max-w-5xl mx-auto space-y-12">
+
+                {/* Heading */}
                 <div className="text-center max-w-2xl mx-auto">
-                    <h2 className="text-3xl font-bold text-gray-900">Protocol stats</h2>
-                    <p className="text-gray-500 mt-3 text-lg leading-relaxed">
-                        {/* Section intro — TODO */}
+                    <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 tracking-tight">
+                        Live on Arc testnet
+                    </h2>
+                    <p className="text-gray-500 mt-3 text-base leading-relaxed">
+                        All figures sourced directly from on-chain events.
                     </p>
                 </div>
 
-                {/* Stat cards — wire to live on-chain data */}
+                {/* Stat grid — skeleton while loading, live values once resolved */}
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                    {[
-                        { label: 'Active plans',       value: '—' },
-                        { label: 'Active subscribers', value: '—' },
-                        { label: 'Volume (USDC)',      value: '—' },
-                        { label: 'Fees collected',     value: '—' },
-                    ].map(({ label, value }) => (
-                        <div key={label} className="bg-gray-50 border border-gray-100 rounded-2xl p-6 text-center">
-                            <p className="text-3xl font-bold text-gray-900 tabular-nums">{value}</p>
-                            <p className="text-xs text-gray-400 mt-1.5 font-medium uppercase tracking-wide">
-                                {label}
-                            </p>
-                        </div>
-                    ))}
+                    {loading || !stats ? (
+                        <>
+                            <StatSkeleton />
+                            <StatSkeleton />
+                            <StatSkeleton />
+                            <StatSkeleton />
+                        </>
+                    ) : (
+                        <>
+                            <div className="bg-gray-50 border border-gray-100 rounded-2xl p-6 text-center">
+                                <p className="text-3xl font-bold text-gray-900 tabular-nums leading-none">
+                                    {fmtUsdc(stats.totalVolumeUsdc)}
+                                </p>
+                                <p className="text-xs text-gray-400 mt-2 font-medium uppercase tracking-wide">
+                                    Total USDC processed
+                                </p>
+                            </div>
+
+                            <div className="bg-gray-50 border border-gray-100 rounded-2xl p-6 text-center">
+                                <p className="text-3xl font-bold text-gray-900 tabular-nums leading-none">
+                                    {fmtInt(stats.activeSubscriptions)}
+                                </p>
+                                <p className="text-xs text-gray-400 mt-2 font-medium uppercase tracking-wide">
+                                    Active subscriptions
+                                </p>
+                            </div>
+
+                            <div className="bg-gray-50 border border-gray-100 rounded-2xl p-6 text-center">
+                                <p className="text-3xl font-bold text-gray-900 tabular-nums leading-none">
+                                    {fmtInt(stats.uniqueMerchants)}
+                                </p>
+                                <p className="text-xs text-gray-400 mt-2 font-medium uppercase tracking-wide">
+                                    Total merchants
+                                </p>
+                            </div>
+
+                            <div className="bg-gray-50 border border-gray-100 rounded-2xl p-6 text-center">
+                                <p className="text-3xl font-bold text-gray-900 tabular-nums leading-none">
+                                    {fmtInt(stats.totalCharges)}
+                                </p>
+                                <p className="text-xs text-gray-400 mt-2 font-medium uppercase tracking-wide">
+                                    Charges settled
+                                </p>
+                            </div>
+                        </>
+                    )}
                 </div>
             </div>
         </section>

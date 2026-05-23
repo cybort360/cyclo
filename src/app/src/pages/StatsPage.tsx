@@ -1,15 +1,6 @@
-import { useState, useEffect, useCallback } from 'react'
 import { Link } from 'wouter'
-
-interface ProtocolStats {
-    totalPlans: number
-    activePlans: number
-    totalSubscriptions: number
-    activeSubscriptions: number
-    totalCharges: number
-    totalVolumeUsdc: number
-    uniqueMerchants: number
-}
+import { useProtocolStats } from '../hooks/useProtocolStats'
+import type { ProtocolStats } from '../hooks/useProtocolStats'
 
 const REFRESH_INTERVAL_MS = 30_000
 
@@ -35,31 +26,7 @@ function StatCard({ label, value, sub }: StatCardProps) {
 }
 
 export function StatsPage() {
-    const [stats, setStats] = useState<ProtocolStats | null>(null)
-    const [loading, setLoading] = useState(true)
-    const [error, setError] = useState('')
-    const [lastUpdated, setLastUpdated] = useState<Date | null>(null)
-
-    const fetchStats = useCallback(async () => {
-        try {
-            const res = await fetch('/api/stats')
-            if (!res.ok) throw new Error(`Server error: ${res.status}`)
-            const data = await res.json() as ProtocolStats
-            setStats(data)
-            setLastUpdated(new Date())
-            setError('')
-        } catch (err) {
-            setError(err instanceof Error ? err.message : 'Failed to load stats')
-        } finally {
-            setLoading(false)
-        }
-    }, [])
-
-    useEffect(() => {
-        void fetchStats()
-        const interval = setInterval(() => { void fetchStats() }, REFRESH_INTERVAL_MS)
-        return () => clearInterval(interval)
-    }, [fetchStats])
+    const { stats, loading, error, lastUpdated } = useProtocolStats({ refreshIntervalMs: REFRESH_INTERVAL_MS })
 
     return (
         <div className="min-h-screen bg-gray-50">
