@@ -8,6 +8,9 @@
  *
  * Connector lines between steps are indigo when the lower step has been reached,
  * gray otherwise.
+ *
+ * Pass `flashingStep` to show a transient green success circle on the given step
+ * index (used during the wallet-connect auto-advance animation).
  */
 
 /**
@@ -19,20 +22,30 @@ export interface OnboardingStep {
 }
 
 interface OnboardingStepperProps {
-    steps:       OnboardingStep[]
-    currentStep: number
-    onStepClick: (index: number) => void
+    steps:        OnboardingStep[]
+    currentStep:  number
+    onStepClick:  (index: number) => void
+    /** Index of the step indicator to render in green during a success flash. */
+    flashingStep?: number | null
 }
 
 type StepState = 'completed' | 'active' | 'future'
 
 interface StepCircleProps {
-    index: number
-    state: StepState
+    index:      number
+    state:      StepState
+    /** Only has visual effect when state is 'completed'. */
+    isFlashing: boolean
 }
 
-function StepCircle({ index, state }: StepCircleProps) {
-    const base = 'w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold shrink-0'
+function StepCircle({ index, state, isFlashing }: StepCircleProps) {
+    const base = 'w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold shrink-0 transition-colors duration-300'
+
+    if (state === 'completed' && isFlashing) {
+        return (
+            <div className={`${base} bg-green-500 text-white`}>✓</div>
+        )
+    }
 
     if (state === 'completed') {
         return (
@@ -60,8 +73,9 @@ function StepCircle({ index, state }: StepCircleProps) {
  * @param steps - Ordered list of steps to display.
  * @param currentStep - Zero-based index of the currently active step.
  * @param onStepClick - Called with the step index when a completed step is clicked.
+ * @param flashingStep - Optional index of the step indicator to render in green (success flash).
  */
-export function OnboardingStepper({ steps, currentStep, onStepClick }: OnboardingStepperProps) {
+export function OnboardingStepper({ steps, currentStep, onStepClick, flashingStep }: OnboardingStepperProps) {
     return (
         <div className="w-full">
             {steps.map((step, index) => {
@@ -69,6 +83,7 @@ export function OnboardingStepper({ steps, currentStep, onStepClick }: Onboardin
                 const isActive    = index === currentStep
                 const isLast      = index === steps.length - 1
                 const state: StepState = isCompleted ? 'completed' : isActive ? 'active' : 'future'
+                const stepIsFlashing = flashingStep != null && index === flashingStep
 
                 return (
                     <div key={step.title} className="flex gap-4">
@@ -81,10 +96,10 @@ export function OnboardingStepper({ steps, currentStep, onStepClick }: Onboardin
                                     className="focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 rounded-full"
                                     aria-label={`Go back to ${step.title}`}
                                 >
-                                    <StepCircle index={index} state={state} />
+                                    <StepCircle index={index} state={state} isFlashing={stepIsFlashing} />
                                 </button>
                             ) : (
-                                <StepCircle index={index} state={state} />
+                                <StepCircle index={index} state={state} isFlashing={stepIsFlashing} />
                             )}
 
                             {/* Connector line — omitted after the last step */}
