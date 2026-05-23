@@ -120,7 +120,7 @@ function FundWalletStepContent({ address, onAdvance }: FundWalletStepContentProp
     })
 
     const balanceDisplay = usdcBalance !== undefined
-        ? `${fromUsdcUnits(usdcBalance)} USDC`
+        ? `${fromUsdcUnits(usdcBalance).toFixed(6)} USDC`
         : '—'
 
     const canContinue = usdcBalance !== undefined && usdcBalance > 0n
