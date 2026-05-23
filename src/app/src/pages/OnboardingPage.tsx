@@ -15,7 +15,7 @@
  */
 import { useState, useEffect, useRef, FormEvent } from 'react'
 import { useAccount, useReadContract } from 'wagmi'
-import { Link } from 'wouter'
+import { Link, useLocation } from 'wouter'
 import { OnboardingStepper } from '../components/OnboardingStepper'
 import type { OnboardingStep } from '../components/OnboardingStepper'
 import { ConnectButton } from '../components/WalletStatus'
@@ -23,6 +23,7 @@ import { USDC_ABI }      from '../constants/abis'
 import { USDC_ADDRESS }  from '../constants/addresses'
 import { fromUsdcUnits } from '../utils/formatting'
 import { useCycloClient } from '@cyclo/react'
+import QRCode from 'qrcode'
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 
@@ -306,6 +307,100 @@ function CreatePlanStepContent({ onSuccess }: CreatePlanStepContentProps): JSX.E
     )
 }
 
+interface ShareLinkStepContentProps {
+    planId: bigint
+}
+
+/**
+ * Content panel for step 3: displays the merchant's subscribe URL, a QR code,
+ * a copy-to-clipboard button, and a "Go to Dashboard" button that clears
+ * onboarding localStorage and navigates to the merchant dashboard.
+ */
+function ShareLinkStepContent({ planId }: ShareLinkStepContentProps): JSX.Element {
+    const [, navigate]        = useLocation()
+    const [copied, setCopied] = useState(false)
+    const qrCanvasRef         = useRef<HTMLCanvasElement>(null)
+    const copyTimerRef        = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+    const subscribeUrl = `${APP_BASE_URL || window.location.origin}/subscribe/${String(planId)}`
+
+    useEffect(() => {
+        if (qrCanvasRef.current === null) return
+        QRCode.toCanvas(qrCanvasRef.current, subscribeUrl, { width: 160 })
+            .catch(() => {
+                // QR generation failed — canvas stays blank, card still renders
+            })
+    }, [subscribeUrl])
+
+    useEffect(() => () => {
+        if (copyTimerRef.current !== null) clearTimeout(copyTimerRef.current)
+    }, [])
+
+    async function handleCopy(): Promise<void> {
+        try {
+            await navigator.clipboard.writeText(subscribeUrl)
+            setCopied(true)
+            if (copyTimerRef.current !== null) clearTimeout(copyTimerRef.current)
+            copyTimerRef.current = setTimeout(() => setCopied(false), 2_000)
+        } catch {
+            // Clipboard unavailable — degrade silently, do not crash
+        }
+    }
+
+    function handleDashboard(): void {
+        clearPersistedStep()
+        clearPersistedPlanId()
+        navigate('/')
+    }
+
+    return (
+        <div className="bg-white border border-gray-200 rounded-xl p-6 space-y-4">
+            <div>
+                <h2 className="text-lg font-semibold text-gray-900">Your checkout link is ready</h2>
+                <p className="text-sm text-gray-500 mt-1">
+                    Share this link with anyone you want to subscribe.
+                </p>
+            </div>
+
+            <div className="flex gap-2 items-center">
+                <input
+                    type="text"
+                    readOnly
+                    value={subscribeUrl}
+                    className="flex-1 px-3 py-2 border border-gray-200 rounded-lg text-sm text-gray-700 bg-gray-50 focus:outline-none"
+                />
+                <a
+                    href={subscribeUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="p-2 border border-gray-200 rounded-lg text-gray-500 hover:text-gray-700 hover:bg-gray-50 transition-colors"
+                    aria-label="Open subscribe link in new tab"
+                >
+                    ↗
+                </a>
+            </div>
+
+            <button
+                onClick={handleCopy}
+                className="px-5 py-2.5 bg-indigo-600 text-white rounded-lg text-sm font-semibold hover:bg-indigo-700 transition-colors"
+            >
+                {copied ? 'Copied! ✓' : 'Copy Link'}
+            </button>
+
+            <div className="flex justify-center">
+                <canvas ref={qrCanvasRef} width={160} height={160} />
+            </div>
+
+            <button
+                onClick={handleDashboard}
+                className="w-full px-5 py-2.5 bg-indigo-600 text-white rounded-lg text-sm font-semibold hover:bg-indigo-700 transition-colors"
+            >
+                Go to Dashboard
+            </button>
+        </div>
+    )
+}
+
 // ── Page ──────────────────────────────────────────────────────────────────────
 
 /**
@@ -390,6 +485,8 @@ export function OnboardingPage() {
         // Guard against clicking a completed step circle to skip past the connection
         // requirement — auto-advance is the only sanctioned path from step 0 to 1.
         if (step > 0 && !isConnected) return
+        // Guard against navigating to the share-link step without a confirmed planId.
+        if (step === 3 && planId === null) return
         setCurrentStep(step)
         persistStep(step)
     }
@@ -469,8 +566,14 @@ export function OnboardingPage() {
                     />
                 )}
 
-                {/* Navigation — hidden on step 0; connection itself advances the step */}
-                {currentStep > 0 && (
+                {/* Step 4 content — share link card */}
+                {currentStep === 3 && planId !== null && (
+                    <ShareLinkStepContent planId={planId} />
+                )}
+
+                {/* Navigation — hidden on step 0 and on the terminal step 3,
+                    where Go to Dashboard in the card is the only exit. */}
+                {currentStep > 0 && currentStep < STEP_COUNT - 1 && (
                     <div className="flex gap-3">
                         <button
                             onClick={handleBack}
