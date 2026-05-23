@@ -1,0 +1,187 @@
+/**
+ * /onboarding — focused setup wizard for new merchants.
+ *
+ * Guides users through 4 steps: connect wallet, get testnet USDC,
+ * create a plan, and share their checkout link.
+ *
+ * Inputs:  none (reads wallet state via wagmi useAccount)
+ * Outputs: renders full-screen centered wizard UI
+ *
+ * State:
+ *   - currentStep persists to localStorage under 'cyclo_onboarding_step'
+ *   - Resets to step 0 when the wallet address changes or disconnects
+ *   - Step 0 Next button is gated on wallet connection
+ */
+import { useState, useEffect, useRef } from 'react'
+import { useAccount } from 'wagmi'
+import { Link } from 'wouter'
+import { OnboardingStepper } from '../components/OnboardingStepper'
+import type { OnboardingStep } from '../components/OnboardingStepper'
+
+// ── Constants ─────────────────────────────────────────────────────────────────
+
+const STORAGE_KEY = 'cyclo_onboarding_step'
+
+const ONBOARDING_STEPS: OnboardingStep[] = [
+    {
+        title:       'Connect Wallet',
+        description: 'Connect an injected wallet to get started on Arc testnet.',
+    },
+    {
+        title:       'Get Testnet USDC',
+        description: 'Fund your wallet with testnet USDC from the Arc faucet.',
+    },
+    {
+        title:       'Create Your First Plan',
+        description: 'Define a price and billing interval for your first subscription plan.',
+    },
+    {
+        title:       'Share Your Link',
+        description: 'Share your checkout link and accept your first subscriber.',
+    },
+]
+
+const STEP_COUNT = ONBOARDING_STEPS.length
+
+// ── localStorage helpers ──────────────────────────────────────────────────────
+
+function readPersistedStep(): number {
+    try {
+        const raw = localStorage.getItem(STORAGE_KEY)
+        if (raw === null) return 0
+        const parsed = parseInt(raw, 10)
+        if (isNaN(parsed)) return 0
+        return Math.max(0, Math.min(parsed, STEP_COUNT - 1))
+    } catch {
+        // localStorage unavailable — fail silently, default to start
+        return 0
+    }
+}
+
+function persistStep(step: number): void {
+    try {
+        localStorage.setItem(STORAGE_KEY, String(step))
+    } catch {
+        // localStorage unavailable — degrade silently, do not crash
+    }
+}
+
+function clearPersistedStep(): void {
+    try {
+        localStorage.removeItem(STORAGE_KEY)
+    } catch {
+        // ignore
+    }
+}
+
+// ── Page ──────────────────────────────────────────────────────────────────────
+
+/**
+ * Full-screen onboarding wizard for new merchants.
+ *
+ * @returns The 4-step onboarding UI with localStorage-persisted step state.
+ */
+export function OnboardingPage() {
+    const { address, isConnected } = useAccount()
+    const [currentStep, setCurrentStep] = useState<number>(readPersistedStep)
+
+    // lastAddressRef records the address seen in the previous effect run.
+    // Starts as undefined so the initial mount (address going from undefined
+    // to a value) does NOT trigger a reset.
+    const lastAddressRef = useRef<string | undefined>(undefined)
+
+    // Reset to step 0 when the wallet address changes or when isConnected goes
+    // false. isConnected is the explicit disconnect signal — address alone is
+    // not reliable because it can lag behind connection state in wagmi.
+    // The reset is gated on lastAddressRef so the initial mount never resets.
+    useEffect(() => {
+        const prevAddress = lastAddressRef.current
+        const addressChanged =
+            address !== undefined && prevAddress !== undefined && prevAddress !== address
+
+        const disconnected = !isConnected && prevAddress !== undefined
+
+        if (addressChanged || disconnected) {
+            setCurrentStep(0)
+            clearPersistedStep()
+        }
+
+        lastAddressRef.current = isConnected ? address : undefined
+    }, [address, isConnected])
+
+    function goToStep(step: number): void {
+        // Enforce the wallet-connection gate: step 0 → 1 requires an active connection.
+        if (step > 0 && !isConnected) return
+        setCurrentStep(step)
+        persistStep(step)
+    }
+
+    function handleNext(): void {
+        if (currentStep >= STEP_COUNT - 1) return
+        goToStep(currentStep + 1)
+    }
+
+    function handleBack(): void {
+        if (currentStep <= 0) return
+        goToStep(currentStep - 1)
+    }
+
+    // Next is disabled on the last step, and on step 0 when not connected
+    // (wallet connection is required to progress past step 1).
+    const canGoNext = currentStep < STEP_COUNT - 1 && (currentStep > 0 || isConnected)
+    const canGoBack = currentStep > 0
+
+    return (
+        <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center px-6 py-12">
+            <div className="w-full max-w-sm space-y-8">
+
+                {/* Logo */}
+                <div className="flex items-center gap-2">
+                    <div className="w-7 h-7 bg-indigo-600 rounded-lg flex items-center justify-center">
+                        <span className="text-white text-xs font-bold">C</span>
+                    </div>
+                    <span className="font-semibold text-gray-900">Cyclo</span>
+                </div>
+
+                {/* Heading */}
+                <div>
+                    <h1 className="text-2xl font-bold text-gray-900">Get started</h1>
+                    <p className="text-sm text-gray-500 mt-1">
+                        Follow the steps below to set up your first subscription plan.
+                    </p>
+                </div>
+
+                {/* Stepper */}
+                <OnboardingStepper
+                    steps={ONBOARDING_STEPS}
+                    currentStep={currentStep}
+                    onStepClick={goToStep}
+                />
+
+                {/* Navigation */}
+                <div className="flex gap-3">
+                    <button
+                        onClick={handleBack}
+                        disabled={!canGoBack}
+                        className="px-5 py-2.5 border border-gray-200 text-gray-600 rounded-lg text-sm font-semibold hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                    >
+                        ← Back
+                    </button>
+                    <button
+                        onClick={handleNext}
+                        disabled={!canGoNext}
+                        className="px-5 py-2.5 bg-indigo-600 text-white rounded-lg text-sm font-semibold hover:bg-indigo-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                    >
+                        Next →
+                    </button>
+                </div>
+
+                {/* Skip */}
+                <Link href="/" className="text-sm text-gray-400 hover:text-gray-600">
+                    Skip setup →
+                </Link>
+
+            </div>
+        </div>
+    )
+}
