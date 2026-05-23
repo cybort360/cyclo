@@ -40,34 +40,50 @@ function Hero() {
     return (
         <section
             id="hero"
-            className="min-h-[80vh] flex flex-col items-center justify-center text-center px-6 py-24 bg-white"
+            /*
+             * Fill the viewport below the sticky nav (h-16 = 4rem).
+             * py-20 gives breathing room on short screens where the content
+             * would otherwise crowd the nav or fold boundary.
+             */
+            className="min-h-[calc(100vh-4rem)] flex flex-col items-center justify-center text-center px-6 py-20 bg-white"
         >
-            {/* Placeholder content — replace with real copy */}
-            <div className="max-w-3xl mx-auto space-y-6">
-                <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-indigo-50 border border-indigo-100 rounded-full text-xs font-medium text-indigo-600">
-                    On-chain recurring billing · Arc Testnet
+            <div className="max-w-4xl mx-auto space-y-8">
+
+                {/* Eyebrow tag */}
+                <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-indigo-50 border border-indigo-100 rounded-full text-xs font-semibold text-indigo-600 tracking-wide uppercase">
+                    Arc Testnet · Open Beta
                 </div>
-                <h1 className="text-5xl sm:text-6xl font-bold text-gray-900 leading-tight tracking-tight">
-                    {/* Hero headline — TODO */}
-                    Headline goes here
+
+                {/* Headline — largest text on the page */}
+                <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold text-gray-900 tracking-tight leading-[1.05]">
+                    Recurring billing infrastructure for Arc
                 </h1>
-                <p className="text-xl text-gray-500 max-w-xl mx-auto leading-relaxed">
-                    {/* Sub-headline — TODO */}
-                    Sub-headline goes here.
+
+                {/* Sub-headline */}
+                <p className="text-xl text-gray-500 max-w-2xl mx-auto leading-relaxed">
+                    Create subscription plans on-chain. Subscribers approve once.
+                    The protocol handles the rest —{' '}
+                    <span className="text-gray-700">no backend, no API keys, no trust required.</span>
                 </p>
+
+                {/* CTAs */}
                 <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
-                    <Link href="/dashboard">
-                        <a className="px-6 py-3 bg-indigo-600 text-white text-sm font-semibold rounded-xl hover:bg-indigo-700 transition-colors shadow-sm">
-                            Launch App →
+                    <Link href="/onboarding">
+                        <a className="px-6 py-3.5 bg-indigo-600 text-white text-sm font-semibold rounded-xl hover:bg-indigo-700 active:bg-indigo-800 transition-colors shadow-sm">
+                            Start accepting subscriptions →
                         </a>
                     </Link>
-                    <a
-                        href="#how-it-works"
-                        className="px-6 py-3 border border-gray-200 text-gray-700 text-sm font-medium rounded-xl hover:bg-gray-50 transition-colors"
-                    >
-                        How it works
-                    </a>
+                    <Link href="/docs">
+                        <a className="px-6 py-3.5 border border-gray-200 text-gray-700 text-sm font-medium rounded-xl hover:bg-gray-50 active:bg-gray-100 transition-colors">
+                            Read the docs
+                        </a>
+                    </Link>
                 </div>
+
+                {/* Tagline strip */}
+                <p className="text-sm text-gray-400 pt-2 select-none">
+                    Built on Arc · Powered by USDC · Open source
+                </p>
             </div>
         </section>
     )
