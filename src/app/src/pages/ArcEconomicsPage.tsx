@@ -308,7 +308,7 @@ function CostCalculator({ subscribers, onSubscribersChange }: CostCalculatorProp
 const DEFAULT_PLAN_PRICE     = 9.99
 const ARC_COST_PER_CHARGE    = 0.001
 const ETH_COST_PER_CHARGE    = 3.50
-const PROTOCOL_FEE_RATE      = 0.01   // 1%
+const PROTOCOL_FEE_RATE      = 0.03   // 3%
 
 interface FeeMarginSectionProps {
     subscribers: number
@@ -392,7 +392,7 @@ function FeeMarginSection({ subscribers }: FeeMarginSectionProps) {
                 <StatCard
                     label="Gross protocol revenue"
                     value={fmtCost(grossRevenue)}
-                    sub="subscribers × price × 1% fee / month"
+                    sub="subscribers × price × 3% fee / month"
                 />
                 <StatCard
                     label="Keeper cost on Arc"
@@ -775,7 +775,7 @@ export function ArcEconomicsPage() {
                 {/* Protocol fee margin */}
                 <Section title="Protocol fee margin">
                     <p className="text-gray-600 leading-relaxed">
-                        With the same subscriber count, see how the 1% protocol fee
+                        With the same subscriber count, see how the 3% protocol fee
                         translates into net margin once Arc keeper costs are deducted.
                         Adjust the average plan price to model different pricing tiers.
                     </p>
@@ -809,12 +809,12 @@ export function ArcEconomicsPage() {
                             />
                             <FormulaRow
                                 label="Protocol fee per subscription"
-                                value="price × 1%"
+                                value="price × 3%"
                                 sub="collected in USDC"
                             />
                             <FormulaRow
                                 label="Total fees collected"
-                                value="N × price × 0.01"
+                                value="N × price × 0.03"
                                 sub="in USDC"
                             />
                             <FormulaRow
@@ -824,7 +824,7 @@ export function ArcEconomicsPage() {
                             />
                             <FormulaRow
                                 label="Net keeper profit"
-                                value="(N × price × 0.01) − gas"
+                                value="(N × price × 0.03) − gas"
                                 sub="fully determined before submitting"
                                 accent
                             />
@@ -919,14 +919,14 @@ export function ArcEconomicsPage() {
                                 </p>
                             </div>
                             <div className="p-3 space-y-0.5">
-                                <FormulaRow label="Fees collected" value="$4.995" sub="50 × $9.99 × 1%" />
+                                <FormulaRow label="Fees collected" value="$14.985" sub="50 × $9.99 × 3%" />
                                 <FormulaRow label="Gas cost" value="~0.003 ETH" sub="at 20 gwei, ~150k units" />
                                 <FormulaRow label="ETH/USDC rate" value="needs oracle" sub="$1,500–$4,000 range" />
                                 <FormulaRow label="Gas in USD" value="$4.50–$12.00" sub="depends on ETH price" />
                                 <FormulaRow
                                     label="Net profit range"
-                                    value="−$7.01 to +$0.49"
-                                    sub="unpredictable"
+                                    value="+$2.99 to +$10.49"
+                                    sub="range depends on ETH price"
                                     accent
                                 />
                             </div>
@@ -940,13 +940,13 @@ export function ArcEconomicsPage() {
                                 </p>
                             </div>
                             <div className="p-3 space-y-0.5">
-                                <FormulaRow label="Fees collected" value="$4.995 USDC" sub="50 × $9.99 × 1%" />
+                                <FormulaRow label="Fees collected" value="$14.985 USDC" sub="50 × $9.99 × 3%" />
                                 <FormulaRow label="Gas cost" value="~$0.001 USDC" sub="same asset, no oracle" />
                                 <FormulaRow label="Exchange rate" value="n/a" sub="USDC = USDC" />
                                 <FormulaRow label="Gas in USD" value="$0.001" sub="stable, predictable" />
                                 <FormulaRow
                                     label="Net profit"
-                                    value="+$4.994 USDC"
+                                    value="+$14.984 USDC"
                                     sub="deterministic"
                                     accent
                                 />
@@ -979,8 +979,8 @@ export function ArcEconomicsPage() {
                                 body:  'checkPreFlight() returns a binary ready/not-ready signal based purely on USDC balance and allowance. On Arc, this is a complete decision — the keeper never needs to cross-reference an external price to confirm profitability.',
                             },
                             {
-                                title: 'The 1% fee is always viable',
-                                body:  'The protocol fee is fixed at 1% of the subscription price. On Arc, this will always exceed gas cost for any subscription priced above approximately $0.10 USDC. On Ethereum, the break-even price floats with ETH.',
+                                title: 'The 3% fee is always viable',
+                                body:  'The protocol fee is fixed at 3% of the subscription price. On Arc, this will always exceed gas cost for any subscription priced above approximately $0.04 USDC. On Ethereum, the break-even price floats with ETH.',
                             },
                             {
                                 title: 'Single-asset keeper wallet',

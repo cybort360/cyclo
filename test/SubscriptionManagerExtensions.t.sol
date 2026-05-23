@@ -63,11 +63,11 @@ contract SubscriptionManagerExtensionsTest is Test {
     // charge() — fee split
     // -------------------------------------------------------------------------
 
-    function test_charge_fee_merchantReceives99Percent() public {
+    function test_charge_fee_merchantReceives97Percent() public {
         uint256 planId = _createPlan();
         _subscribe(planId);
 
-        uint256 fee              = PRICE / 100;
+        uint256 fee              = PRICE * 3 / 100;
         uint256 merchantAmount   = PRICE - fee;
         uint256 merchantBefore   = usdc.balanceOf(merchant);
         uint256 feeBefore        = usdc.balanceOf(feeRecipient);
@@ -90,7 +90,7 @@ contract SubscriptionManagerExtensionsTest is Test {
 
     function test_pay_success() public {
         uint256 amount           = 5_000_000; // 5 USDC
-        uint256 fee              = amount / 100;
+        uint256 fee              = amount * 3 / 100;
         uint256 recipientAmount  = amount - fee;
 
         vm.startPrank(payer);
@@ -124,7 +124,7 @@ contract SubscriptionManagerExtensionsTest is Test {
 
     function test_pay_revert_transferFails() public {
         uint256 amount          = 5_000_000;
-        uint256 recipientAmount = amount - amount / 100;
+        uint256 recipientAmount = amount - amount * 3 / 100;
         // payer has no allowance — MockUSDC returns false
         vm.prank(payer);
         vm.expectRevert(abi.encodeWithSelector(ISubscriptionManager.TransferFailed.selector, payer, recipient, recipientAmount));
@@ -202,7 +202,7 @@ contract SubscriptionManagerExtensionsTest is Test {
         _subscribe(planId);
         manager.charge(planId, subscriber);
 
-        assertEq(usdc.balanceOf(newRecipient), PRICE / 100);
+        assertEq(usdc.balanceOf(newRecipient), PRICE * 3 / 100);
         assertEq(usdc.balanceOf(feeRecipient), 0); // old recipient got nothing
     }
 

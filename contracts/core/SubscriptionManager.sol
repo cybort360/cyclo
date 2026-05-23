@@ -20,8 +20,8 @@ contract SubscriptionManager is ISubscriptionManager, ReentrancyGuard, Ownable {
     address private immutable _usdcAddress;
     address private _feeRecipient;
 
-    // 1% of every charge or pay() amount goes to _feeRecipient.
-    uint256 private constant FEE_DENOMINATOR = 100;
+    // 3% of every charge or pay() amount goes to _feeRecipient.
+    uint256 private constant FEE_BPS = 300; // 3% expressed in basis points (1 bp = 0.01%)
 
     // Plan IDs start at 1; 0 is used as a sentinel for "does not exist".
     uint256 private _nextPlanId = 1;
@@ -202,7 +202,7 @@ contract SubscriptionManager is ISubscriptionManager, ReentrancyGuard, Ownable {
             revert PaymentNotDue(planId, subscriber, sub.nextChargeTimestamp);
         }
 
-        uint256 fee            = plan.price / FEE_DENOMINATOR;
+        uint256 fee            = plan.price * FEE_BPS / 10_000;
         uint256 merchantAmount = plan.price - fee;
         uint256 newNextChargeTimestamp = uint256(sub.nextChargeTimestamp) + plan.interval;
         // casting to 'uint48' is safe — max uint48 (281474976710655)
@@ -220,7 +220,7 @@ contract SubscriptionManager is ISubscriptionManager, ReentrancyGuard, Ownable {
         emit FeeCollected(planId, subscriber, fee);
     }
 
-    /// @notice Transfers USDC from the caller to a recipient, deducting a 1% protocol fee.
+    /// @notice Transfers USDC from the caller to a recipient, deducting a 3% protocol fee.
     /// The caller must have pre-approved this contract for at least `amount` USDC.
     /// @param recipient Address to receive the payment (minus fee); must not be the zero address
     /// @param amount Total USDC amount in 6-decimal units; must be greater than zero
@@ -228,7 +228,7 @@ contract SubscriptionManager is ISubscriptionManager, ReentrancyGuard, Ownable {
         if (recipient == address(0)) revert ZeroAddress();
         if (amount == 0) revert InvalidAmount();
 
-        uint256 fee             = amount / FEE_DENOMINATOR;
+        uint256 fee             = amount * FEE_BPS / 10_000;
         uint256 recipientAmount = amount - fee;
 
         bool s1 = IUSDC(_usdcAddress).transferFrom(msg.sender, recipient, recipientAmount);
@@ -270,7 +270,7 @@ contract SubscriptionManager is ISubscriptionManager, ReentrancyGuard, Ownable {
         // forge-lint: disable-next-line(block-timestamp)
         if (block.timestamp < sub.nextChargeTimestamp) return false;
 
-        uint256 fee            = plan.price / FEE_DENOMINATOR;
+        uint256 fee            = plan.price * FEE_BPS / 10_000;
         uint256 merchantAmount = plan.price - fee;
         uint256 newNextCharge  = uint256(sub.nextChargeTimestamp) + plan.interval;
         // forge-lint: disable-next-line(unsafe-typecast)
