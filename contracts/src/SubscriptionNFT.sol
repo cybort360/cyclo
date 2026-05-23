@@ -41,6 +41,9 @@ contract SubscriptionNFT is ERC721 {
     /// @notice Emitted when a subscription token is burned.
     event Burned(address indexed subscriber, uint256 indexed planId, uint256 tokenId);
 
+    /// @notice Emitted when contract ownership is transferred.
+    event OwnershipTransferred(address indexed previousOwner, address indexed newOwner);
+
     // ── State ─────────────────────────────────────────────────────────────────
 
     /// @notice Address authorised to mint and burn tokens. Set to msg.sender on deploy.
@@ -66,6 +69,19 @@ contract SubscriptionNFT is ERC721 {
     modifier onlyOwner() {
         if (msg.sender != owner) revert Unauthorized();
         _;
+    }
+
+    // ── Ownership management ──────────────────────────────────────────────────
+
+    /// @notice Transfers contract ownership to `newOwner`.
+    ///         Only the current owner may call this. Used during deployment to
+    ///         hand control from the deployer EOA to the SubscriptionManager contract.
+    /// @param newOwner Address that will become the new owner. Must not be the zero address.
+    function transferOwnership(address newOwner) external onlyOwner {
+        if (newOwner == address(0)) revert Unauthorized();
+        address previousOwner = owner;
+        owner = newOwner;
+        emit OwnershipTransferred(previousOwner, newOwner);
     }
 
     // ── Soulbound override ────────────────────────────────────────────────────

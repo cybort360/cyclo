@@ -12,6 +12,7 @@ contract SubscriptionNFTTest is Test {
     // Mirror the contract's events here so vm.expectEmit can match.
     event Minted(address indexed subscriber, uint256 indexed planId, uint256 tokenId);
     event Burned(address indexed subscriber, uint256 indexed planId, uint256 tokenId);
+    event OwnershipTransferred(address indexed previousOwner, address indexed newOwner);
 
     SubscriptionNFT internal nft;
 
@@ -301,5 +302,54 @@ contract SubscriptionNFTTest is Test {
         // ERC721 reverts with ERC721NonexistentToken for tokens that don't exist.
         vm.expectRevert();
         nft.tokenURI(99);
+    }
+
+    // ── transferOwnership ─────────────────────────────────────────────────────
+
+    function test_transferOwnership_success() public {
+        address newOwner = makeAddr("newOwner");
+
+        vm.expectEmit(true, true, false, false);
+        emit OwnershipTransferred(nftOwner, newOwner);
+
+        vm.prank(nftOwner);
+        nft.transferOwnership(newOwner);
+
+        assertEq(nft.owner(), newOwner);
+    }
+
+    function test_transferOwnership_newOwnerCanMint() public {
+        address newOwner = makeAddr("newOwner");
+
+        vm.prank(nftOwner);
+        nft.transferOwnership(newOwner);
+
+        vm.prank(newOwner);
+        nft.mint(subscriber, PLAN_A);
+
+        assertTrue(nft.isSubscribed(subscriber, PLAN_A));
+    }
+
+    function test_transferOwnership_previousOwnerCanNoLongerMint() public {
+        address newOwner = makeAddr("newOwner");
+
+        vm.prank(nftOwner);
+        nft.transferOwnership(newOwner);
+
+        vm.prank(nftOwner);
+        vm.expectRevert(SubscriptionNFT.Unauthorized.selector);
+        nft.mint(subscriber, PLAN_A);
+    }
+
+    function test_transferOwnership_revert_onlyOwner() public {
+        vm.prank(stranger);
+        vm.expectRevert(SubscriptionNFT.Unauthorized.selector);
+        nft.transferOwnership(stranger);
+    }
+
+    function test_transferOwnership_revert_zeroAddress() public {
+        vm.prank(nftOwner);
+        vm.expectRevert(SubscriptionNFT.Unauthorized.selector);
+        nft.transferOwnership(address(0));
     }
 }
