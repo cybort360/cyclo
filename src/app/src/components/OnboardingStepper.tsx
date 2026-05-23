@@ -34,14 +34,14 @@ type StepState = 'completed' | 'active' | 'future'
 interface StepCircleProps {
     index:      number
     state:      StepState
-    /** Only has visual effect when state is 'completed'. */
+    /** When true, renders the circle in green with a ✓ regardless of state. */
     isFlashing: boolean
 }
 
 function StepCircle({ index, state, isFlashing }: StepCircleProps) {
     const base = 'w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold shrink-0 transition-colors duration-300'
 
-    if (state === 'completed' && isFlashing) {
+    if (isFlashing) {
         return (
             <div className={`${base} bg-green-500 text-white`}>✓</div>
         )
