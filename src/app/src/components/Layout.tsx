@@ -6,10 +6,12 @@ import { ProfileSetupModal } from './ProfileSetupModal'
 import { AIChatPanel } from './AIChatPanel'
 import { SocketStatusIndicator } from './SocketStatusIndicator'
 import { arcTestnet } from '../wagmi'
+import { usePastDueCount } from '../hooks/usePastDueCount'
 
 const nav = [
   { path: '/dashboard',   label: 'Overview',    icon: '▦' },
   { path: '/plans',       label: 'Plans',       icon: '☰' },
+  { path: '/past-due',    label: 'Past Due',    icon: '△' },
   { path: '/subscribers', label: 'Subscribers', icon: '◎' },
   { path: '/settlements', label: 'Settlements', icon: '⇅' },
   { path: '/analytics',   label: 'Analytics',   icon: '∿' },
@@ -17,17 +19,30 @@ const nav = [
   { path: '/developers',  label: 'Developers',  icon: '⌥' },
 ]
 
-function NavItem({ path, label, icon }: { path: string; label: string; icon: string }) {
+interface NavItemProps {
+  path:   string
+  label:  string
+  icon:   string
+  /** Live badge count. Rendered only when > 0. */
+  badge?: number
+}
+
+function NavItem({ path, label, icon, badge }: NavItemProps) {
   const [active] = useRoute(path === '/dashboard' ? path : `${path}*`)
   return (
     <Link href={path}>
-      <a className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+      <a className={`flex w-full items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
         active
           ? 'bg-indigo-50 text-indigo-700'
           : 'text-gray-500 hover:text-gray-900 hover:bg-gray-50'
       }`}>
         <span className="text-base w-5 text-center">{icon}</span>
         {label}
+        {badge !== undefined && badge > 0 && (
+          <span className="ml-auto text-[10px] font-semibold bg-amber-100 text-amber-700 rounded-full px-1.5 py-0.5 min-w-[18px] text-center tabular-nums leading-none">
+            {badge > 99 ? '99+' : badge}
+          </span>
+        )}
       </a>
     </Link>
   )
@@ -58,6 +73,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
   const { profile } = useMerchantProfile()
   const [showProfileSetup, setShowProfileSetup] = useState(false)
   const [showAI, setShowAI] = useState(false)
+  const pastDueCount = usePastDueCount()
 
   useEffect(() => {
     if (isConnected && address && profile === null) {
@@ -95,7 +111,11 @@ export function Layout({ children }: { children: React.ReactNode }) {
         {/* Nav */}
         <nav className="flex-1 px-2 py-4 space-y-0.5">
           {nav.map(item => (
-            <NavItem key={item.path} {...item} />
+            <NavItem
+              key={item.path}
+              {...item}
+              badge={item.path === '/past-due' ? pastDueCount : undefined}
+            />
           ))}
         </nav>
 

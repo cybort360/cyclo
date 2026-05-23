@@ -14,6 +14,7 @@ import { SettlementsPage } from './pages/SettlementsPage'
 import { AnalyticsPage } from './pages/AnalyticsPage'
 import { WebhooksPage } from './pages/WebhooksPage'
 import { DevelopersPage } from './pages/DevelopersPage'
+import { PastDuePage } from './pages/PastDuePage'
 import { SubscribePage } from './pages/SubscribePage'
 import { DemoPage } from './pages/DemoPage'
 import { DocsPage } from './pages/DocsPage'
@@ -54,6 +55,7 @@ export default function App() {
                                     <Route path="/dashboard" component={OverviewPage} />
                                     <Route path="/connect" component={ConnectPage} />
                                     <Route path="/plans" component={PlansPage} />
+                                    <Route path="/past-due" component={PastDuePage} />
                                     <Route path="/subscribers" component={SubscribersPage} />
                                     <Route path="/settlements" component={SettlementsPage} />
                                     <Route path="/analytics" component={AnalyticsPage} />
