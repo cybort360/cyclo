@@ -82,7 +82,7 @@ function clearPersistedStep(): void {
  * Content panel for step 0: prompts the user to connect their Web3 wallet.
  * Renders the shared ConnectButton — connection triggers auto-advance in the parent.
  */
-function Step1Content() {
+function ConnectWalletStepContent() {
     return (
         <div className="bg-white border border-gray-200 rounded-xl p-6 space-y-4">
             <div>
@@ -160,7 +160,8 @@ export function OnboardingPage() {
     }, [isConnected, currentStep])
 
     function goToStep(step: number): void {
-        // Enforce the wallet-connection gate: step 0 → 1 requires an active connection.
+        // Guard against clicking a completed step circle to skip past the connection
+        // requirement — auto-advance is the only sanctioned path from step 0 to 1.
         if (step > 0 && !isConnected) return
         setCurrentStep(step)
         persistStep(step)
@@ -210,7 +211,7 @@ export function OnboardingPage() {
                 />
 
                 {/* Step 1 content — wallet connect card */}
-                {currentStep === 0 && <Step1Content />}
+                {currentStep === 0 && <ConnectWalletStepContent />}
 
                 {/* Navigation — hidden on step 0; connection itself advances the step */}
                 {currentStep > 0 && (

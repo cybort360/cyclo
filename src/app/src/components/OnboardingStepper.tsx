@@ -74,6 +74,7 @@ function StepCircle({ index, state, isFlashing }: StepCircleProps) {
  * @param currentStep - Zero-based index of the currently active step.
  * @param onStepClick - Called with the step index when a completed step is clicked.
  * @param flashingStep - Optional index of the step indicator to render in green (success flash).
+ * @returns The vertical stepper UI with per-step state indicators and connector lines.
  */
 export function OnboardingStepper({ steps, currentStep, onStepClick, flashingStep }: OnboardingStepperProps) {
     return (
@@ -105,10 +106,9 @@ export function OnboardingStepper({ steps, currentStep, onStepClick, flashingSte
                             {/* Connector line — omitted after the last step */}
                             {!isLast && (
                                 <div
-                                    className={`w-0.5 my-1 flex-1 ${
+                                    className={`w-0.5 my-1 flex-1 min-h-8 ${
                                         index < currentStep ? 'bg-indigo-600' : 'bg-gray-200'
                                     }`}
-                                    style={{ minHeight: '2rem' }}
                                 />
                             )}
                         </div>
