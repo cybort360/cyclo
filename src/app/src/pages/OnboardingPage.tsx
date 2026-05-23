@@ -50,6 +50,10 @@ const STEP_COUNT = ONBOARDING_STEPS.length
 
 const ARC_FAUCET_URL: string = import.meta.env.VITE_ARC_FAUCET_URL ?? 'https://faucet.circle.com/'
 
+// 5 seconds: responsive enough to feel near-instant after visiting the faucet,
+// without hammering the RPC on every render.
+const BALANCE_POLL_INTERVAL_MS = 5_000
+
 // ── localStorage helpers ──────────────────────────────────────────────────────
 
 function readPersistedStep(): number {
@@ -107,16 +111,18 @@ interface FundWalletStepContentProps {
 }
 
 /**
- * Content panel for step 1: shows the Arc faucet link, live USDC balance,
- * and a continue button that enables once the balance exceeds zero.
+ * Content panel for step 1: polls USDC balance so the user can see funds
+ * arrive without refreshing, and gates advancement on any nonzero balance
+ * rather than a minimum — testnet amounts are unpredictable and any balance
+ * is sufficient to proceed.
  */
-function FundWalletStepContent({ address, onAdvance }: FundWalletStepContentProps) {
+function FundWalletStepContent({ address, onAdvance }: FundWalletStepContentProps): JSX.Element {
     const { data: usdcBalance } = useReadContract({
         address:      USDC_ADDRESS as `0x${string}`,
         abi:          USDC_ABI,
         functionName: 'balanceOf',
         args:         [address],
-        query:        { refetchInterval: 5_000 },
+        query:        { refetchInterval: BALANCE_POLL_INTERVAL_MS },
     })
 
     const balanceDisplay = usdcBalance !== undefined
