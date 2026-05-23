@@ -1,0 +1,87 @@
+export const SUBSCRIPTION_MANAGER_ABI = [
+  { type: "constructor", inputs: [{ name: "usdcAddress", type: "address", internalType: "address" }, { name: "feeRecipient", type: "address", internalType: "address" }], stateMutability: "nonpayable" },
+  { type: "function", name: "cancelSubscription", inputs: [{ name: "planId", type: "uint256", internalType: "uint256" }], outputs: [], stateMutability: "nonpayable" },
+  { type: "function", name: "charge", inputs: [{ name: "planId", type: "uint256", internalType: "uint256" }, { name: "subscriber", type: "address", internalType: "address" }], outputs: [], stateMutability: "nonpayable" },
+  { type: "function", name: "createPlan", inputs: [{ name: "price", type: "uint256", internalType: "uint256" }, { name: "interval", type: "uint256", internalType: "uint256" }, { name: "trialDuration", type: "uint48", internalType: "uint48" }], outputs: [{ name: "planId", type: "uint256", internalType: "uint256" }], stateMutability: "nonpayable" },
+  { type: "function", name: "deactivatePlan", inputs: [{ name: "planId", type: "uint256", internalType: "uint256" }], outputs: [], stateMutability: "nonpayable" },
+  { type: "function", name: "batchCharge", inputs: [{ name: "planIds", type: "uint256[]", internalType: "uint256[]" }, { name: "subscribers", type: "address[]", internalType: "address[]" }], outputs: [{ name: "successCount", type: "uint256", internalType: "uint256" }], stateMutability: "nonpayable" },
+  { type: "function", name: "pay", inputs: [{ name: "recipient", type: "address", internalType: "address" }, { name: "amount", type: "uint256", internalType: "uint256" }], outputs: [], stateMutability: "nonpayable" },
+  { type: "function", name: "updateFeeRecipient", inputs: [{ name: "newFeeRecipient", type: "address", internalType: "address" }], outputs: [], stateMutability: "nonpayable" },
+  { type: "function", name: "getPlan", inputs: [{ name: "planId", type: "uint256", internalType: "uint256" }], outputs: [{ name: "", type: "tuple", internalType: "struct SubscriptionLib.Plan", components: [{ name: "merchant", type: "address", internalType: "address" }, { name: "active", type: "bool", internalType: "bool" }, { name: "trialDuration", type: "uint48", internalType: "uint48" }, { name: "price", type: "uint256", internalType: "uint256" }, { name: "interval", type: "uint256", internalType: "uint256" }] }], stateMutability: "view" },
+  { type: "function", name: "migratePlan", inputs: [{ name: "currentPlanId", type: "uint256", internalType: "uint256" }, { name: "newPlanId", type: "uint256", internalType: "uint256" }], outputs: [], stateMutability: "nonpayable" },
+  { type: "function", name: "getSubscription", inputs: [{ name: "planId", type: "uint256", internalType: "uint256" }, { name: "subscriber", type: "address", internalType: "address" }], outputs: [{ name: "", type: "tuple", internalType: "struct SubscriptionLib.Subscription", components: [{ name: "nextChargeTimestamp", type: "uint48", internalType: "uint48" }, { name: "active", type: "bool", internalType: "bool" }] }], stateMutability: "view" },
+  { type: "function", name: "isChargeDue", inputs: [{ name: "planId", type: "uint256", internalType: "uint256" }, { name: "subscriber", type: "address", internalType: "address" }], outputs: [{ name: "", type: "bool", internalType: "bool" }], stateMutability: "view" },
+  { type: "function", name: "subscriptionNFT", inputs: [], outputs: [{ name: "", type: "address", internalType: "address" }], stateMutability: "view" },
+  { type: "function", name: "isSubscribed", inputs: [{ name: "subscriber", type: "address", internalType: "address" }, { name: "planId", type: "uint256", internalType: "uint256" }], outputs: [{ name: "", type: "bool", internalType: "bool" }], stateMutability: "view" },
+  { type: "function", name: "subscribe", inputs: [{ name: "planId", type: "uint256", internalType: "uint256" }], outputs: [], stateMutability: "nonpayable" },
+  { type: "event", name: "PaymentCharged", inputs: [{ name: "planId", type: "uint256", indexed: true, internalType: "uint256" }, { name: "subscriber", type: "address", indexed: true, internalType: "address" }, { name: "merchant", type: "address", indexed: true, internalType: "address" }, { name: "amount", type: "uint256", indexed: false, internalType: "uint256" }, { name: "nextChargeTimestamp", type: "uint256", indexed: false, internalType: "uint256" }], anonymous: false },
+  { type: "event", name: "FeeCollected", inputs: [{ name: "planId", type: "uint256", indexed: true, internalType: "uint256" }, { name: "subscriber", type: "address", indexed: true, internalType: "address" }, { name: "feeAmount", type: "uint256", indexed: false, internalType: "uint256" }], anonymous: false },
+  { type: "event", name: "PaymentSent", inputs: [{ name: "sender", type: "address", indexed: true, internalType: "address" }, { name: "recipient", type: "address", indexed: true, internalType: "address" }, { name: "amount", type: "uint256", indexed: false, internalType: "uint256" }, { name: "fee", type: "uint256", indexed: false, internalType: "uint256" }], anonymous: false },
+  { type: "event", name: "PlanCreated", inputs: [{ name: "planId", type: "uint256", indexed: true, internalType: "uint256" }, { name: "merchant", type: "address", indexed: true, internalType: "address" }, { name: "price", type: "uint256", indexed: false, internalType: "uint256" }, { name: "interval", type: "uint256", indexed: false, internalType: "uint256" }], anonymous: false },
+  { type: "event", name: "PlanDeactivated", inputs: [{ name: "planId", type: "uint256", indexed: true, internalType: "uint256" }, { name: "merchant", type: "address", indexed: true, internalType: "address" }], anonymous: false },
+  { type: "event", name: "SubscriptionCancelled", inputs: [{ name: "planId", type: "uint256", indexed: true, internalType: "uint256" }, { name: "subscriber", type: "address", indexed: true, internalType: "address" }], anonymous: false },
+  { type: "event", name: "PlanMigrated", inputs: [{ name: "fromPlanId", type: "uint256", indexed: true, internalType: "uint256" }, { name: "toPlanId", type: "uint256", indexed: true, internalType: "uint256" }, { name: "subscriber", type: "address", indexed: true, internalType: "address" }], anonymous: false },
+  { type: "event", name: "SubscriptionCreated", inputs: [{ name: "planId", type: "uint256", indexed: true, internalType: "uint256" }, { name: "subscriber", type: "address", indexed: true, internalType: "address" }, { name: "nextChargeTimestamp", type: "uint256", indexed: false, internalType: "uint256" }], anonymous: false },
+  { type: "error", name: "AlreadySubscribed", inputs: [{ name: "planId", type: "uint256", internalType: "uint256" }, { name: "subscriber", type: "address", internalType: "address" }] },
+  { type: "error", name: "ArrayLengthMismatch", inputs: [] },
+  { type: "error", name: "SamePlan", inputs: [{ name: "planId", type: "uint256", internalType: "uint256" }] },
+  { type: "error", name: "InsufficientAllowance", inputs: [{ name: "subscriber", type: "address", internalType: "address" }, { name: "required", type: "uint256", internalType: "uint256" }, { name: "actual", type: "uint256", internalType: "uint256" }] },
+  { type: "error", name: "InvalidAmount", inputs: [] },
+  { type: "error", name: "InvalidInterval", inputs: [] },
+  { type: "error", name: "InvalidPrice", inputs: [] },
+  { type: "error", name: "PaymentNotDue", inputs: [{ name: "planId", type: "uint256", internalType: "uint256" }, { name: "subscriber", type: "address", internalType: "address" }, { name: "nextChargeTimestamp", type: "uint256", internalType: "uint256" }] },
+  { type: "error", name: "PlanInactive", inputs: [{ name: "planId", type: "uint256", internalType: "uint256" }] },
+  { type: "error", name: "PlanNotFound", inputs: [{ name: "planId", type: "uint256", internalType: "uint256" }] },
+  { type: "error", name: "ReentrancyGuardReentrantCall", inputs: [] },
+  { type: "error", name: "SubscriptionInactive", inputs: [{ name: "planId", type: "uint256", internalType: "uint256" }, { name: "subscriber", type: "address", internalType: "address" }] },
+  { type: "error", name: "TransferFailed", inputs: [{ name: "from", type: "address", internalType: "address" }, { name: "to", type: "address", internalType: "address" }, { name: "amount", type: "uint256", internalType: "uint256" }] },
+  { type: "error", name: "Unauthorized", inputs: [{ name: "caller", type: "address", internalType: "address" }] },
+  { type: "error", name: "ZeroAddress", inputs: [] },
+] as const
+
+export const SUBSCRIPTION_NFT_ABI = [
+  // ── View functions ────────────────────────────────────────────────────────
+  { type: "function", name: "owner", inputs: [], outputs: [{ name: "", type: "address", internalType: "address" }], stateMutability: "view" },
+  { type: "function", name: "isSubscribed", inputs: [{ name: "subscriber", type: "address", internalType: "address" }, { name: "planId", type: "uint256", internalType: "uint256" }], outputs: [{ name: "", type: "bool", internalType: "bool" }], stateMutability: "view" },
+  { type: "function", name: "tokenOfSubscriber", inputs: [{ name: "subscriber", type: "address", internalType: "address" }, { name: "planId", type: "uint256", internalType: "uint256" }], outputs: [{ name: "tokenId", type: "uint256", internalType: "uint256" }], stateMutability: "view" },
+  { type: "function", name: "tokenURI", inputs: [{ name: "tokenId", type: "uint256", internalType: "uint256" }], outputs: [{ name: "", type: "string", internalType: "string" }], stateMutability: "view" },
+  { type: "function", name: "ownerOf", inputs: [{ name: "tokenId", type: "uint256", internalType: "uint256" }], outputs: [{ name: "", type: "address", internalType: "address" }], stateMutability: "view" },
+  { type: "function", name: "name", inputs: [], outputs: [{ name: "", type: "string", internalType: "string" }], stateMutability: "view" },
+  { type: "function", name: "symbol", inputs: [], outputs: [{ name: "", type: "string", internalType: "string" }], stateMutability: "view" },
+  // ── Owner-only write functions ─────────────────────────────────────────────
+  { type: "function", name: "mint", inputs: [{ name: "subscriber", type: "address", internalType: "address" }, { name: "planId", type: "uint256", internalType: "uint256" }], outputs: [], stateMutability: "nonpayable" },
+  { type: "function", name: "burn", inputs: [{ name: "subscriber", type: "address", internalType: "address" }, { name: "planId", type: "uint256", internalType: "uint256" }], outputs: [], stateMutability: "nonpayable" },
+  { type: "function", name: "transferOwnership", inputs: [{ name: "newOwner", type: "address", internalType: "address" }], outputs: [], stateMutability: "nonpayable" },
+  // ── Events ────────────────────────────────────────────────────────────────
+  { type: "event", name: "Minted", inputs: [{ name: "subscriber", type: "address", indexed: true, internalType: "address" }, { name: "planId", type: "uint256", indexed: true, internalType: "uint256" }, { name: "tokenId", type: "uint256", indexed: false, internalType: "uint256" }], anonymous: false },
+  { type: "event", name: "Burned", inputs: [{ name: "subscriber", type: "address", indexed: true, internalType: "address" }, { name: "planId", type: "uint256", indexed: true, internalType: "uint256" }, { name: "tokenId", type: "uint256", indexed: false, internalType: "uint256" }], anonymous: false },
+  { type: "event", name: "OwnershipTransferred", inputs: [{ name: "previousOwner", type: "address", indexed: true, internalType: "address" }, { name: "newOwner", type: "address", indexed: true, internalType: "address" }], anonymous: false },
+  // ── Errors ────────────────────────────────────────────────────────────────
+  { type: "error", name: "AlreadySubscribed", inputs: [] },
+  { type: "error", name: "NotSubscribed", inputs: [] },
+  { type: "error", name: "Soulbound", inputs: [] },
+  { type: "error", name: "Unauthorized", inputs: [] },
+] as const
+
+export const USDC_ABI = [
+  {
+    name: 'approve',
+    type: 'function',
+    stateMutability: 'nonpayable',
+    inputs: [
+      { name: 'spender', type: 'address' },
+      { name: 'amount', type: 'uint256' },
+    ],
+    outputs: [{ type: 'bool' }],
+  },
+  {
+    name: 'allowance',
+    type: 'function',
+    stateMutability: 'view',
+    inputs: [
+      { name: 'owner', type: 'address' },
+      { name: 'spender', type: 'address' },
+    ],
+    outputs: [{ type: 'uint256' }],
+  },
+] as const
