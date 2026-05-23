@@ -14,11 +14,14 @@
  *   - Wallet connection auto-advances from step 0 to step 1 with a success animation
  */
 import { useState, useEffect, useRef } from 'react'
-import { useAccount } from 'wagmi'
+import { useAccount, useReadContract } from 'wagmi'
 import { Link } from 'wouter'
 import { OnboardingStepper } from '../components/OnboardingStepper'
 import type { OnboardingStep } from '../components/OnboardingStepper'
 import { ConnectButton } from '../components/WalletStatus'
+import { USDC_ABI }      from '../constants/abis'
+import { USDC_ADDRESS }  from '../constants/addresses'
+import { fromUsdcUnits } from '../utils/formatting'
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 
@@ -44,6 +47,8 @@ const ONBOARDING_STEPS: OnboardingStep[] = [
 ]
 
 const STEP_COUNT = ONBOARDING_STEPS.length
+
+const ARC_FAUCET_URL: string = import.meta.env.VITE_ARC_FAUCET_URL ?? 'https://faucet.circle.com/'
 
 // ── localStorage helpers ──────────────────────────────────────────────────────
 
@@ -92,6 +97,60 @@ function ConnectWalletStepContent() {
                 </p>
             </div>
             <ConnectButton />
+        </div>
+    )
+}
+
+interface FundWalletStepContentProps {
+    address:   `0x${string}`
+    onAdvance: () => void
+}
+
+/**
+ * Content panel for step 1: shows the Arc faucet link, live USDC balance,
+ * and a continue button that enables once the balance exceeds zero.
+ */
+function FundWalletStepContent({ address, onAdvance }: FundWalletStepContentProps) {
+    const { data: usdcBalance } = useReadContract({
+        address:      USDC_ADDRESS as `0x${string}`,
+        abi:          USDC_ABI,
+        functionName: 'balanceOf',
+        args:         [address],
+        query:        { refetchInterval: 5_000 },
+    })
+
+    const balanceDisplay = usdcBalance !== undefined
+        ? `${fromUsdcUnits(usdcBalance)} USDC`
+        : '—'
+
+    const canContinue = usdcBalance !== undefined && usdcBalance > 0n
+
+    return (
+        <div className="bg-white border border-gray-200 rounded-xl p-6 space-y-4">
+            <div>
+                <h2 className="text-lg font-semibold text-gray-900">Fund your wallet with testnet USDC</h2>
+                <p className="text-sm text-gray-500 mt-1">
+                    You need testnet USDC to pay gas fees and test subscriptions on Arc.
+                </p>
+            </div>
+            <a
+                href={ARC_FAUCET_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-block px-5 py-2.5 bg-indigo-600 text-white rounded-lg text-sm font-semibold hover:bg-indigo-700 transition-colors"
+            >
+                Open Arc Faucet ↗
+            </a>
+            <p className="text-sm text-gray-600">
+                Balance: {balanceDisplay}
+            </p>
+            <button
+                onClick={onAdvance}
+                disabled={!canContinue}
+                className="px-5 py-2.5 bg-indigo-600 text-white rounded-lg text-sm font-semibold hover:bg-indigo-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+            >
+                I'm funded, continue
+            </button>
         </div>
     )
 }
@@ -212,6 +271,14 @@ export function OnboardingPage() {
 
                 {/* Step 1 content — wallet connect card */}
                 {currentStep === 0 && <ConnectWalletStepContent />}
+
+                {/* Step 2 content — fund wallet card */}
+                {currentStep === 1 && address && (
+                    <FundWalletStepContent
+                        address={address}
+                        onAdvance={() => goToStep(2)}
+                    />
+                )}
 
                 {/* Navigation — hidden on step 0; connection itself advances the step */}
                 {currentStep > 0 && (
