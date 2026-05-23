@@ -89,36 +89,74 @@ function Hero() {
     )
 }
 
+const HOW_IT_WORKS_STEPS = [
+    {
+        number: 1,
+        title:  'Merchants create a plan',
+        body:   'Set a price, billing interval, and optional trial period. Deployed to Arc in one transaction.',
+    },
+    {
+        number: 2,
+        title:  'Subscribers approve once',
+        body:   'One USDC approval. No repeated signing. The subscriber controls their wallet at all times.',
+    },
+    {
+        number: 3,
+        title:  'The protocol settles automatically',
+        body:   'A decentralised keeper charges due subscriptions on schedule. Every payment is on-chain and auditable.',
+    },
+] as const
+
 function HowItWorks() {
     return (
         <section
             id="how-it-works"
             className="py-24 px-6 bg-gray-50 border-t border-gray-100"
         >
-            <div className="max-w-6xl mx-auto space-y-12">
-                <div className="text-center max-w-2xl mx-auto">
-                    <h2 className="text-3xl font-bold text-gray-900">How it works</h2>
-                    <p className="text-gray-500 mt-3 text-lg leading-relaxed">
-                        {/* Section intro — TODO */}
-                    </p>
+            <div className="max-w-5xl mx-auto space-y-14">
+
+                {/* Heading */}
+                <div className="text-center">
+                    <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 tracking-tight">
+                        How Cyclo works
+                    </h2>
                 </div>
 
-                {/* Step cards — populate with real content */}
+                {/* Step cards */}
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-                    {[
-                        { step: '01', title: 'Step one', body: 'Description placeholder.' },
-                        { step: '02', title: 'Step two', body: 'Description placeholder.' },
-                        { step: '03', title: 'Step three', body: 'Description placeholder.' },
-                    ].map(({ step, title, body }) => (
-                        <div key={step} className="bg-white border border-gray-100 rounded-2xl p-6 space-y-3">
-                            <span className="text-xs font-bold text-indigo-500 tracking-widest uppercase">
-                                {step}
-                            </span>
-                            <h3 className="text-base font-semibold text-gray-900">{title}</h3>
-                            <p className="text-sm text-gray-500 leading-relaxed">{body}</p>
+                    {HOW_IT_WORKS_STEPS.map(({ number, title, body }) => (
+                        <div
+                            key={number}
+                            className="bg-white border border-gray-100 rounded-2xl p-7 flex flex-col gap-4"
+                        >
+                            {/* Step number badge */}
+                            <div className="w-9 h-9 rounded-full bg-indigo-50 border border-indigo-100 flex items-center justify-center shrink-0">
+                                <span className="text-sm font-bold text-indigo-600 tabular-nums">
+                                    {number}
+                                </span>
+                            </div>
+
+                            {/* Text */}
+                            <div className="space-y-2">
+                                <h3 className="text-base font-semibold text-gray-900 leading-snug">
+                                    {title}
+                                </h3>
+                                <p className="text-sm text-gray-500 leading-relaxed">
+                                    {body}
+                                </p>
+                            </div>
                         </div>
                     ))}
                 </div>
+
+                {/* Composability note */}
+                <p className="text-sm text-gray-400 text-center max-w-2xl mx-auto leading-relaxed">
+                    Every subscription mints a soulbound NFT. Any contract on Arc can call{' '}
+                    <code className="font-mono text-xs bg-white border border-gray-200 px-1.5 py-0.5 rounded text-gray-600">
+                        isSubscribed(wallet, planId)
+                    </code>
+                    {' '}to verify access — no Cyclo integration required.
+                </p>
             </div>
         </section>
     )
