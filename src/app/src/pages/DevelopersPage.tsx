@@ -13,6 +13,59 @@
  * can sit flush-left with its own border treatment.
  */
 import { useState, useEffect } from 'react'
+import { CodeBlock, DocStep, CopyButton } from '../components/DocCodeBlock'
+import { CONTRACT_ADDRESS, USDC_ADDRESS } from '../constants/addresses'
+
+// ── Network constants ─────────────────────────────────────────────────────────
+
+const ARC_RPC_URL  = (import.meta.env.VITE_ARC_RPC_URL as string | undefined) ?? ''
+const EXPLORER_URL = 'https://testnet.arcscan.app'
+
+// ── Quick Start code snippets ─────────────────────────────────────────────────
+
+const INSTALL_CODE = 'npm install @cyclo/sdk'
+
+const INIT_CODE = `\
+import { CycloClient } from '@cyclo/sdk'
+import { createWalletClient, http } from 'viem'
+import { privateKeyToAccount } from 'viem/accounts'
+
+const client = new CycloClient({
+  contractAddress: '0x...', // SubscriptionManager address
+  walletClient: createWalletClient({
+    account: privateKeyToAccount('0x...'),
+    transport: http('https://rpc.arc.testnet')
+  })
+})`
+
+const CREATE_PLAN_CODE = `\
+const planId = await client.createPlan({
+  price: 9990000n,      // 9.99 USDC (6 decimals)
+  interval: 2592000n,   // 30 days in seconds
+  trialPeriod: 0n
+})`
+
+const SUBSCRIBE_CODE = `\
+await client.subscribe(planId)
+// USDC allowance is managed automatically`
+
+// ── Network table rows ────────────────────────────────────────────────────────
+
+interface NetworkRow {
+    property: string
+    value:    string
+    copyable: boolean
+    href?:    string
+}
+
+const NETWORK_ROWS: NetworkRow[] = [
+    { property: 'Network name',     value: 'Arc Testnet',                                    copyable: false                          },
+    { property: 'Chain ID',         value: '5042002',                                        copyable: false                          },
+    { property: 'RPC URL',          value: ARC_RPC_URL || '(VITE_ARC_RPC_URL not set)',      copyable: ARC_RPC_URL.length > 0         },
+    { property: 'USDC address',     value: USDC_ADDRESS || '(not configured)',               copyable: false                          },
+    { property: 'Contract address', value: CONTRACT_ADDRESS || '(not configured)',           copyable: CONTRACT_ADDRESS.length > 0    },
+    { property: 'Block explorer',   value: EXPLORER_URL,                                     copyable: false, href: EXPLORER_URL      },
+]
 
 // ── Section manifest ──────────────────────────────────────────────────────────
 
@@ -97,8 +150,8 @@ function AnchorNav({ activeId }: AnchorNavProps) {
 // ── Section wrapper ───────────────────────────────────────────────────────────
 
 interface DocSectionProps {
-    id:       SectionId
-    title:    string
+    id:        SectionId
+    title:     string
     children?: React.ReactNode
 }
 
@@ -106,9 +159,6 @@ interface DocSectionProps {
  * Wraps each documentation section with a consistent heading style, bottom
  * separator, and scroll-margin-top to ensure anchor links land below the
  * sticky dashboard header.
- *
- * scroll-mt-20 (80px) gives clearance above the ~58px header + some breathing
- * room so the section heading doesn't sit flush against the header border.
  */
 function DocSection({ id, title, children }: DocSectionProps) {
     return (
@@ -143,11 +193,6 @@ export function DevelopersPage() {
 
             {/* ── Left anchor nav ───────────────────────────────────────── */}
             <aside className="w-[216px] flex-shrink-0 border-r border-gray-100 bg-white">
-                {/*
-                  * top-[57px] positions the sticky nav just below the dashboard
-                  * header (py-4 top + py-4 bottom + ~25px content + 1px border
-                  * ≈ 57px). Adjust if the header height changes.
-                  */}
                 <div className="sticky top-[57px] px-5 pt-7 pb-12">
                     <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-widest mb-3">
                         On this page
@@ -169,12 +214,78 @@ export function DevelopersPage() {
 
                 {/* Sections */}
                 <div className="space-y-0">
-                    <DocSection id="quick-start"        title="Quick Start"        />
-                    <DocSection id="network"            title="Network"            />
+
+                    {/* ── Quick Start ─────────────────────────────────── */}
+                    <DocSection id="quick-start" title="Quick Start">
+                        <p className="text-sm text-gray-600 mb-8 leading-relaxed">
+                            Start accepting subscriptions in minutes.
+                        </p>
+                        <DocStep n={1} title="Install the SDK">
+                            <CodeBlock code={INSTALL_CODE} language="bash" />
+                        </DocStep>
+                        <DocStep n={2} title="Initialise the client">
+                            <CodeBlock code={INIT_CODE} />
+                        </DocStep>
+                        <DocStep n={3} title="Create a plan">
+                            <CodeBlock code={CREATE_PLAN_CODE} />
+                        </DocStep>
+                        <DocStep n={4} title="Subscribe a user">
+                            <CodeBlock code={SUBSCRIBE_CODE} />
+                        </DocStep>
+                    </DocSection>
+
+                    {/* ── Network ─────────────────────────────────────── */}
+                    <DocSection id="network" title="Network">
+                        <p className="text-sm text-gray-600 mb-6 leading-relaxed">
+                            All contract interactions happen on Arc Testnet. There are no API keys —
+                            authentication is wallet-based and entirely on-chain.
+                        </p>
+                        <table className="w-full text-sm border-collapse">
+                            <thead>
+                                <tr className="border-b border-gray-200">
+                                    <th className="text-left text-xs font-semibold text-gray-400 uppercase tracking-wide pb-2.5 w-44">
+                                        Property
+                                    </th>
+                                    <th className="text-left text-xs font-semibold text-gray-400 uppercase tracking-wide pb-2.5">
+                                        Value
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {NETWORK_ROWS.map(({ property, value, copyable, href }) => (
+                                    <tr key={property} className="border-b border-gray-100 last:border-0">
+                                        <td className="py-3 pr-4 text-gray-500 align-middle whitespace-nowrap">
+                                            {property}
+                                        </td>
+                                        <td className="py-3 align-middle">
+                                            <div className="flex items-center">
+                                                {href ? (
+                                                    <a
+                                                        href={href}
+                                                        target="_blank"
+                                                        rel="noreferrer"
+                                                        className="font-mono text-indigo-600 hover:underline break-all"
+                                                    >
+                                                        {value}
+                                                    </a>
+                                                ) : (
+                                                    <span className="font-mono text-gray-900 break-all">{value}</span>
+                                                )}
+                                                {copyable && <CopyButton value={value} />}
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </DocSection>
+
+                    {/* ── Remaining sections (content coming soon) ─────── */}
                     <DocSection id="sdk-reference"      title="SDK Reference"      />
                     <DocSection id="contract-reference" title="Contract Reference" />
                     <DocSection id="composability"      title="Composability"      />
                     <DocSection id="webhooks"           title="Webhooks"           />
+
                 </div>
             </div>
         </div>
