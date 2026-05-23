@@ -21,6 +21,7 @@ import { StatsPage } from './pages/StatsPage'
 import { PortalPage } from './pages/PortalPage'
 import { ArcEconomicsPage } from './pages/ArcEconomicsPage'
 import { OnboardingPage } from './pages/OnboardingPage'
+import { LandingPage } from './pages/LandingPage'
 
 function SubscribeRoute({ params }: { params: { planId: string } }) {
     const planId = BigInt(params.planId || '0')
@@ -36,7 +37,8 @@ export default function App() {
             <MerchantProfileProvider>
                 <Router>
                     <Switch>
-                        {/* Full-page routes — no sidebar */}
+                        {/* Public routes — no sidebar, no wallet required */}
+                        <Route path="/" component={LandingPage} />
                         <Route path="/subscribe/:planId" component={SubscribeRoute} />
                         <Route path="/portal" component={PortalPage} />
                         <Route path="/arc-economics" component={ArcEconomicsPage} />
@@ -49,7 +51,7 @@ export default function App() {
                         <Route>
                             <Layout>
                                 <Switch>
-                                    <Route path="/" component={OverviewPage} />
+                                    <Route path="/dashboard" component={OverviewPage} />
                                     <Route path="/connect" component={ConnectPage} />
                                     <Route path="/plans" component={PlansPage} />
                                     <Route path="/subscribers" component={SubscribersPage} />

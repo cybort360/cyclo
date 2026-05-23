@@ -350,7 +350,7 @@ function ShareLinkStepContent({ planId }: ShareLinkStepContentProps): JSX.Elemen
     function handleDashboard(): void {
         clearPersistedStep()
         clearPersistedPlanId()
-        navigate('/')
+        navigate('/dashboard')
     }
 
     return (
@@ -633,7 +633,7 @@ export function OnboardingPage() {
                 )}
 
                 {/* Skip */}
-                <Link href="/" className="text-sm text-gray-400 hover:text-gray-600">
+                <Link href="/dashboard" className="text-sm text-gray-400 hover:text-gray-600">
                     Skip setup →
                 </Link>
 

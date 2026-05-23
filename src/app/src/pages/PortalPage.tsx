@@ -580,7 +580,7 @@ function PortalHeader() {
                             {fmtAddress(address)}
                         </span>
                     )}
-                    <Link href="/">
+                    <Link href="/dashboard">
                         <a className="text-sm bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700">
                             Merchant dashboard →
                         </a>
@@ -649,7 +649,7 @@ function EmptyState() {
                 This wallet has no active on-chain subscriptions. Browse available
                 plans to get started.
             </p>
-            <Link href="/">
+            <Link href="/dashboard">
                 <a className="text-sm text-indigo-600 font-medium hover:underline">
                     Browse plans →
                 </a>

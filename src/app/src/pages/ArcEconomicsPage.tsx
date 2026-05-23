@@ -564,7 +564,7 @@ function PageHeader() {
                     <span className="text-gray-300 mx-1.5">·</span>
                     <span className="text-sm text-gray-500">Arc Economics</span>
                 </div>
-                <Link href="/">
+                <Link href="/dashboard">
                     <a className="text-sm bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700">
                         Open dashboard →
                     </a>
@@ -1036,7 +1036,7 @@ export function ArcEconomicsPage() {
                     <div className="flex items-center gap-4">
                         <a href="/stats" className="hover:text-gray-600 transition-colors">Protocol stats</a>
                         <a href="/docs"  className="hover:text-gray-600 transition-colors">Docs</a>
-                        <Link href="/">
+                        <Link href="/dashboard">
                             <a className="hover:text-gray-600 transition-colors">Dashboard</a>
                         </Link>
                     </div>

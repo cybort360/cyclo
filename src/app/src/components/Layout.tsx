@@ -8,7 +8,7 @@ import { SocketStatusIndicator } from './SocketStatusIndicator'
 import { arcTestnet } from '../wagmi'
 
 const nav = [
-  { path: '/',            label: 'Overview',    icon: '▦' },
+  { path: '/dashboard',   label: 'Overview',    icon: '▦' },
   { path: '/plans',       label: 'Plans',       icon: '☰' },
   { path: '/subscribers', label: 'Subscribers', icon: '◎' },
   { path: '/settlements', label: 'Settlements', icon: '⇅' },
@@ -18,7 +18,7 @@ const nav = [
 ]
 
 function NavItem({ path, label, icon }: { path: string; label: string; icon: string }) {
-  const [active] = useRoute(path === '/' ? path : `${path}*`)
+  const [active] = useRoute(path === '/dashboard' ? path : `${path}*`)
   return (
     <Link href={path}>
       <a className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
@@ -77,14 +77,16 @@ export function Layout({ children }: { children: React.ReactNode }) {
       {/* Sidebar */}
       <aside className="w-56 bg-white border-r flex-shrink-0 flex flex-col fixed h-full">
 
-        {/* Logo */}
+        {/* Logo — links to dashboard overview */}
         <div className="px-4 py-5 border-b">
-          <div className="flex items-center gap-2">
-            <div className="w-7 h-7 bg-indigo-600 rounded-lg flex items-center justify-center">
-              <span className="text-white text-xs font-bold">C</span>
-            </div>
-            <span className="font-semibold text-gray-900">Cyclo</span>
-          </div>
+          <Link href="/dashboard">
+            <a className="flex items-center gap-2 no-underline">
+              <div className="w-7 h-7 bg-indigo-600 rounded-lg flex items-center justify-center">
+                <span className="text-white text-xs font-bold">C</span>
+              </div>
+              <span className="font-semibold text-gray-900">Cyclo</span>
+            </a>
+          </Link>
           {profile && (
             <p className="text-xs text-gray-400 mt-1 truncate">{profile.business_name}</p>
           )}

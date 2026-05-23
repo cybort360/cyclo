@@ -256,7 +256,7 @@ export function SubscribePage({ planId }: SubscribePageProps) {
             <div style={{ width: '100%', maxWidth: '480px', display: 'flex', flexDirection: 'column', gap: '24px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <a href="/" style={{ fontWeight: 700, fontSize: '20px', color: '#111', textDecoration: 'none' }}>Cyclo</a>
-                    <a href="/" style={{ fontSize: '13px', color: '#6b6375', textDecoration: 'none' }}>← Back to app</a>
+                    <a href="/dashboard" style={{ fontSize: '13px', color: '#6b6375', textDecoration: 'none' }}>← Back to app</a>
                 </div>
 
                 {planLoading && <p style={{ color: '#6b6375' }}>Loading plan…</p>}
