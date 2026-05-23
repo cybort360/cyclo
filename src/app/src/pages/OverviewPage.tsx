@@ -5,6 +5,7 @@ import { useAnalytics } from '../hooks/useAnalytics'
 import { useSocket } from '../hooks/useSocket'
 import { useAtRiskRevenue } from '../hooks/useAtRiskRevenue'
 import { InsightsCard } from '../components/InsightsCard'
+import { WelcomeChecklist } from '../components/WelcomeChecklist'
 
 const fmt = (n: number) =>
   n.toLocaleString('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 2 })
@@ -85,16 +86,29 @@ export function OverviewPage() {
   const [liveChargesCount,  setLiveChargesCount]  = useState(0)
   const [liveUsdcProcessed, setLiveUsdcProcessed] = useState(0)
 
-  const [dismissed, setDismissed] = useState(false)
+  const [dismissed,  setDismissed]  = useState(false)
+  // Tracks whether this merchant has ever had both a plan and a subscriber.
+  // Once true (persisted to localStorage), the welcome state is never shown again.
+  const [graduated, setGraduated] = useState(false)
 
-  // Re-check dismissal when the wallet address resolves or changes.
-  // localStorage is synchronous but address can arrive after mount.
+  // Restore per-address flags from localStorage when the wallet resolves or changes.
+  // Reset first so stale state from a previous address never bleeds through.
+  useEffect(() => { setGraduated(false); setDismissed(false) }, [address])
   useEffect(() => {
     if (!address) return
-    if (localStorage.getItem(ONBOARDING_DISMISSED_KEY) === address.toLowerCase()) {
-      setDismissed(true)
-    }
+    const addr = address.toLowerCase()
+    if (localStorage.getItem(ONBOARDING_DISMISSED_KEY) === addr) setDismissed(true)
+    if (localStorage.getItem(`cyclo_grad_${addr}`) === '1')      setGraduated(true)
   }, [address])
+
+  // Graduate permanently once the merchant has both a plan and a subscriber.
+  useEffect(() => {
+    if (!address || !data || graduated) return
+    if (data.plans.length > 0 && data.activeSubscribers > 0) {
+      localStorage.setItem(`cyclo_grad_${address.toLowerCase()}`, '1')
+      setGraduated(true)
+    }
+  }, [address, data, graduated])
 
   function handleDismiss(): void {
     if (!address) return
@@ -127,6 +141,13 @@ export function OverviewPage() {
       </div>
     )
   }
+
+  // Welcome state: shown until the merchant has ever had both a plan and a subscriber.
+  const hasPlans          = (data?.plans.length      ?? 0) > 0
+  const hasSubscribers    = (data?.activeSubscribers  ?? 0) > 0
+  const showWelcome       = !!address && !isLoading && data !== undefined
+                            && !graduated && !(hasPlans && hasSubscribers)
+  const firstActivePlanId = data?.plans[0]?.planId
 
   // Patch Total Revenue with the live socket delta.
   // After the 30-second React Query refetch the fetched total naturally catches up,
@@ -178,100 +199,95 @@ export function OverviewPage() {
         </Link>
       </div>
 
-      {/* Onboarding entry banner — shown only to new merchants with zero plans */}
-      {isConnected && !!address && !isLoading && data !== undefined && data.plans.length === 0 && !dismissed && (
+      {/* Onboarding entry banner — suppressed during welcome state (checklist covers it) */}
+      {!showWelcome && isConnected && !!address && !isLoading && data !== undefined && data.plans.length === 0 && !dismissed && (
         <OnboardingBanner onDismiss={handleDismiss} />
       )}
 
-      {/* At-risk revenue — only shown when past-due subscriptions exist */}
-      {pastDueCount > 0 && (
-        <AtRiskCard count={pastDueCount} totalAmount={pastDueTotalAmount} />
-      )}
+      {showWelcome ? (
+        <WelcomeChecklist
+          address={address!}
+          hasPlans={hasPlans}
+          hasSubscribers={hasSubscribers}
+          firstActivePlanId={firstActivePlanId}
+        />
+      ) : (
+        <>
+          {/* At-risk revenue — only shown when past-due subscriptions exist */}
+          {pastDueCount > 0 && (
+            <AtRiskCard count={pastDueCount} totalAmount={pastDueTotalAmount} />
+          )}
 
-      {/* KPIs */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        {kpis.map(({ label, value, sub, live }) => (
-          <div
-            key={label}
-            className={`bg-white border rounded-2xl p-5 ${live ? 'border-indigo-200 bg-indigo-50/40' : ''}`}
-          >
-            <p className="text-xs font-medium text-gray-400 uppercase tracking-wide">{label}</p>
-            <p className={`text-3xl font-bold mt-2 ${live ? 'text-indigo-600' : 'text-gray-900'}`}>{value}</p>
-            <p className="text-xs text-gray-400 mt-1">{sub}</p>
+          {/* KPIs */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {kpis.map(({ label, value, sub, live }) => (
+              <div key={label}
+                className={`bg-white border rounded-2xl p-5 ${live ? 'border-indigo-200 bg-indigo-50/40' : ''}`}
+              >
+                <p className="text-xs font-medium text-gray-400 uppercase tracking-wide">{label}</p>
+                <p className={`text-3xl font-bold mt-2 ${live ? 'text-indigo-600' : 'text-gray-900'}`}>{value}</p>
+                <p className="text-xs text-gray-400 mt-1">{sub}</p>
+              </div>
+            ))}
           </div>
-        ))}
-      </div>
 
-      <InsightsCard />
+          <InsightsCard />
 
-      {/* Quick actions */}
-      <div>
-        <h2 className="text-sm font-medium text-gray-500 uppercase tracking-wide mb-3">Quick actions</h2>
-        <div className="grid grid-cols-3 gap-3">
-          {[
-            {
-              href:  '/plans',
-              icon:  '☰',
-              label: 'Create a plan',
-              desc:  'Set price, interval, and trial period',
-            },
-            {
-              href:  '/subscribers',
-              icon:  '◎',
-              label: 'Add a subscriber',
-              desc:  'Subscribe a wallet to an existing plan',
-            },
-            {
-              href:  '/webhooks',
-              icon:  '⊹',
-              label: 'Add a webhook',
-              desc:  'Get notified when payments are charged',
-            },
-          ].map(({ href, icon, label, desc }) => (
-            <Link key={href} href={href}>
-              <a className="bg-white border rounded-xl p-4 hover:border-indigo-300 hover:shadow-sm transition-all block">
-                <span className="text-xl">{icon}</span>
-                <p className="font-medium text-gray-900 text-sm mt-2">{label}</p>
-                <p className="text-xs text-gray-400 mt-0.5">{desc}</p>
-              </a>
-            </Link>
-          ))}
-        </div>
-      </div>
-
-      {/* Plan breakdown */}
-      {(data?.plans.length ?? 0) > 0 && (
-        <div>
-          <div className="flex items-center justify-between mb-3">
-            <h2 className="text-sm font-medium text-gray-500 uppercase tracking-wide">Plans</h2>
-            <Link href="/plans">
-              <a className="text-xs text-indigo-600 hover:underline">View all →</a>
-            </Link>
+          {/* Quick actions */}
+          <div>
+            <h2 className="text-sm font-medium text-gray-500 uppercase tracking-wide mb-3">Quick actions</h2>
+            <div className="grid grid-cols-3 gap-3">
+              {[
+                { href: '/plans',       icon: '☰', label: 'Create a plan',   desc: 'Set price, interval, and trial period' },
+                { href: '/subscribers', icon: '◎', label: 'Add a subscriber', desc: 'Subscribe a wallet to an existing plan' },
+                { href: '/webhooks',    icon: '⊹', label: 'Add a webhook',    desc: 'Get notified when payments are charged' },
+              ].map(({ href, icon, label, desc }) => (
+                <Link key={href} href={href}>
+                  <a className="bg-white border rounded-xl p-4 hover:border-indigo-300 hover:shadow-sm transition-all block">
+                    <span className="text-xl">{icon}</span>
+                    <p className="font-medium text-gray-900 text-sm mt-2">{label}</p>
+                    <p className="text-xs text-gray-400 mt-0.5">{desc}</p>
+                  </a>
+                </Link>
+              ))}
+            </div>
           </div>
-          <div className="bg-white border rounded-2xl overflow-hidden">
-            <table className="w-full text-sm">
-              <thead className="bg-gray-50 border-b">
-                <tr>
-                  {['Plan', 'Price', 'Subscribers', 'MRR'].map(h => (
-                    <th key={h} className="text-left px-5 py-3 text-xs font-medium text-gray-400 uppercase tracking-wide">
-                      {h}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody className="divide-y">
-                {data!.plans.map(p => (
-                  <tr key={p.planId.toString()} className="hover:bg-gray-50">
-                    <td className="px-5 py-3 font-medium text-gray-900">Plan {p.planId.toString()}</td>
-                    <td className="px-5 py-3 text-gray-600">{fmt(p.price)}</td>
-                    <td className="px-5 py-3 text-gray-600">{p.activeSubscribers}</td>
-                    <td className="px-5 py-3 font-medium text-gray-900">{fmt(p.mrr)}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
+
+          {/* Plan breakdown */}
+          {(data?.plans.length ?? 0) > 0 && (
+            <div>
+              <div className="flex items-center justify-between mb-3">
+                <h2 className="text-sm font-medium text-gray-500 uppercase tracking-wide">Plans</h2>
+                <Link href="/plans">
+                  <a className="text-xs text-indigo-600 hover:underline">View all →</a>
+                </Link>
+              </div>
+              <div className="bg-white border rounded-2xl overflow-hidden">
+                <table className="w-full text-sm">
+                  <thead className="bg-gray-50 border-b">
+                    <tr>
+                      {['Plan', 'Price', 'Subscribers', 'MRR'].map(h => (
+                        <th key={h} className="text-left px-5 py-3 text-xs font-medium text-gray-400 uppercase tracking-wide">
+                          {h}
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y">
+                    {data!.plans.map(p => (
+                      <tr key={p.planId.toString()} className="hover:bg-gray-50">
+                        <td className="px-5 py-3 font-medium text-gray-900">Plan {p.planId.toString()}</td>
+                        <td className="px-5 py-3 text-gray-600">{fmt(p.price)}</td>
+                        <td className="px-5 py-3 text-gray-600">{p.activeSubscribers}</td>
+                        <td className="px-5 py-3 font-medium text-gray-900">{fmt(p.mrr)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+        </>
       )}
     </div>
   )
