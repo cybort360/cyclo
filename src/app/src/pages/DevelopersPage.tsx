@@ -15,6 +15,7 @@
 import { useState, useEffect } from 'react'
 import { CodeBlock, DocStep, CopyButton } from '../components/DocCodeBlock'
 import { CONTRACT_ADDRESS, USDC_ADDRESS } from '../constants/addresses'
+import { SdkReferenceSection } from './SdkReferenceSection'
 
 // ── Network constants ─────────────────────────────────────────────────────────
 
@@ -281,7 +282,9 @@ export function DevelopersPage() {
                     </DocSection>
 
                     {/* ── Remaining sections (content coming soon) ─────── */}
-                    <DocSection id="sdk-reference"      title="SDK Reference"      />
+                    <DocSection id="sdk-reference" title="SDK Reference">
+                        <SdkReferenceSection />
+                    </DocSection>
                     <DocSection id="contract-reference" title="Contract Reference" />
                     <DocSection id="composability"      title="Composability"      />
                     <DocSection id="webhooks"           title="Webhooks"           />
