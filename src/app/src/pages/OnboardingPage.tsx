@@ -13,7 +13,7 @@
  *   - Step 0 is bypassed immediately if the wallet is already connected on mount
  *   - Wallet connection auto-advances from step 0 to step 1 with a success animation
  */
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, FormEvent } from 'react'
 import { useAccount, useReadContract } from 'wagmi'
 import { Link } from 'wouter'
 import { OnboardingStepper } from '../components/OnboardingStepper'
@@ -22,6 +22,7 @@ import { ConnectButton } from '../components/WalletStatus'
 import { USDC_ABI }      from '../constants/abis'
 import { USDC_ADDRESS }  from '../constants/addresses'
 import { fromUsdcUnits } from '../utils/formatting'
+import { useCycloClient } from '@cyclo/react'
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 
@@ -181,6 +182,129 @@ function FundWalletStepContent({ usdcBalance, onAdvance }: FundWalletStepContent
     )
 }
 
+interface CreatePlanStepContentProps {
+    onSuccess: (planId: bigint) => void
+}
+
+/**
+ * Content panel for step 2: form to create a subscription plan.
+ * Owns all form state internally. Calls cyclo.createPlan() on submit,
+ * then notifies the parent via onSuccess(planId) to persist and advance.
+ */
+function CreatePlanStepContent({ onSuccess }: CreatePlanStepContentProps): JSX.Element {
+    // planName is a UX affordance only — the contract's createPlan has no name
+    // parameter, so this is not submitted. Kept so the form feels complete to merchants.
+    const [planName, setPlanName]   = useState('')
+    const [price,    setPrice]      = useState('')
+    const [interval, setInterval]   = useState('30')
+    const [isPending, setIsPending] = useState(false)
+    const [error,    setError]      = useState<string | null>(null)
+
+    const cyclo = useCycloClient()
+
+    async function handleSubmit(e: FormEvent): Promise<void> {
+        e.preventDefault()
+        setError(null)
+        setIsPending(true)
+        try {
+            // parseFloat is safe here: step="0.01" constrains price to 2 decimal
+            // places, which Math.round(x * 1_000_000) handles without precision loss.
+            const id = await cyclo.createPlan({
+                price:        parseFloat(price),
+                intervalDays: parseInt(interval, 10),
+                trialDays:    0,
+            })
+            onSuccess(id)
+        } catch (err) {
+            setError(err instanceof Error ? err.message : 'Failed to create plan')
+        } finally {
+            setIsPending(false)
+        }
+    }
+
+    // The regex guards the 2-decimal-place assumption in the parseFloat comment above —
+    // step="0.01" is a browser hint only; this ensures it's a code-level invariant.
+    const canSubmit =
+        price !== '' &&
+        /^\d+(\.\d{1,2})?$/.test(price) &&
+        parseFloat(price) >= 0.01 &&
+        !isPending
+
+    return (
+        <form
+            onSubmit={handleSubmit}
+            className="bg-white border border-gray-200 rounded-xl p-6 space-y-4"
+        >
+            <div>
+                <h2 className="text-lg font-semibold text-gray-900">Create your first subscription plan</h2>
+                <p className="text-sm text-gray-500 mt-1">
+                    This defines what you're charging and how often.
+                </p>
+            </div>
+
+            <div className="space-y-3">
+                <div>
+                    <label htmlFor="plan-name" className="block text-sm font-medium text-gray-700 mb-1">
+                        Plan name (optional)
+                    </label>
+                    <input
+                        id="plan-name"
+                        type="text"
+                        value={planName}
+                        onChange={e => setPlanName(e.target.value)}
+                        placeholder="e.g. Pro Monthly"
+                        className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    />
+                </div>
+
+                <div>
+                    <label htmlFor="plan-price" className="block text-sm font-medium text-gray-700 mb-1">
+                        Price (USDC)
+                    </label>
+                    <input
+                        id="plan-price"
+                        type="number"
+                        value={price}
+                        onChange={e => setPrice(e.target.value)}
+                        min="0.01"
+                        step="0.01"
+                        placeholder="10.00"
+                        className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    />
+                </div>
+
+                <div>
+                    <label htmlFor="plan-interval" className="block text-sm font-medium text-gray-700 mb-1">
+                        Billing interval
+                    </label>
+                    <select
+                        id="plan-interval"
+                        value={interval}
+                        onChange={e => setInterval(e.target.value)}
+                        className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    >
+                        <option value="30">Monthly</option>
+                        <option value="7">Weekly</option>
+                        <option value="365">Yearly</option>
+                    </select>
+                </div>
+            </div>
+
+            {error !== null && (
+                <p className="text-sm text-red-600">{error}</p>
+            )}
+
+            <button
+                type="submit"
+                disabled={!canSubmit}
+                className="px-5 py-2.5 bg-indigo-600 text-white rounded-lg text-sm font-semibold hover:bg-indigo-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+            >
+                {isPending ? 'Creating…' : 'Create Plan'}
+            </button>
+        </form>
+    )
+}
+
 // ── Page ──────────────────────────────────────────────────────────────────────
 
 /**
@@ -330,6 +454,17 @@ export function OnboardingPage() {
                     <FundWalletStepContent
                         usdcBalance={usdcBalance}
                         onAdvance={() => goToStep(2)}
+                    />
+                )}
+
+                {/* Step 3 content — create plan card */}
+                {currentStep === 2 && (
+                    <CreatePlanStepContent
+                        onSuccess={(id) => {
+                            setPlanId(id)
+                            persistPlanId(id)
+                            goToStep(3)
+                        }}
                     />
                 )}
 
