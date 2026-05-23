@@ -3,6 +3,7 @@ import { useAccount } from 'wagmi'
 import { Link } from 'wouter'
 import { useAnalytics } from '../hooks/useAnalytics'
 import { useSocket } from '../hooks/useSocket'
+import { useAtRiskRevenue } from '../hooks/useAtRiskRevenue'
 import { InsightsCard } from '../components/InsightsCard'
 
 const fmt = (n: number) =>
@@ -37,10 +38,47 @@ function OnboardingBanner({ onDismiss }: OnboardingBannerProps): JSX.Element {
     )
 }
 
+// ── At-risk revenue card ──────────────────────────────────────────────────────
+
+interface AtRiskCardProps {
+    count:       number
+    totalAmount: number
+}
+
+function AtRiskCard({ count, totalAmount }: AtRiskCardProps): JSX.Element {
+    const label = count === 1 ? 'subscription is' : 'subscriptions are'
+    return (
+        <div className="flex items-start justify-between gap-6 px-5 py-4
+                        bg-amber-50 border border-amber-200 rounded-xl">
+            <div className="space-y-1 min-w-0">
+                <p className="text-[11px] font-semibold text-amber-700 uppercase tracking-wide">
+                    At-risk revenue
+                </p>
+                <p className="text-2xl font-bold text-amber-900 tabular-nums">
+                    {fmt(totalAmount)}
+                </p>
+                <p className="text-sm text-amber-700/80 leading-snug">
+                    {count} {label} in the grace period. The keeper will retry up to
+                    3&nbsp;times before marking {count === 1 ? 'it' : 'them'} as failed.
+                </p>
+            </div>
+            <Link href="/past-due">
+                <a className="shrink-0 self-center text-sm font-medium text-amber-700
+                              hover:text-amber-900 whitespace-nowrap transition-colors">
+                    View past due →
+                </a>
+            </Link>
+        </div>
+    )
+}
+
+// ── Page ──────────────────────────────────────────────────────────────────────
+
 export function OverviewPage() {
   const { isConnected, address } = useAccount()
   const { data, isLoading } = useAnalytics()
   const { onPaymentCharged } = useSocket()
+  const { count: pastDueCount, totalAmount: pastDueTotalAmount } = useAtRiskRevenue()
 
   // Live counters — incremented by socket events, never reset mid-session.
   // These are additive on top of the initial data fetch.
@@ -143,6 +181,11 @@ export function OverviewPage() {
       {/* Onboarding entry banner — shown only to new merchants with zero plans */}
       {isConnected && !!address && !isLoading && data !== undefined && data.plans.length === 0 && !dismissed && (
         <OnboardingBanner onDismiss={handleDismiss} />
+      )}
+
+      {/* At-risk revenue — only shown when past-due subscriptions exist */}
+      {pastDueCount > 0 && (
+        <AtRiskCard count={pastDueCount} totalAmount={pastDueTotalAmount} />
       )}
 
       {/* KPIs */}
