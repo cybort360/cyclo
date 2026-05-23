@@ -8,6 +8,7 @@
 import { useState, useEffect, useRef, memo } from 'react'
 import { usePublicClient } from 'wagmi'
 import { Link } from 'wouter'
+import { COMPOSABILITY_SOLIDITY_CODE } from '../constants/codeSnippets'
 import { SUBSCRIPTION_MANAGER_ABI } from '../constants/abis'
 import { CONTRACT_ADDRESS, DEPLOY_BLOCK } from '../constants/addresses'
 
@@ -427,33 +428,8 @@ function FeeMarginSection({ subscribers }: FeeMarginSectionProps) {
 
 // ── Composability section ─────────────────────────────────────────────────────
 
-/**
- * Static Solidity snippet shown in the "Built for composability" section.
- * Defined at module scope so it is never recreated between renders.
- */
-const SOLIDITY_CODE = `import { ISubscriptionNFT } from "@cyclo/contracts";
-
-contract MyProtocol {
-    ISubscriptionNFT public cyclo;
-    uint256 public planId;
-
-    constructor(address _cyclo, uint256 _planId) {
-        cyclo = ISubscriptionNFT(_cyclo);
-        planId = _planId;
-    }
-
-    modifier onlySubscribers() {
-        require(
-            cyclo.isSubscribed(msg.sender, planId),
-            "Active Cyclo subscription required"
-        );
-        _;
-    }
-
-    function premiumFeature() external onlySubscribers {
-        // gated logic here
-    }
-}`
+/** Alias so the rest of this file can keep its existing local name. */
+const SOLIDITY_CODE = COMPOSABILITY_SOLIDITY_CODE
 
 const HLJS_VERSION    = '11.9.0'
 const HLJS_BASE       = `https://cdnjs.cloudflare.com/ajax/libs/highlight.js/${HLJS_VERSION}`

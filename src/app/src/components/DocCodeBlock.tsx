@@ -12,14 +12,31 @@ import { useState, useEffect, useRef, useCallback } from 'react'
 
 type HljsGlobal = { highlightElement: (el: Element) => void }
 
-const HLJS_VERSION = '11.9.0'
-const HLJS_BASE    = `https://cdnjs.cloudflare.com/ajax/libs/highlight.js/${HLJS_VERSION}`
+const HLJS_VERSION      = '11.9.0'
+const HLJS_BASE         = `https://cdnjs.cloudflare.com/ajax/libs/highlight.js/${HLJS_VERSION}`
+const HLJS_SOLIDITY_SRC = `${HLJS_BASE}/languages/solidity.min.js`
 
 /**
  * Module-level singleton so CSS + JS are injected exactly once regardless of
  * how many CodeBlock instances mount concurrently.
  */
 let hljsPromise: Promise<HljsGlobal> | null = null
+
+/**
+ * Lazy-loads the Solidity language grammar for highlight.js.
+ * No-ops if the script tag is already in the document.
+ * Must be called after loadHljs() resolves (grammar requires the core bundle).
+ */
+function loadSolidityGrammar(): Promise<void> {
+    return new Promise<void>((resolve, reject) => {
+        if (document.querySelector(`script[src="${HLJS_SOLIDITY_SRC}"]`)) { resolve(); return }
+        const script   = document.createElement('script')
+        script.src     = HLJS_SOLIDITY_SRC
+        script.onload  = () => resolve()
+        script.onerror = () => reject(new Error('Solidity grammar CDN request failed'))
+        document.head.appendChild(script)
+    })
+}
 
 /**
  * Loads the highlight.js CSS (github-dark) and JS bundle from cdnjs.
@@ -76,14 +93,20 @@ export function CodeBlock({ code, language = 'typescript' }: CodeBlockProps) {
     useEffect(() => {
         const el = codeRef.current
         if (!el) return
-        loadHljs()
-            .then(hljs => {
-                // Remove the attribute hljs sets on highlighted elements so
-                // it will re-process when the code or language prop changes.
-                el.removeAttribute('data-highlighted')
-                hljs.highlightElement(el)
-            })
-            .catch(() => { /* plain text is still readable — fail silently */ })
+
+        function applyHighlight(hljs: HljsGlobal): void {
+            // Remove the attribute hljs sets on highlighted elements so it
+            // will re-process when the code or language prop changes.
+            el!.removeAttribute('data-highlighted')
+            hljs.highlightElement(el!)
+        }
+
+        // Solidity is not in the hljs core bundle — load its grammar first.
+        const load = language === 'solidity'
+            ? loadHljs().then(hljs => loadSolidityGrammar().then(() => applyHighlight(hljs)))
+            : loadHljs().then(applyHighlight)
+
+        load.catch(() => { /* plain text is still readable — fail silently */ })
     }, [code, language])
 
     const copy = useCallback(() => {

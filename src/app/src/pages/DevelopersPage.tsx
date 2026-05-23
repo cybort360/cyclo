@@ -1,22 +1,17 @@
 /**
  * /developers — in-dashboard developer reference.
- *
  * Two-column layout: sticky anchor nav (left) + section content (right).
- * Scroll-spy via IntersectionObserver highlights the active section as
- * the user scrolls.
- *
- * No API key UI — Cyclo does not use API keys. Authentication is entirely
- * wallet-based and on-chain.
- *
- * The outer dashboard chrome (sidebar + header) is provided by Layout.
- * -mx-8 -mt-8 cancels Layout's px-8 py-8 wrapper so the anchor nav
- * can sit flush-left with its own border treatment.
+ * Scroll-spy via IntersectionObserver highlights the active section.
+ * No API key UI — authentication is wallet-based and on-chain.
+ * -mx-8 -mt-8 cancels Layout's px-8 py-8 padding so the nav sits flush-left.
  */
 import { useState, useEffect } from 'react'
 import { CodeBlock, DocStep, CopyButton } from '../components/DocCodeBlock'
 import { CONTRACT_ADDRESS, USDC_ADDRESS } from '../constants/addresses'
 import { SdkReferenceSection } from './SdkReferenceSection'
 import { ContractReferenceSection } from './ContractReferenceSection'
+import { ComposabilitySection } from './ComposabilitySection'
+import { WebhooksSection } from './WebhooksSection'
 
 // ── Network constants ─────────────────────────────────────────────────────────
 
@@ -289,8 +284,12 @@ export function DevelopersPage() {
                     <DocSection id="contract-reference" title="Contract Reference">
                         <ContractReferenceSection />
                     </DocSection>
-                    <DocSection id="composability"      title="Composability"      />
-                    <DocSection id="webhooks"           title="Webhooks"           />
+                    <DocSection id="composability" title="Composability">
+                        <ComposabilitySection />
+                    </DocSection>
+                    <DocSection id="webhooks" title="Webhooks">
+                        <WebhooksSection />
+                    </DocSection>
 
                 </div>
             </div>
