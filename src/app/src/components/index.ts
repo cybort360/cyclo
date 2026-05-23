@@ -1,0 +1,26 @@
+/**
+ * Barrel export for all shared components.
+ * Import from here rather than reaching into individual files:
+ *   import { EmptyState, TabBar } from '../components'
+ */
+export { AIChatPanel }           from './AIChatPanel'
+export { AnalyticsTab }          from './AnalyticsTab'
+export { CreatePlanForm }        from './CreatePlanForm'
+export { DocCodeBlock, CopyButton } from './DocCodeBlock'
+export { EmptyState }            from './EmptyState'
+export type { EmptyStateProps, EmptyStateAction } from './EmptyState'
+export { InsightsCard }          from './InsightsCard'
+export { Layout }                from './Layout'
+export { OnboardingStepper }     from './OnboardingStepper'
+export { PastDueDrawer }         from './PastDueDrawer'
+export type { PastDueDrawerProps } from './PastDueDrawer'
+export { PastDueTable }          from './PastDueTable'
+export type { PastDueTableProps } from './PastDueTable'
+export { PlanTable }             from './PlanTable'
+export { ProfileSetupModal }     from './ProfileSetupModal'
+export { SettlementsTable }      from './SettlementsTable'
+export { SocketStatusIndicator } from './SocketStatusIndicator'
+export { SubscribeForm }         from './SubscribeForm'
+export { TabBar }                from './TabBar'
+export { WalletStatus }          from './WalletStatus'
+export { WebhooksTab }           from './WebhooksTab'
