@@ -4,6 +4,19 @@
  */
 import type { PlanEvent } from '../hooks/useSubscriptionManager';
 import { fromUsdcUnits, intervalToLabel } from '../utils/formatting';
+import { EmptyState } from './EmptyState';
+
+const PLANS_EMPTY_ICON = (
+    <div className="w-11 h-11 rounded-full bg-gray-100 flex items-center justify-center">
+        <svg className="w-5 h-5 text-gray-400" fill="none" viewBox="0 0 24 24"
+             stroke="currentColor" strokeWidth={1.75}>
+            <rect x="3" y="3" width="7" height="7" rx="1" />
+            <rect x="14" y="3" width="7" height="7" rx="1" />
+            <rect x="3" y="14" width="7" height="7" rx="1" />
+            <rect x="14" y="14" width="7" height="7" rx="1" />
+        </svg>
+    </div>
+);
 
 interface PlanTableProps {
     plans:         PlanEvent[];
@@ -14,6 +27,8 @@ interface PlanTableProps {
     planTrials:    Map<string, bigint>;
     error?:        string;
     onDeactivate:  (planId: bigint) => Promise<void>;
+    /** Called when the empty-state CTA is clicked; opens the create-plan form. */
+    onCreatePlan?: () => void;
 }
 
 const thStyle: React.CSSProperties = { textAlign: 'left', padding: '10px 12px', borderBottom: '1px solid #e5e4e7', fontWeight: 600, fontSize: '13px', color: '#6b6375' };
@@ -25,10 +40,17 @@ function formatTrial(seconds: bigint | undefined): string {
     return Number.isInteger(days) ? `${days}d` : `${Number(seconds)}s`;
 }
 
-export function PlanTable({ plans, isLoading, isPending, pendingPlanId, planStatuses, planTrials, error, onDeactivate }: PlanTableProps) {
+export function PlanTable({ plans, isLoading, isPending, pendingPlanId, planStatuses, planTrials, error, onDeactivate, onCreatePlan }: PlanTableProps) {
     if (isLoading) return <p style={{ color: '#6b6375' }}>Loading plans…</p>;
     if (error)     return <p style={{ color: '#dc2626' }}>Failed to load plans: {error}</p>;
-    if (plans.length === 0) return <p style={{ color: '#6b6375' }}>No plans created yet.</p>;
+    if (plans.length === 0) return (
+        <EmptyState
+            icon={PLANS_EMPTY_ICON}
+            heading="No plans yet"
+            subtext="Create your first subscription plan to start accepting recurring payments."
+            action={onCreatePlan ? { label: 'Create a plan', onClick: onCreatePlan } : undefined}
+        />
+    );
 
     return (
         <div style={{ overflowX: 'auto' }}>
