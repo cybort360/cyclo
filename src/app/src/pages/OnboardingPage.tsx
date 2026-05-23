@@ -106,25 +106,16 @@ function ConnectWalletStepContent() {
 }
 
 interface FundWalletStepContentProps {
-    address:   `0x${string}`
-    onAdvance: () => void
+    usdcBalance: bigint | undefined
+    onAdvance:   () => void
 }
 
 /**
- * Content panel for step 1: polls USDC balance so the user can see funds
- * arrive without refreshing, and gates advancement on any nonzero balance
- * rather than a minimum — testnet amounts are unpredictable and any balance
- * is sufficient to proceed.
+ * Content panel for step 1: displays the live USDC balance (polled by the
+ * parent) and gates advancement on any nonzero balance rather than a minimum —
+ * testnet amounts are unpredictable and any balance is sufficient to proceed.
  */
-function FundWalletStepContent({ address, onAdvance }: FundWalletStepContentProps): JSX.Element {
-    const { data: usdcBalance } = useReadContract({
-        address:      USDC_ADDRESS as `0x${string}`,
-        abi:          USDC_ABI,
-        functionName: 'balanceOf',
-        args:         [address],
-        query:        { refetchInterval: BALANCE_POLL_INTERVAL_MS },
-    })
-
+function FundWalletStepContent({ usdcBalance, onAdvance }: FundWalletStepContentProps): JSX.Element {
     const balanceDisplay = usdcBalance !== undefined
         ? `${fromUsdcUnits(usdcBalance).toFixed(6)} USDC`
         : '—'
@@ -172,6 +163,20 @@ export function OnboardingPage() {
     const { address, isConnected } = useAccount()
     const [currentStep, setCurrentStep]   = useState<number>(readPersistedStep)
     const [flashingStep, setFlashingStep] = useState<number | null>(null)
+
+    // Polled only while the user is on step 1 — avoids unnecessary RPC traffic
+    // on every other step. Lifted to page level so canGoNext can gate on it,
+    // preventing the nav-row Next button from bypassing the balance requirement.
+    const { data: usdcBalance } = useReadContract({
+        address:      USDC_ADDRESS as `0x${string}`,
+        abi:          USDC_ABI,
+        functionName: 'balanceOf',
+        args:         address ? [address] : undefined,
+        query: {
+            enabled:         currentStep === 1 && !!address,
+            refetchInterval: BALANCE_POLL_INTERVAL_MS,
+        },
+    })
 
     // lastAddressRef: detects wallet address changes to trigger reset.
     // Starts undefined so the initial mount never fires the reset logic.
@@ -242,9 +247,13 @@ export function OnboardingPage() {
         goToStep(currentStep - 1)
     }
 
-    // Next is disabled on the last step, and on step 0 when not connected
-    // (wallet connection is required to progress past step 1).
-    const canGoNext = currentStep < STEP_COUNT - 1 && (currentStep > 0 || isConnected)
+    // Next is disabled on the last step, on step 0 when not connected, and on
+    // step 1 when the USDC balance is zero — mirrors the card's continue button
+    // so the nav row cannot bypass the funding requirement.
+    const canGoNext =
+        currentStep < STEP_COUNT - 1 &&
+        (currentStep > 0 || isConnected) &&
+        (currentStep !== 1 || (usdcBalance !== undefined && usdcBalance > 0n))
     const canGoBack = currentStep > 0
 
     return (
@@ -278,10 +287,14 @@ export function OnboardingPage() {
                 {/* Step 1 content — wallet connect card */}
                 {currentStep === 0 && <ConnectWalletStepContent />}
 
-                {/* Step 2 content — fund wallet card */}
+                {/* Step 2 content — fund wallet card.
+                    Falls back to the connect card for the rare render cycle where
+                    currentStep has advanced to 1 but address hasn't resolved yet
+                    (wagmi can set isConnected and address in separate renders). */}
+                {currentStep === 1 && !address && <ConnectWalletStepContent />}
                 {currentStep === 1 && address && (
                     <FundWalletStepContent
-                        address={address}
+                        usdcBalance={usdcBalance}
                         onAdvance={() => goToStep(2)}
                     />
                 )}
