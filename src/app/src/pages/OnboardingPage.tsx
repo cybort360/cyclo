@@ -10,13 +10,15 @@
  * State:
  *   - currentStep persists to localStorage under 'cyclo_onboarding_step'
  *   - Resets to step 0 when the wallet address changes or disconnects
- *   - Step 0 Next button is gated on wallet connection
+ *   - Step 0 is bypassed immediately if the wallet is already connected on mount
+ *   - Wallet connection auto-advances from step 0 to step 1 with a success animation
  */
 import { useState, useEffect, useRef } from 'react'
 import { useAccount } from 'wagmi'
 import { Link } from 'wouter'
 import { OnboardingStepper } from '../components/OnboardingStepper'
 import type { OnboardingStep } from '../components/OnboardingStepper'
+import { ConnectButton } from '../components/WalletStatus'
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 
@@ -74,6 +76,26 @@ function clearPersistedStep(): void {
     }
 }
 
+// ── Step content ──────────────────────────────────────────────────────────────
+
+/**
+ * Content panel for step 0: prompts the user to connect their Web3 wallet.
+ * Renders the shared ConnectButton — connection triggers auto-advance in the parent.
+ */
+function Step1Content() {
+    return (
+        <div className="bg-white border border-gray-200 rounded-xl p-6 space-y-4">
+            <div>
+                <h2 className="text-lg font-semibold text-gray-900">Connect your wallet</h2>
+                <p className="text-sm text-gray-500 mt-1">
+                    You'll need a Web3 wallet to create plans and receive payments.
+                </p>
+            </div>
+            <ConnectButton />
+        </div>
+    )
+}
+
 // ── Page ──────────────────────────────────────────────────────────────────────
 
 /**
@@ -83,12 +105,16 @@ function clearPersistedStep(): void {
  */
 export function OnboardingPage() {
     const { address, isConnected } = useAccount()
-    const [currentStep, setCurrentStep] = useState<number>(readPersistedStep)
+    const [currentStep, setCurrentStep]   = useState<number>(readPersistedStep)
+    const [flashingStep, setFlashingStep] = useState<number | null>(null)
 
-    // lastAddressRef records the address seen in the previous effect run.
-    // Starts as undefined so the initial mount (address going from undefined
-    // to a value) does NOT trigger a reset.
+    // lastAddressRef: detects wallet address changes to trigger reset.
+    // Starts undefined so the initial mount never fires the reset logic.
     const lastAddressRef = useRef<string | undefined>(undefined)
+
+    // wasConnectedAtMountRef: distinguishes "already connected on arrival" from
+    // "just connected during this session" for the auto-advance animation logic.
+    const wasConnectedAtMountRef = useRef(isConnected)
 
     // Reset to step 0 when the wallet address changes or when isConnected goes
     // false. isConnected is the explicit disconnect signal — address alone is
@@ -108,6 +134,30 @@ export function OnboardingPage() {
 
         lastAddressRef.current = isConnected ? address : undefined
     }, [address, isConnected])
+
+    // Auto-advance from step 0 when the wallet connects.
+    // If already connected on mount, skip to step 1 immediately without animation.
+    // Otherwise show a 600ms green success flash on the step 0 indicator first.
+    useEffect(() => {
+        if (!isConnected || currentStep !== 0) return
+
+        if (wasConnectedAtMountRef.current) {
+            // Arrived already connected — advance without animation.
+            wasConnectedAtMountRef.current = false
+            setCurrentStep(1)
+            persistStep(1)
+            return
+        }
+
+        // Wallet just connected — flash green then advance.
+        setFlashingStep(0)
+        const timer = setTimeout(() => {
+            setFlashingStep(null)
+            setCurrentStep(1)
+            persistStep(1)
+        }, 600)
+        return () => clearTimeout(timer)
+    }, [isConnected, currentStep])
 
     function goToStep(step: number): void {
         // Enforce the wallet-connection gate: step 0 → 1 requires an active connection.
@@ -156,25 +206,31 @@ export function OnboardingPage() {
                     steps={ONBOARDING_STEPS}
                     currentStep={currentStep}
                     onStepClick={goToStep}
+                    flashingStep={flashingStep}
                 />
 
-                {/* Navigation */}
-                <div className="flex gap-3">
-                    <button
-                        onClick={handleBack}
-                        disabled={!canGoBack}
-                        className="px-5 py-2.5 border border-gray-200 text-gray-600 rounded-lg text-sm font-semibold hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-                    >
-                        ← Back
-                    </button>
-                    <button
-                        onClick={handleNext}
-                        disabled={!canGoNext}
-                        className="px-5 py-2.5 bg-indigo-600 text-white rounded-lg text-sm font-semibold hover:bg-indigo-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-                    >
-                        Next →
-                    </button>
-                </div>
+                {/* Step 1 content — wallet connect card */}
+                {currentStep === 0 && <Step1Content />}
+
+                {/* Navigation — hidden on step 0; connection itself advances the step */}
+                {currentStep > 0 && (
+                    <div className="flex gap-3">
+                        <button
+                            onClick={handleBack}
+                            disabled={!canGoBack}
+                            className="px-5 py-2.5 border border-gray-200 text-gray-600 rounded-lg text-sm font-semibold hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                        >
+                            ← Back
+                        </button>
+                        <button
+                            onClick={handleNext}
+                            disabled={!canGoNext}
+                            className="px-5 py-2.5 bg-indigo-600 text-white rounded-lg text-sm font-semibold hover:bg-indigo-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                        >
+                            Next →
+                        </button>
+                    </div>
+                )}
 
                 {/* Skip */}
                 <Link href="/" className="text-sm text-gray-400 hover:text-gray-600">
