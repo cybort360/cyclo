@@ -267,64 +267,90 @@ function Pricing() {
             id="pricing"
             className="py-24 px-6 bg-gray-50 border-t border-gray-100"
         >
-            <div className="max-w-6xl mx-auto space-y-12">
-                <div className="text-center max-w-2xl mx-auto">
-                    <h2 className="text-3xl font-bold text-gray-900">Simple, transparent pricing</h2>
-                    <p className="text-gray-500 mt-3 text-lg leading-relaxed">
-                        {/* Pricing intro — TODO */}
+            <div className="max-w-3xl mx-auto space-y-10">
+
+                {/* Heading */}
+                <div className="text-center">
+                    <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 tracking-tight">
+                        Simple, transparent pricing
+                    </h2>
+                    <p className="mt-4 text-lg text-gray-600 leading-relaxed">
+                        3% protocol fee on every settled payment. No monthly charges,
+                        no setup fees, no hidden costs.
                     </p>
                 </div>
 
-                {/* Pricing card — populate with real copy */}
-                <div className="max-w-sm mx-auto bg-white border border-gray-100 rounded-2xl p-8 text-center space-y-4 shadow-sm">
-                    <p className="text-xs font-bold text-indigo-500 uppercase tracking-widest">Protocol fee</p>
-                    <p className="text-5xl font-bold text-gray-900">3%</p>
-                    <p className="text-sm text-gray-500 leading-relaxed">
-                        {/* Fee description — TODO */}
-                        Description placeholder.
+                {/* Keeper cost callout */}
+                <div className="bg-white border border-gray-200 rounded-2xl px-8 py-6 space-y-3">
+                    <p className="text-sm text-gray-700 leading-relaxed">
+                        Keeper costs on Arc run at{' '}
+                        <span className="font-semibold text-gray-900">~$0.001 per charge</span>.
+                        At 10,000 subscribers, that's{' '}
+                        <span className="font-semibold text-gray-900">$10/month</span>{' '}
+                        in operational costs.
                     </p>
-                    <Link href="/dashboard">
-                        <a className="block w-full mt-2 px-5 py-3 bg-indigo-600 text-white text-sm font-semibold rounded-xl hover:bg-indigo-700 transition-colors">
-                            Get started →
-                        </a>
-                    </Link>
+                    <a
+                        href="/arc-economics"
+                        className="inline-block text-sm font-medium text-indigo-600 hover:text-indigo-700 transition-colors"
+                    >
+                        See the full economics breakdown →
+                    </a>
                 </div>
             </div>
         </section>
     )
 }
 
-function CtaFooter() {
-    return (
-        <footer
-            id="cta"
-            className="py-24 px-6 bg-indigo-600 border-t border-indigo-700"
-        >
-            <div className="max-w-3xl mx-auto text-center space-y-6">
-                <h2 className="text-3xl font-bold text-white">
-                    {/* CTA headline — TODO */}
-                    Ready to get started?
-                </h2>
-                <p className="text-indigo-200 text-lg leading-relaxed">
-                    {/* CTA body — TODO */}
-                    Description placeholder.
-                </p>
-                <Link href="/dashboard">
-                    <a className="inline-block px-8 py-3.5 bg-white text-indigo-600 text-sm font-bold rounded-xl hover:bg-indigo-50 transition-colors shadow-sm">
-                        Launch App →
-                    </a>
-                </Link>
-            </div>
+// ── CTA banner ────────────────────────────────────────────────────────────────
 
-            {/* Bottom strip */}
-            <div className="max-w-6xl mx-auto mt-20 pt-8 border-t border-indigo-500 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-indigo-300">
-                <span>Cyclo · Arc Testnet · Chain ID 5042002</span>
-                <div className="flex items-center gap-5">
-                    <a href="/stats" className="hover:text-white transition-colors">Protocol stats</a>
-                    <a href="/docs"  className="hover:text-white transition-colors">Docs</a>
-                    <a href="/arc-economics" className="hover:text-white transition-colors">Arc economics</a>
-                    <a href="/portal" className="hover:text-white transition-colors">Subscriber portal</a>
+function CtaBanner() {
+    return (
+        <section
+            id="cta"
+            className="py-28 px-6 bg-gray-900"
+        >
+            <div className="max-w-2xl mx-auto text-center space-y-6">
+                <h2 className="text-4xl sm:text-5xl font-bold text-white tracking-tight leading-[1.1]">
+                    Ready to build?
+                </h2>
+                <p className="text-lg text-gray-400 leading-relaxed">
+                    Set up your first plan in under 90 seconds.
+                </p>
+                <div className="pt-2 space-y-4">
+                    <Link href="/onboarding">
+                        <a className="inline-block px-8 py-3.5 bg-indigo-500 text-white text-sm font-bold rounded-xl hover:bg-indigo-400 active:bg-indigo-600 transition-colors shadow-lg shadow-indigo-900/40">
+                            Get started
+                        </a>
+                    </Link>
+                    <p className="text-xs text-gray-500 select-none">
+                        Arc testnet · No real funds required
+                    </p>
                 </div>
+            </div>
+        </section>
+    )
+}
+
+// ── Page footer ───────────────────────────────────────────────────────────────
+
+function PageFooter() {
+    return (
+        <footer className="bg-white border-t border-gray-100">
+            <div className="max-w-6xl mx-auto px-6 py-8 flex flex-col sm:flex-row items-center justify-between gap-4">
+
+                {/* Built on Arc badge */}
+                <span className="inline-flex items-center gap-1.5 text-xs font-medium text-gray-400 select-none">
+                    <span className="w-1.5 h-1.5 rounded-full bg-indigo-400" />
+                    Built on Arc
+                </span>
+
+                {/* Nav links */}
+                <nav className="flex items-center gap-6 text-xs text-gray-400">
+                    <a href="/docs"          className="hover:text-gray-700 transition-colors">Docs</a>
+                    <a href="/arc-economics" className="hover:text-gray-700 transition-colors">Arc economics</a>
+                    <a href="/stats"         className="hover:text-gray-700 transition-colors">Protocol stats</a>
+                    <a href="/portal"        className="hover:text-gray-700 transition-colors">Subscriber portal</a>
+                </nav>
             </div>
         </footer>
     )
@@ -340,7 +366,8 @@ export function LandingPage() {
             <HowItWorks />
             <ProtocolStats />
             <Pricing />
-            <CtaFooter />
+            <CtaBanner />
+            <PageFooter />
         </div>
     )
 }
