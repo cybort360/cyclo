@@ -26,6 +26,7 @@ import { fromUsdcUnits } from '../utils/formatting'
 // ── Constants ─────────────────────────────────────────────────────────────────
 
 const STORAGE_KEY = 'cyclo_onboarding_step'
+const PLAN_ID_KEY = 'cyclo_onboarding_planId'
 
 const ONBOARDING_STEPS: OnboardingStep[] = [
     {
@@ -80,6 +81,34 @@ function persistStep(step: number): void {
 function clearPersistedStep(): void {
     try {
         localStorage.removeItem(STORAGE_KEY)
+    } catch {
+        // ignore
+    }
+}
+
+function readPersistedPlanId(): bigint | null {
+    try {
+        const raw = localStorage.getItem(PLAN_ID_KEY)
+        if (raw === null) return null
+        const parsed = BigInt(raw)
+        if (parsed < 0n) return null
+        return parsed
+    } catch {
+        return null
+    }
+}
+
+function persistPlanId(id: bigint): void {
+    try {
+        localStorage.setItem(PLAN_ID_KEY, String(id))
+    } catch {
+        // localStorage unavailable — degrade silently, do not crash
+    }
+}
+
+function clearPersistedPlanId(): void {
+    try {
+        localStorage.removeItem(PLAN_ID_KEY)
     } catch {
         // ignore
     }
@@ -163,6 +192,7 @@ export function OnboardingPage() {
     const { address, isConnected } = useAccount()
     const [currentStep, setCurrentStep]   = useState<number>(readPersistedStep)
     const [flashingStep, setFlashingStep] = useState<number | null>(null)
+    const [planId, setPlanId]             = useState<bigint | null>(readPersistedPlanId)
 
     // Polled only while the user is on step 1 — avoids unnecessary RPC traffic
     // on every other step. Lifted to page level so canGoNext can gate on it,
@@ -200,6 +230,8 @@ export function OnboardingPage() {
         if (addressChanged || disconnected) {
             setCurrentStep(0)
             clearPersistedStep()
+            setPlanId(null)
+            clearPersistedPlanId()
         }
 
         lastAddressRef.current = isConnected ? address : undefined
@@ -247,13 +279,15 @@ export function OnboardingPage() {
         goToStep(currentStep - 1)
     }
 
-    // Next is disabled on the last step, on step 0 when not connected, and on
-    // step 1 when the USDC balance is zero — mirrors the card's continue button
-    // so the nav row cannot bypass the funding requirement.
+    // Next is disabled on the last step, on step 0 when not connected, on
+    // step 1 when the USDC balance is zero, and on step 2 before a plan is
+    // created — mirrors each card's own advance mechanism so the nav row
+    // cannot bypass any step's requirement.
     const canGoNext =
         currentStep < STEP_COUNT - 1 &&
         (currentStep > 0 || isConnected) &&
-        (currentStep !== 1 || (usdcBalance !== undefined && usdcBalance > 0n))
+        (currentStep !== 1 || (usdcBalance !== undefined && usdcBalance > 0n)) &&
+        (currentStep !== 2 || planId !== null)
     const canGoBack = currentStep > 0
 
     return (
