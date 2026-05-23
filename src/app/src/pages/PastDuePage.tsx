@@ -67,9 +67,10 @@ function EmptyState() {
                     <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                 </svg>
             </div>
-            <p className="text-sm font-semibold text-gray-900">No past-due subscriptions</p>
+            <p className="text-sm font-semibold text-gray-900">All caught up</p>
             <p className="text-sm text-gray-400 mt-1 max-w-xs">
-                All subscribers are current — no pending charge retries in the grace period.
+                No subscriptions are currently in the grace period.
+                The keeper will notify you here when a charge fails.
             </p>
         </div>
     )
