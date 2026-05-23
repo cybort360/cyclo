@@ -401,6 +401,33 @@ function ShareLinkStepContent({ planId }: ShareLinkStepContentProps): JSX.Elemen
     )
 }
 
+interface ResumeBannerProps {
+    onResume: () => void
+}
+
+/**
+ * Banner shown at the top of the onboarding wizard when both
+ * 'cyclo_onboarding_step' and 'cyclo_onboarding_planId' are present in
+ * localStorage — indicating the user created a plan but did not finish
+ * the onboarding flow.
+ */
+function ResumeBanner({ onResume }: ResumeBannerProps): JSX.Element {
+    return (
+        <div className="flex items-center gap-3 px-5 py-3 bg-green-50 border border-green-200 rounded-xl text-sm">
+            <span className="text-green-500">✓</span>
+            <span className="flex-1 text-gray-700">
+                You're almost done.{' '}
+                <button
+                    onClick={onResume}
+                    className="text-green-700 font-medium hover:underline"
+                >
+                    Resume where you left off →
+                </button>
+            </span>
+        </div>
+    )
+}
+
 // ── Page ──────────────────────────────────────────────────────────────────────
 
 /**
@@ -413,6 +440,14 @@ export function OnboardingPage() {
     const [currentStep, setCurrentStep]   = useState<number>(readPersistedStep)
     const [flashingStep, setFlashingStep] = useState<number | null>(null)
     const [planId, setPlanId]             = useState<bigint | null>(readPersistedPlanId)
+    // Evaluated once on mount — lazy initialiser avoids a one-frame flicker.
+    // Both keys being present means the user created a plan but did not click
+    // "Go to Dashboard" (which clears both keys).
+    const [showResume]                    = useState(
+        () =>
+            localStorage.getItem(STORAGE_KEY)  !== null &&
+            localStorage.getItem(PLAN_ID_KEY) !== null
+    )
 
     // Polled only while the user is on step 1 — avoids unnecessary RPC traffic
     // on every other step. Lifted to page level so canGoNext can gate on it,
@@ -531,6 +566,11 @@ export function OnboardingPage() {
                         Follow the steps below to set up your first subscription plan.
                     </p>
                 </div>
+
+                {/* Resume banner — shown when prior onboarding progress is detected */}
+                {showResume && (
+                    <ResumeBanner onResume={() => goToStep(3)} />
+                )}
 
                 {/* Stepper */}
                 <OnboardingStepper
