@@ -1,21 +1,20 @@
 /**
- * Merchant view of subscribers across all plans.
+ * Merchant view of all wallets subscribed to their plans.
  *
- * Counts unique subscriber addresses via SubscriptionCreated event logs.
- * Shows an empty state while that count is zero; once subscribers exist,
- * falls through to the SubscribeForm for plan lookup and management.
+ * Data comes from useSubscriberList — on-chain SubscriptionCreated /
+ * SubscriptionCancelled events cross-referenced with the keeper's past-due
+ * API. The tabbed SubscriberTable handles per-status filtering.
+ *
+ * Shows a full-page EmptyState while the subscriber list is zero; once
+ * any subscriptions exist the tabbed table is shown instead.
  */
-import { useState, useEffect } from 'react'
-import { usePublicClient } from 'wagmi'
+import { useState } from 'react'
 import { useSubscriptionManager } from '../hooks/useSubscriptionManager'
+import { useSubscriberList } from '../hooks/useSubscriberList'
 import { EmptyState } from '../components/EmptyState'
-import { SubscribeForm } from '../components/SubscribeForm'
-import { SUBSCRIPTION_MANAGER_ABI } from '../constants/abis'
-import { CONTRACT_ADDRESS, DEPLOY_BLOCK } from '../constants/addresses'
+import { SubscriberTable } from '../components/SubscriberTable'
 
-type Address = `0x${string}`
-
-const SUBSCRIBERS_EMPTY_ICON = (
+const EMPTY_ICON = (
     <div className="w-11 h-11 rounded-full bg-gray-100 flex items-center justify-center">
         <svg className="w-5 h-5 text-gray-400" fill="none" viewBox="0 0 24 24"
              stroke="currentColor" strokeWidth={1.75}>
@@ -30,63 +29,12 @@ const SUBSCRIBERS_EMPTY_ICON = (
     </div>
 )
 
-/**
- * Counts unique subscriber addresses across the given plan IDs by reading
- * SubscriptionCreated event logs. Returns { count, isLoading }.
- *
- * One RPC call (no per-plan filter) — client-side filtered by merchant plan set.
- * Errors are swallowed: count stays 0, empty state renders, no crash.
- */
-function useSubscriberCount(
-    planIdKey: string,   // stable string derived from plan IDs; triggers re-fetch on change
-    enabled: boolean,    // false while plans are still loading
-): { count: number; isLoading: boolean } {
-    const client = usePublicClient()
-    const [count,     setCount]     = useState(0)
-    const [isLoading, setIsLoading] = useState(true)
-
-    useEffect(() => {
-        if (!enabled) { setIsLoading(false); return }
-        if (!client)  return
-
-        const planIds = planIdKey.split(',').filter(Boolean)
-        if (planIds.length === 0) { setCount(0); setIsLoading(false); return }
-
-        const planIdSet = new Set(planIds)
-        setIsLoading(true)
-
-        client.getContractEvents({
-            address:   CONTRACT_ADDRESS as Address,
-            abi:       SUBSCRIPTION_MANAGER_ABI,
-            eventName: 'SubscriptionCreated',
-            fromBlock: DEPLOY_BLOCK,
-            toBlock:   'latest',
-        })
-            .then(logs => {
-                const subscribers = new Set(
-                    logs
-                        .filter(log => planIdSet.has((log.args.planId as bigint).toString()))
-                        .map(log => (log.args.subscriber as string).toLowerCase())
-                )
-                setCount(subscribers.size)
-            })
-            .catch(() => { /* fail silently — empty state remains */ })
-            .finally(() => setIsLoading(false))
-    }, [client, enabled, planIdKey])
-
-    return { count, isLoading }
-}
-
 export function SubscribersPage() {
-    const { plans, planStatuses, isLoadingPlans } = useSubscriptionManager()
+    const { plans, planStatuses } = useSubscriptionManager()
+    const { data: rows = [], isLoading } = useSubscriberList()
     const [copied, setCopied] = useState(false)
 
-    // Stable string key avoids reference-equality churn from the derived array.
-    const planIdKey = plans.map(p => p.planId.toString()).join(',')
-    const { count: subscriberCount, isLoading: isLoadingSubscribers } =
-        useSubscriberCount(planIdKey, !isLoadingPlans)
-
-    // First plan whose active status is not explicitly false (undefined = not yet read = optimistic true).
+    // First plan not explicitly deactivated — used to build the checkout link.
     const firstActivePlan = plans.find(p => planStatuses.get(p.planId.toString()) !== false)
     const hasActivePlan   = firstActivePlan !== undefined
 
@@ -102,28 +50,29 @@ export function SubscribersPage() {
         ? { label: copied ? 'Copied!' : 'Copy checkout link', onClick: copyCheckoutLink }
         : { label: 'Create a plan first', href: '/plans' }
 
-    const isLoading     = isLoadingPlans || isLoadingSubscribers
-    const showEmptyState = !isLoading && subscriberCount === 0
-
     return (
         <div className="max-w-4xl space-y-6">
             <div>
                 <h1 className="text-2xl font-bold text-gray-900">Subscribers</h1>
                 <p className="text-sm text-gray-500 mt-1">
-                    Enter a plan ID to view its details and subscribe. Your wallet must have a USDC
-                    balance to cover the plan price — approval is handled automatically.
+                    All wallets subscribed to your plans, with live status from the keeper.
                 </p>
             </div>
 
-            {showEmptyState ? (
+            {isLoading ? (
+                <div className="bg-white rounded-xl border border-gray-100 px-8 py-12
+                                text-sm text-gray-400 text-center">
+                    Loading subscribers…
+                </div>
+            ) : rows.length === 0 ? (
                 <EmptyState
-                    icon={SUBSCRIBERS_EMPTY_ICON}
+                    icon={EMPTY_ICON}
                     heading="No subscribers yet"
                     subtext="Share your checkout link to start onboarding subscribers. Once someone subscribes, they'll appear here."
                     action={emptyAction}
                 />
             ) : (
-                <SubscribeForm />
+                <SubscriberTable rows={rows} />
             )}
         </div>
     )
