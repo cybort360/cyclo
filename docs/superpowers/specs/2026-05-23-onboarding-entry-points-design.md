@@ -68,12 +68,11 @@ function handleDismiss(): void {
 
 ```ts
 interface OnboardingBannerProps {
-    address:   `0x${string}` | undefined
     onDismiss: () => void
 }
 ```
 
-`OnboardingBanner` is a pure presentational component; the parent (`OverviewPage`) owns state and the dismiss handler.
+`OnboardingBanner` is a pure presentational component; the parent (`OverviewPage`) owns state and the dismiss handler. `address` is not passed as a prop — the parent reads it from `useAccount()` and uses it only in `handleDismiss`.
 
 ### Layout
 
