@@ -1,4 +1,19 @@
 /**
+ * Returns a compact relative time string for a past ISO timestamp.
+ * Examples: "just now", "5m ago", "2h ago", "3d ago"
+ */
+export function relativeTime(isoStr: string): string {
+    const diffMs = Date.now() - new Date(isoStr).getTime()
+    const mins   = Math.floor(diffMs / 60_000)
+    const hours  = Math.floor(diffMs / 3_600_000)
+    const days   = Math.floor(diffMs / 86_400_000)
+    if (mins  <  1) return 'just now'
+    if (hours <  1) return `${mins}m ago`
+    if (days  <  1) return `${hours}h ago`
+    return `${days}d ago`
+}
+
+/**
  * The three standard billing intervals Cyclo supports, in seconds.
  * These constants are the canonical source of truth for the interval presets used
  * in the create-plan form toggle and the display helpers throughout the UI.

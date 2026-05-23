@@ -8,6 +8,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useAccount } from 'wagmi'
 import { PastDueTable } from '../components/PastDueTable'
+import { PastDueDrawer } from '../components/PastDueDrawer'
 
 // ── API shape ─────────────────────────────────────────────────────────────────
 
@@ -132,8 +133,10 @@ function usePastDue(): FetchState {
 
 export function PastDuePage() {
     const { items, isLoading, refreshing, error, refresh } = usePastDue()
+    const [selectedItem, setSelectedItem] = useState<PastDueItem | null>(null)
 
     return (
+        <>
         <div className="max-w-4xl space-y-6">
 
             {/* Header */}
@@ -170,9 +173,15 @@ export function PastDuePage() {
 
             {/* Table */}
             {!isLoading && !error && items.length > 0 && (
-                <PastDueTable items={items} />
+                <PastDueTable items={items} onSelect={setSelectedItem} />
             )}
 
         </div>
+
+        {/* Detail drawer — rendered outside the max-w container so it overlays the full viewport */}
+        {selectedItem && (
+            <PastDueDrawer item={selectedItem} onClose={() => setSelectedItem(null)} />
+        )}
+        </>
     )
 }

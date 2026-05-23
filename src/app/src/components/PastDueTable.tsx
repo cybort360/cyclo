@@ -10,23 +10,9 @@
 import { useState } from 'react'
 import { useEnsName } from 'wagmi'
 import type { PastDueItem } from '../pages/PastDuePage'
+import { relativeTime } from '../utils/formatting'
 
 // ── Time helpers ───────────────────────────────────────────────────────────────
-
-/**
- * Returns a compact relative time string for a past ISO timestamp.
- * Examples: "just now", "5m ago", "2h ago", "3d ago"
- */
-function relativeTime(isoStr: string): string {
-    const diffMs = Date.now() - new Date(isoStr).getTime()
-    const mins   = Math.floor(diffMs / 60_000)
-    const hours  = Math.floor(diffMs / 3_600_000)
-    const days   = Math.floor(diffMs / 86_400_000)
-    if (mins  <  1) return 'just now'
-    if (hours <  1) return `${mins}m ago`
-    if (days  <  1) return `${hours}h ago`
-    return `${days}d ago`
-}
 
 const ONE_DAY_MS = 24 * 3_600_000
 
@@ -144,11 +130,13 @@ const TD = 'px-3 py-3.5 text-[13px] align-middle border-b border-gray-50 last:bo
 // ── Table ─────────────────────────────────────────────────────────────────────
 
 export interface PastDueTableProps {
-    items: PastDueItem[]
+    items:    PastDueItem[]
+    /** Called when a row is clicked; opens the detail drawer. */
+    onSelect: (item: PastDueItem) => void
 }
 
 /** Renders past-due subscriptions sorted by nextRetryAt ascending. */
-export function PastDueTable({ items }: PastDueTableProps) {
+export function PastDueTable({ items, onSelect }: PastDueTableProps) {
     const sorted = [...items].sort(
         (a, b) => new Date(a.nextRetryAt).getTime() - new Date(b.nextRetryAt).getTime()
     )
@@ -177,7 +165,8 @@ export function PastDueTable({ items }: PastDueTableProps) {
                             return (
                                 <tr
                                     key={`${item.planId}-${item.subscriber}`}
-                                    className="hover:bg-gray-50/60 transition-colors"
+                                    onClick={() => onSelect(item)}
+                                    className="hover:bg-gray-50/60 transition-colors cursor-pointer"
                                 >
                                     {/* Subscriber */}
                                     <td className={TD}>
