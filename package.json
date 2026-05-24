@@ -1,0 +1,30 @@
+{
+  "name": "cyclo",
+  "version": "0.1.0",
+  "description": "On-chain recurring USDC billing on Arc testnet",
+  "private": true,
+  "workspaces": ["packages/*", "src/app"],
+  "type": "module",
+  "scripts": {
+    "deploy": "tsx scripts/deploy.ts",
+    "create-plan": "tsx scripts/createPlan.ts",
+    "subscribe": "tsx scripts/subscribe.ts",
+    "charge": "tsx scripts/charge.ts",
+    "keeper": "tsx keeper/index.ts",
+    "webhook": "tsx webhook/index.ts",
+    "api": "tsx api/index.ts"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "ethers": "^6.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "dotenv": "^16.0.0",
+    "ts-node": "^10.0.0",
+    "tsx": "^4.22.3",
+    "typescript": "^5.0.0"
+  }
+}
