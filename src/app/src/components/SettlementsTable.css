@@ -14,7 +14,20 @@
     background:    var(--bg-surface);
     border:        0.5px solid var(--bg-border);
     border-radius: 10px;
-    overflow:      hidden;
+    overflow-x:    auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+/* Keep rows from collapsing below their natural grid width on narrow viewports.
+   Fixed columns sum to 500 px; reserve 100 px for the 1fr tx-hash column = 600 px.
+   The wrapper scrolls horizontally so all six columns stay visible on mobile. */
+@media (max-width: 767px) {
+    .stl-header,
+    .stl-row { min-width: 600px; }
+
+    .stl-wrap::-webkit-scrollbar       { height: 3px; }
+    .stl-wrap::-webkit-scrollbar-track { background: transparent; }
+    .stl-wrap::-webkit-scrollbar-thumb { background: var(--bg-border-bright); border-radius: 2px; }
 }
 
 /* ── Header row ──────────────────────────────────────────────────────────────── */
