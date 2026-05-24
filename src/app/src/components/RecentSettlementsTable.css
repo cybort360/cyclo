@@ -296,3 +296,35 @@
     color:      var(--text-muted);
     margin:     0;
 }
+
+/* ── Responsive ─────────────────────────────────────────────────────────────── */
+
+/*
+ * On narrow screens the top bar (title + 220 px search input) is too wide.
+ * Stack them vertically: heading on top, search + filter button full-width
+ * below. Also reduce cell padding so table columns don't get clipped.
+ */
+@media (max-width: 600px) {
+    .st-bar {
+        flex-direction: column;
+        align-items:    flex-start;
+        gap:            10px;
+        padding:        14px 16px 10px;
+    }
+
+    /* Search + filter button row stretches full width */
+    .st-bar-right {
+        width: 100%;
+    }
+
+    /* Search expands to fill available space beside the filter button */
+    .st-search { flex: 1; }
+
+    .st-search-input {
+        width: 100%;
+    }
+
+    /* Tighter cell padding to keep table columns from being clipped */
+    .st-th,
+    .st-cell { padding: 10px 16px; }
+}

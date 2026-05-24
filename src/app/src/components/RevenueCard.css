@@ -147,6 +147,26 @@
     margin:  0 -4px 0 0;
 }
 
+/* ── Responsive ─────────────────────────────────────────────────────────────── */
+
+/*
+ * On narrow screens the 36 px value + period selector fight for horizontal
+ * space. Stack them vertically instead: meta block on top, period selector
+ * left-aligned below it. Also reduce the headline font so it doesn't crowd
+ * the delta pills on small phones.
+ */
+@media (max-width: 600px) {
+    .rv-header {
+        flex-direction: column;
+        gap:            12px;
+    }
+
+    .rv-value { font-size: 28px; }
+
+    /* Keep the pill row left-aligned when stacked */
+    .rv-period-selector { align-self: flex-start; }
+}
+
 /* ── Custom tooltip ─────────────────────────────────────────────────────────── */
 
 .rv-tooltip {

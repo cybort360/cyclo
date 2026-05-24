@@ -603,8 +603,20 @@
     /* Hide the page title — Logo is the identifier at this size */
     .sl-topbar-title { display: none; }
 
-    /* Let the topbar collapse to a tighter layout */
-    .sl-topbar { padding: 0 16px; gap: 12px; }
+    /*
+     * Switch topbar from grid to flexbox on mobile.
+     * The grid columns are 1fr auto 1fr; when the centre search item gets
+     * display:none its auto track collapses to 0 but both gaps remain,
+     * leaving 24 px of dead space and forcing Logo + wallet into equal
+     * 1fr halves. Flexbox + space-between lets each side size naturally:
+     * Logo shrinks to icon width, wallet chip sits flush to the right.
+     */
+    .sl-topbar {
+        display:         flex;
+        justify-content: space-between;
+        padding:         0 16px;
+        gap:             8px;
+    }
 
     /* Hide search bar — not enough room on mobile */
     .sl-search { display: none; }
