@@ -144,4 +144,11 @@
     .ft-section    { padding: 80px 0; }
     .ft-grid       { grid-template-columns: 1fr; }
     .ft-tile--wide { grid-column: span 1; }
+    .ft-h2         { font-size: 26px; }
+    .ft-inner      { padding: 0 16px; }
+    .ft-tile       { padding: 22px; }
+}
+
+@media (max-width: 480px) {
+    .ft-header     { margin-bottom: 32px; }
 }

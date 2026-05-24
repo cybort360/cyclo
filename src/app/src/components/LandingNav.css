@@ -105,10 +105,18 @@
     color:       #fff;
 }
 
-/* ── Mobile (< 768px): collapse to logo + launch only ───────────────────────── */
+/* ── Mobile (< 768px): collapse to logo mark only + launch button ───────────── */
 
 @media (max-width: 767px) {
     .ln-inner  { padding: 0 20px; }
     .ln-links  { display: none; }
     .ln-signin { display: none; }
+
+    /*
+     * Hide the "CYCLO" wordmark — show only the arc mark on small screens.
+     * Logo renders <span wrapper><svg/><span wordmark>CYCLO</span></span>.
+     * The outer span is a direct child of .ln-logo; the inner span is the
+     * wordmark. !important overrides the Logo component's inline styles.
+     */
+    .ln-logo > span > span { display: none !important; }
 }

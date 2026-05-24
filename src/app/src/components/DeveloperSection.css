@@ -141,4 +141,10 @@
 
 @media (max-width: 600px) {
     .dv-section { padding: 64px 0; }
+    .dv-inner   { padding: 0 16px; }
+    .dv-h2      { font-size: 24px; }
+}
+
+@media (max-width: 480px) {
+    .dv-section { padding: 48px 0; }
 }

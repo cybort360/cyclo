@@ -56,6 +56,9 @@
 
 .lp-root {
     min-height:              100vh;
+    /* Prevent any child element (blobs, pills, watermark) from causing
+       a horizontal scrollbar on the landing page.                      */
+    overflow-x:              hidden;
     scroll-behavior:         smooth;
     font-family:             var(--font-sans);
     background:              var(--l-bg);

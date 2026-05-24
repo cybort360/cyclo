@@ -239,4 +239,12 @@
 
 @media (max-width: 900px) {
     .hs-stats-row { flex-direction: column; bottom: 0; padding: 0 20px; }
+    /* Each card must not exceed its container — prevents overflow on small phones */
+    .hs-stat-card { width: 100%; box-sizing: border-box; }
+}
+
+@media (max-width: 600px) {
+    .hs-stats-row  { padding: 0 16px; }
+    .hs-stat-value { font-size: 24px; }
+    .hs-stat-card  { padding: 16px 20px; }
 }

@@ -252,4 +252,11 @@
 @media (max-width: 600px) {
     .hiw-section { padding-top: 80px; padding-bottom: 80px; }
     .hiw-sub     { font-size: 15px; }
+    .hiw-h2      { font-size: 26px; }
+    .hiw-card    { padding: 24px; }
+    .hiw-inner   { padding: 0 16px; }
+}
+
+@media (max-width: 480px) {
+    .hiw-header  { margin-bottom: 40px; }
 }

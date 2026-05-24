@@ -212,6 +212,16 @@
 
 @media (max-width: 600px) {
     .cf-cta-section { padding: 80px 0; }
-    .cf-headline    { font-size: 30px; }
+    .cf-headline    { font-size: 30px; overflow-wrap: break-word; }
     .cf-stats       { gap: 16px; }
+    .cf-cta-inner   { padding: 0 16px; }
+    .cf-footer-inner { padding: 0 16px; }
+}
+
+@media (max-width: 480px) {
+    .cf-headline    { font-size: 26px; }
+    .cf-subtext     { font-size: 16px; }
+    .cf-btn-primary,
+    .cf-btn-secondary { padding: 14px 28px; font-size: 15px; }
+    .cf-cta-section { padding: 64px 0; }
 }

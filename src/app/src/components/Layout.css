@@ -612,6 +612,14 @@
     /* Panel toggle button — visible on mobile */
     .sl-panel-toggle { display: flex; }
 
+    /*
+     * Hide the "CYCLO" wordmark in the topbar logo — show arc mark only.
+     * Logo renders <span wrapper><svg/><span wordmark>CYCLO</span></span>;
+     * the outer span is a direct child of the link inside .sl-topbar-logo.
+     * !important overrides the Logo component's inline styles.
+     */
+    .sl-topbar-logo span > span { display: none !important; }
+
     /* Right panel — slide-in drawer from the right */
     .sl-rightpanel {
         position:   fixed;

@@ -125,6 +125,8 @@
     letter-spacing: -0.03em;
     color:          var(--l-ink);
     margin:         0;
+    /* Safety net: break long words (e.g. "infrastructure") on very small screens */
+    overflow-wrap:  break-word;
 }
 
 .hs-h1-em {
@@ -214,4 +216,18 @@
     .hs-inner            { padding: 0 20px; padding-top: 120px; }
     .hs-h1               { font-size: 42px; }
     .hs-sub              { font-size: 16px; }
+}
+
+@media (max-width: 600px) {
+    /* "infrastructure" at 42px (~350px) overflows a 335px content area.
+       36px keeps the word within a 375px phone viewport.                 */
+    .hs-h1               { font-size: 36px; }
+    .hs-inner            { padding-top: 104px; }
+    .hs-cta              { gap: 12px; }
+}
+
+@media (max-width: 480px) {
+    .hs-h1               { font-size: 30px; }
+    .hs-sub              { font-size: 15px; }
+    .hs-trust            { gap: 14px; flex-wrap: wrap; }
 }

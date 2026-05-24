@@ -175,4 +175,10 @@
 @media (max-width: 600px) {
     .ec-section { padding: 80px 0; }
     .ec-card    { padding: 32px 24px; }
+    .ec-inner   { padding: 0 16px; }
+    .ec-h2      { font-size: 24px; }
+}
+
+@media (max-width: 480px) {
+    .ec-card { padding: 24px 20px; }
 }
