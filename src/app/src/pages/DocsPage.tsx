@@ -1,49 +1,45 @@
+/**
+ * /docs — public-facing integration documentation.
+ * Two-column layout: sticky sidebar + scrollable content.
+ * Mobile: sidebar collapses to a horizontal pill strip.
+ *
+ * Class prefix: dp-
+ */
 import { useState } from 'react'
 import { Link } from 'wouter'
+import Logo from '../components/Logo'
+import './DocsPage.css'
 
 const CONTRACT_ADDRESS = import.meta.env.VITE_CONTRACT_ADDRESS ?? '0x...'
 const USDC_ADDRESS     = import.meta.env.VITE_USDC_ADDRESS     ?? '0x...'
 const RPC_URL          = 'https://rpc.arc-testnet.canteen.xyz'
 
 const NAV_ITEMS = [
-    { id: 'overview',    label: 'Overview' },
-    { id: 'hosted-link', label: 'Hosted link' },
+    { id: 'overview',    label: 'Overview'          },
+    { id: 'hosted-link', label: 'Hosted link'        },
     { id: 'widget',      label: 'Widget (script tag)' },
-    { id: 'react',       label: 'React component' },
-    { id: 'sdk',         label: 'SDK' },
-    { id: 'webhooks',    label: 'Webhooks' },
+    { id: 'react',       label: 'React component'    },
+    { id: 'sdk',         label: 'SDK'                },
+    { id: 'webhooks',    label: 'Webhooks'           },
 ]
 
-function CodeBlock({ code }: { code: string }) {
-    const [copied,  setCopied]  = useState(false)
-    const [hovered, setHovered] = useState(false)
+// ── CodeBlock ─────────────────────────────────────────────────────────────────
 
-    function copy() {
-        navigator.clipboard.writeText(code)
+function CodeBlock({ code }: { code: string }) {
+    const [copied, setCopied] = useState(false)
+
+    function copy(): void {
+        void navigator.clipboard.writeText(code)
         setCopied(true)
-        setTimeout(() => setCopied(false), 2000)
+        setTimeout(() => setCopied(false), 2_000)
     }
 
     return (
-        <div
-            style={{ position: 'relative', borderRadius: '12px', overflow: 'hidden', margin: '16px 0' }}
-            onMouseEnter={() => setHovered(true)}
-            onMouseLeave={() => setHovered(false)}
-        >
-            <pre style={{
-                background: '#030712', color: '#f3f4f6', fontSize: '13px',
-                padding: '20px', overflowX: 'auto', lineHeight: 1.65, margin: 0,
-            }}>
-                <code style={{ fontFamily: 'ui-monospace, SFMono-Regular, monospace' }}>{code}</code>
-            </pre>
+        <div className="dp-code-wrap">
+            <pre className="dp-code-pre">{code}</pre>
             <button
                 onClick={copy}
-                style={{
-                    position: 'absolute', top: '12px', right: '12px',
-                    fontSize: '11px', background: '#1f2937', color: '#d1d5db',
-                    padding: '4px 12px', borderRadius: '6px', border: 'none',
-                    cursor: 'pointer', opacity: hovered ? 1 : 0, transition: 'opacity 0.15s',
-                }}
+                className={`dp-code-copy${copied ? ' dp-code-copy--copied' : ''}`}
             >
                 {copied ? 'Copied!' : 'Copy'}
             </button>
@@ -51,84 +47,64 @@ function CodeBlock({ code }: { code: string }) {
     )
 }
 
+// ── Section ───────────────────────────────────────────────────────────────────
+
 function Section({ id, title, children }: { id: string; title: string; children: React.ReactNode }) {
     return (
-        <section id={id} style={{ marginBottom: '64px', scrollMarginTop: '96px' }}>
-            <h2 style={{
-                fontSize: '18px', fontWeight: 600, color: '#111827', marginTop: 0,
-                marginBottom: '24px', paddingBottom: '12px', borderBottom: '1px solid #e5e7eb',
-            }}>
-                {title}
-            </h2>
+        <section id={id} className="dp-section">
+            <h2 className="dp-section-title">{title}</h2>
             {children}
         </section>
     )
 }
 
+// ── Step ──────────────────────────────────────────────────────────────────────
+
 function Step({ n, title, children }: { n: number; title: string; children: React.ReactNode }) {
     return (
-        <div style={{ display: 'flex', gap: '16px', marginBottom: '32px' }}>
-            <div style={{
-                flexShrink: 0, width: '28px', height: '28px', borderRadius: '50%',
-                background: '#4f46e5', color: '#fff', fontSize: '11px', fontWeight: 700,
-                display: 'flex', alignItems: 'center', justifyContent: 'center', marginTop: '2px',
-            }}>
-                {n}
-            </div>
-            <div style={{ flex: 1 }}>
-                <p style={{ fontWeight: 500, color: '#111827', margin: '0 0 8px' }}>{title}</p>
+        <div className="dp-step">
+            <div className="dp-step-badge" aria-hidden="true">{n}</div>
+            <div className="dp-step-body">
+                <p className="dp-step-title">{title}</p>
                 {children}
             </div>
         </div>
     )
 }
 
+// ── Page ──────────────────────────────────────────────────────────────────────
+
 export function DocsPage() {
     return (
-        <div style={{ minHeight: '100vh', background: '#fff', fontFamily: 'system-ui, -apple-system, sans-serif' }}>
+        <div className="dp-root">
 
-            {/* Top nav */}
-            <nav style={{
-                borderBottom: '1px solid #e5e7eb', padding: '16px 32px',
-                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                position: 'sticky', top: 0, background: '#fff', zIndex: 10,
-            }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                    <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: '8px', textDecoration: 'none' }}>
-                        <div style={{ width: '24px', height: '24px', background: '#4f46e5', borderRadius: '6px' }} />
-                        <span style={{ fontWeight: 600, color: '#111827', fontSize: '15px' }}>Cyclo</span>
+            {/* ── Top nav ───────────────────────────────────────────────── */}
+            <nav className="dp-nav">
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', minWidth: 0 }}>
+                    <Link href="/">
+                        <a className="dp-nav-brand" aria-label="Cyclo home">
+                            <Logo size={22} wordmarkSize={13} />
+                        </a>
                     </Link>
-                    <span style={{ color: '#d1d5db' }}>/</span>
-                    <span style={{ color: '#6b7280', fontSize: '14px' }}>Docs</span>
+                    <span className="dp-nav-sep" aria-hidden="true">/</span>
+                    <span className="dp-nav-section">Docs</span>
                 </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
-                    <a href="/arc-economics" style={{ fontSize: '14px', color: '#6b7280', textDecoration: 'none' }}>
-                        Arc economics
-                    </a>
-                    <a href="/demo" style={{ fontSize: '14px', color: '#4f46e5', textDecoration: 'none', fontWeight: 500 }}>
-                        See live demo →
-                    </a>
+
+                <div className="dp-nav-links">
+                    <a href="/arc-economics" className="dp-nav-link">Arc economics</a>
+                    <a href="/demo" className="dp-nav-cta">See live demo →</a>
                 </div>
             </nav>
 
-            <div style={{ maxWidth: '960px', margin: '0 auto', padding: '48px 24px', display: 'flex', gap: '48px' }}>
+            <div className="dp-body">
 
-                {/* Sidebar */}
-                <aside style={{ width: '192px', flexShrink: 0, position: 'sticky', top: '96px', alignSelf: 'flex-start' }}>
-                    <p style={{
-                        fontSize: '11px', fontWeight: 600, color: '#9ca3af',
-                        textTransform: 'uppercase', letterSpacing: '0.06em',
-                        margin: '0 0 12px',
-                    }}>
-                        Integration
-                    </p>
-                    <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                {/* ── Sidebar ───────────────────────────────────────────── */}
+                <aside className="dp-sidebar" aria-label="Documentation sections">
+                    <p className="dp-sidebar-heading">Integration</p>
+                    <ul className="dp-sidebar-list">
                         {NAV_ITEMS.map(item => (
                             <li key={item.id}>
-                                <a
-                                    href={`#${item.id}`}
-                                    style={{ fontSize: '14px', color: '#6b7280', textDecoration: 'none', display: 'block', padding: '4px 0' }}
-                                >
+                                <a href={`#${item.id}`} className="dp-sidebar-link">
                                     {item.label}
                                 </a>
                             </li>
@@ -136,53 +112,53 @@ export function DocsPage() {
                     </ul>
                 </aside>
 
-                {/* Main content */}
-                <main style={{ flex: 1, minWidth: 0 }}>
+                {/* ── Main content ──────────────────────────────────────── */}
+                <main className="dp-main">
 
                     <Section id="overview" title="Overview">
-                        <p style={{ color: '#4b5563', lineHeight: 1.7, margin: '0 0 16px' }}>
+                        <p className="dp-p">
                             Cyclo is an on-chain recurring billing protocol on Arc testnet. Merchants create
                             subscription plans. Subscribers approve USDC once. A keeper bot charges on-chain
                             automatically every interval.
                         </p>
-                        <p style={{ color: '#4b5563', lineHeight: 1.7, margin: '0 0 24px' }}>
+                        <p className="dp-p">
                             There are four ways to add Cyclo to your product. Pick the one that fits your stack.
                         </p>
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                        <div className="dp-overview-grid">
                             {[
-                                { label: 'Hosted link',      desc: 'Zero code. Share a URL.' },
-                                { label: 'Script tag',       desc: 'One line. Any webpage.' },
-                                { label: 'React component',  desc: 'npm install. Full control.' },
-                                { label: 'SDK',              desc: 'Framework-agnostic. Build anything.' },
+                                { label: 'Hosted link',     desc: 'Zero code. Share a URL.'           },
+                                { label: 'Script tag',      desc: 'One line. Any webpage.'            },
+                                { label: 'React component', desc: 'npm install. Full control.'        },
+                                { label: 'SDK',             desc: 'Framework-agnostic. Build anything.' },
                             ].map(({ label, desc }) => (
-                                <div key={label} style={{ border: '1px solid #e5e7eb', borderRadius: '12px', padding: '16px' }}>
-                                    <p style={{ fontWeight: 500, color: '#111827', fontSize: '14px', margin: '0 0 4px' }}>{label}</p>
-                                    <p style={{ fontSize: '12px', color: '#9ca3af', margin: 0 }}>{desc}</p>
+                                <div key={label} className="dp-overview-card">
+                                    <p className="dp-overview-card-title">{label}</p>
+                                    <p className="dp-overview-card-desc">{desc}</p>
                                 </div>
                             ))}
                         </div>
                     </Section>
 
                     <Section id="hosted-link" title="Option 1 — Hosted link">
-                        <p style={{ color: '#4b5563', lineHeight: 1.7, margin: '0 0 24px' }}>
+                        <p className="dp-p">
                             Every plan gets a shareable checkout URL. Drop it in an email, a landing page,
                             or a Notion doc. No installation required.
                         </p>
                         <Step n={1} title="Create a plan in the dashboard">
-                            <p style={{ fontSize: '14px', color: '#6b7280', margin: 0 }}>
+                            <p className="dp-p-sm">
                                 Go to Create Plan, set your price and interval. Note the Plan ID returned.
                             </p>
                         </Step>
                         <Step n={2} title="Share the link">
                             <CodeBlock code={`https://your-cyclo-app.com/subscribe/{planId}`} />
-                            <p style={{ fontSize: '14px', color: '#6b7280', margin: 0 }}>
+                            <p className="dp-p-sm">
                                 The page handles wallet connect, USDC approval, and subscription in one flow.
                             </p>
                         </Step>
                     </Section>
 
                     <Section id="widget" title="Option 2 — Widget (script tag)">
-                        <p style={{ color: '#4b5563', lineHeight: 1.7, margin: '0 0 24px' }}>
+                        <p className="dp-p">
                             Drop the Cyclo widget into any webpage with a single script tag. Works with
                             plain HTML, Vue, Svelte, or any framework.
                         </p>
@@ -207,7 +183,7 @@ export function DocsPage() {
                     </Section>
 
                     <Section id="react" title="Option 3 — React component">
-                        <p style={{ color: '#4b5563', lineHeight: 1.7, margin: '0 0 24px' }}>
+                        <p className="dp-p">
                             Install the React package and drop the checkout into any pricing page or modal.
                             Bring your own wagmi setup or use the built-in provider.
                         </p>
@@ -251,7 +227,7 @@ export function PricingPage() {
                     </Section>
 
                     <Section id="sdk" title="Option 4 — SDK">
-                        <p style={{ color: '#4b5563', lineHeight: 1.7, margin: '0 0 24px' }}>
+                        <p className="dp-p">
                             Use the SDK directly when you want full control over the UI or need to integrate
                             from a Vue, Svelte, or Node.js environment.
                         </p>
@@ -317,7 +293,7 @@ unsubscribe()`
                     </Section>
 
                     <Section id="webhooks" title="Webhooks">
-                        <p style={{ color: '#4b5563', lineHeight: 1.7, margin: '0 0 24px' }}>
+                        <p className="dp-p">
                             Register an HTTPS endpoint to receive Cyclo events in your backend.
                             All requests are signed with HMAC-SHA256 so you can verify they came from Cyclo.
                         </p>

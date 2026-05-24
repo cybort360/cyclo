@@ -1,0 +1,339 @@
+/*
+ * DocsPage — public-facing integration documentation.
+ * Class prefix: dp-
+ *
+ * Two-column layout: sticky sidebar (192px) + scrollable content.
+ * Mobile: sidebar collapses to a horizontal pill strip, content fills full width.
+ */
+
+/* ── Root ─────────────────────────────────────────────────────────────────────── */
+
+.dp-root {
+    min-height:  100vh;
+    background:  #fff;
+    font-family: system-ui, -apple-system, sans-serif;
+    color:       #111827;
+}
+
+/* ── Top nav ─────────────────────────────────────────────────────────────────── */
+
+.dp-nav {
+    border-bottom: 1px solid #e5e7eb;
+    padding:       0 32px;
+    height:        56px;
+    display:       flex;
+    align-items:   center;
+    justify-content: space-between;
+    gap:           16px;
+    position:      sticky;
+    top:           0;
+    background:    #fff;
+    z-index:       10;
+}
+
+.dp-nav-brand {
+    display:         flex;
+    align-items:     center;
+    gap:             12px;
+    text-decoration: none;
+    flex-shrink:     0;
+}
+
+.dp-nav-wordmark {
+    font-weight: 600;
+    color:       #111827;
+    font-size:   15px;
+}
+
+.dp-nav-sep {
+    color:     #d1d5db;
+    flex-shrink: 0;
+}
+
+.dp-nav-section {
+    font-size:   14px;
+    color:       #6b7280;
+    white-space: nowrap;
+}
+
+.dp-nav-links {
+    display:     flex;
+    align-items: center;
+    gap:         20px;
+    flex-shrink: 0;
+}
+
+.dp-nav-link {
+    font-size:       14px;
+    color:           #6b7280;
+    text-decoration: none;
+    white-space:     nowrap;
+    transition:      color 120ms ease;
+}
+.dp-nav-link:hover { color: #111827; }
+
+.dp-nav-cta {
+    font-size:       14px;
+    color:           #4f46e5;
+    text-decoration: none;
+    font-weight:     500;
+    white-space:     nowrap;
+}
+
+/* ── Body wrapper ─────────────────────────────────────────────────────────────── */
+
+.dp-body {
+    max-width: 960px;
+    margin:    0 auto;
+    padding:   48px 24px 80px;
+    display:   flex;
+    gap:       48px;
+}
+
+/* ── Sidebar ─────────────────────────────────────────────────────────────────── */
+
+.dp-sidebar {
+    width:        192px;
+    flex-shrink:  0;
+    position:     sticky;
+    top:          72px; /* clear 56px nav + 16px breathing room */
+    align-self:   flex-start;
+}
+
+.dp-sidebar-heading {
+    font-size:      11px;
+    font-weight:    600;
+    color:          #9ca3af;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin:         0 0 12px;
+}
+
+.dp-sidebar-list {
+    list-style:     none;
+    padding:        0;
+    margin:         0;
+    display:        flex;
+    flex-direction: column;
+    gap:            2px;
+}
+
+.dp-sidebar-link {
+    display:         block;
+    font-size:       14px;
+    color:           #6b7280;
+    text-decoration: none;
+    padding:         5px 8px;
+    border-radius:   6px;
+    transition:      color 120ms ease, background 120ms ease;
+}
+.dp-sidebar-link:hover { color: #111827; background: #f9fafb; }
+
+/* ── Main content ─────────────────────────────────────────────────────────────── */
+
+.dp-main {
+    flex:      1;
+    min-width: 0;
+}
+
+/* ── Section ─────────────────────────────────────────────────────────────────── */
+
+.dp-section {
+    margin-bottom:      64px;
+    scroll-margin-top:  72px;
+}
+
+.dp-section-title {
+    font-size:     20px;
+    font-weight:   600;
+    color:         #111827;
+    margin:        0 0 24px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #e5e7eb;
+    letter-spacing: -0.01em;
+}
+
+/* ── Paragraphs ──────────────────────────────────────────────────────────────── */
+
+.dp-p {
+    font-size:   15px;
+    color:       #4b5563;
+    line-height: 1.75;
+    margin:      0 0 16px;
+}
+
+.dp-p-sm {
+    font-size:   14px;
+    color:       #6b7280;
+    line-height: 1.7;
+    margin:      0;
+}
+
+/* ── Overview option cards ───────────────────────────────────────────────────── */
+
+.dp-overview-grid {
+    display:               grid;
+    grid-template-columns: 1fr 1fr;
+    gap:                   12px;
+    margin-top:            4px;
+}
+
+.dp-overview-card {
+    border:        1px solid #e5e7eb;
+    border-radius: 12px;
+    padding:       16px;
+}
+
+.dp-overview-card-title {
+    font-weight: 500;
+    color:       #111827;
+    font-size:   14px;
+    margin:      0 0 4px;
+}
+
+.dp-overview-card-desc {
+    font-size: 12px;
+    color:     #9ca3af;
+    margin:    0;
+}
+
+/* ── Step ────────────────────────────────────────────────────────────────────── */
+
+.dp-step {
+    display:       flex;
+    gap:           16px;
+    margin-bottom: 32px;
+}
+
+.dp-step-badge {
+    flex-shrink:     0;
+    width:           28px;
+    height:          28px;
+    border-radius:   50%;
+    background:      #4f46e5;
+    color:           #fff;
+    font-size:       12px;
+    font-weight:     700;
+    display:         flex;
+    align-items:     center;
+    justify-content: center;
+    margin-top:      2px;
+}
+
+.dp-step-body {
+    flex:      1;
+    min-width: 0;
+}
+
+.dp-step-title {
+    font-size:   14px;
+    font-weight: 500;
+    color:       #111827;
+    margin:      0 0 8px;
+    line-height: 1.5;
+}
+
+/* ── Code block ──────────────────────────────────────────────────────────────── */
+
+.dp-code-wrap {
+    position:      relative;
+    border-radius: 12px;
+    overflow:      hidden;
+    margin:        12px 0;
+}
+
+.dp-code-pre {
+    background:  #030712;
+    color:       #f3f4f6;   /* always-visible fallback before JS highlights */
+    font-size:   13px;
+    font-family: ui-monospace, 'SFMono-Regular', Consolas, monospace;
+    padding:     20px;
+    overflow-x:  auto;
+    line-height: 1.65;
+    margin:      0;
+}
+
+.dp-code-copy {
+    position:      absolute;
+    top:           12px;
+    right:         12px;
+    font-size:     11px;
+    font-family:   ui-monospace, 'SFMono-Regular', Consolas, monospace;
+    background:    #1f2937;
+    color:         #d1d5db;
+    padding:       4px 12px;
+    border-radius: 6px;
+    border:        none;
+    cursor:        pointer;
+    opacity:       0;
+    transition:    opacity 150ms ease, color 120ms ease;
+}
+
+.dp-code-wrap:hover .dp-code-copy { opacity: 1; }
+.dp-code-copy:hover                { color: #fff; }
+.dp-code-copy--copied              { color: #6ee7b7 !important; opacity: 1 !important; }
+
+/* ── Responsive ──────────────────────────────────────────────────────────────── */
+
+@media (max-width: 767px) {
+    /*
+     * Nav: keep brand left, links right, but allow them to share the
+     * full bar width. Hide the "Arc economics" secondary link to free
+     * up space — the CTA is more important on small screens.
+     */
+    .dp-nav {
+        padding: 0 16px;
+        gap:     8px;
+    }
+    .dp-nav-link { display: none; }  /* hide "Arc economics" on mobile */
+    .dp-nav-links { gap: 12px; }
+
+    /*
+     * Body: stack sidebar above content instead of side-by-side.
+     * 192px sidebar leaves only ~87px of content on a 375px phone —
+     * text wraps on every word.
+     */
+    .dp-body {
+        flex-direction: column;
+        padding:        24px 16px 60px;
+        gap:            0;
+    }
+
+    /* Sidebar becomes a horizontal scrollable pill strip */
+    .dp-sidebar {
+        width:         100%;
+        position:      static;
+        border-bottom: 1px solid #e5e7eb;
+        padding-bottom: 16px;
+        margin-bottom: 24px;
+    }
+
+    .dp-sidebar-heading { display: none; }
+
+    .dp-sidebar-list {
+        flex-direction:     row;
+        flex-wrap:          nowrap;
+        gap:                6px;
+        overflow-x:         auto;
+        padding-bottom:     2px;
+        scrollbar-width:    none;
+        -ms-overflow-style: none;
+    }
+    .dp-sidebar-list::-webkit-scrollbar { display: none; }
+
+    .dp-sidebar-link {
+        white-space:  nowrap;
+        font-size:    12px;
+        padding:      5px 12px;
+        background:   #f3f4f6;
+        border-radius: 20px;
+    }
+    .dp-sidebar-link:hover { background: #e5e7eb; }
+
+    /* Content adjustments */
+    .dp-section-title   { font-size: 17px; }
+    .dp-overview-grid   { grid-template-columns: 1fr; }
+    .dp-code-pre        { font-size: 12px; padding: 16px; }
+    .dp-step            { gap: 12px; }
+    .dp-section         { margin-bottom: 48px; }
+}
