@@ -1,0 +1,217 @@
+/*
+ * CTA section + page footer — final two elements on the landing page.
+ * Class prefix: cf-
+ *
+ * CTA section: l- tokens (light surface, indigo accent).
+ * Page footer: hardcoded dark values (#0A0A14 bg, white/alpha text).
+ *              No l- tokens in the footer — dark theme is intentional.
+ * Imported by CtaFooter.tsx.
+ */
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   CTA SECTION
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.cf-cta-section {
+    background: var(--l-bg);
+    padding:    120px 0;
+}
+
+.cf-cta-inner {
+    max-width:   860px;
+    margin:      0 auto;
+    padding:     0 32px;
+    text-align:  center;
+}
+
+/* ── Headline ─────────────────────────────────────────────────────────────────── */
+
+.cf-headline {
+    font-size:      52px;
+    font-weight:    500;
+    letter-spacing: -0.03em;
+    line-height:    1.15;
+    color:          var(--l-ink);
+    margin:         0;
+}
+
+/* ── Subtext ──────────────────────────────────────────────────────────────────── */
+
+.cf-subtext {
+    font-size:   18px;
+    color:       var(--l-ink-secondary);
+    line-height: 1.7;
+    max-width:   480px;
+    margin:      20px auto 0;
+}
+
+/* ── Buttons ──────────────────────────────────────────────────────────────────── */
+
+.cf-buttons {
+    display:         flex;
+    justify-content: center;
+    align-items:     center;
+    gap:             16px;
+    margin-top:      40px;
+    flex-wrap:       wrap;
+}
+
+/* Primary — indigo filled */
+.cf-btn-primary {
+    display:         inline-block;
+    font-size:       16px;
+    font-weight:     500;
+    color:           #fff;
+    background:      var(--l-accent);
+    padding:         16px 36px;
+    border-radius:   32px;
+    text-decoration: none;
+    box-shadow:      var(--l-shadow-indigo);
+    transition:      all 200ms ease;
+    white-space:     nowrap;
+}
+
+.cf-btn-primary:hover {
+    background:  var(--l-accent-hover);
+    box-shadow:  0 12px 32px rgba(79, 70, 229, 0.30);
+    color:       #fff;
+}
+
+/* Secondary — surface filled */
+.cf-btn-secondary {
+    display:         inline-block;
+    font-size:       16px;
+    font-weight:     500;
+    color:           var(--l-ink);
+    background:      var(--l-surface);
+    padding:         16px 36px;
+    border-radius:   32px;
+    text-decoration: none;
+    box-shadow:      var(--l-shadow-sm);
+    transition:      all 200ms ease;
+    white-space:     nowrap;
+}
+
+.cf-btn-secondary:hover {
+    box-shadow: var(--l-shadow-md);
+    color:      var(--l-ink);
+}
+
+/* ── Stat row ─────────────────────────────────────────────────────────────────── */
+
+.cf-stats {
+    display:         flex;
+    align-items:     center;
+    justify-content: center;
+    max-width:       480px;
+    margin:          48px auto 0;
+    gap:             24px;
+}
+
+.cf-stat { text-align: center; }
+
+.cf-stat-num {
+    font-size:   24px;
+    font-weight: 600;
+    color:       var(--l-ink);
+    margin:      0;
+    line-height: 1;
+}
+
+.cf-stat-label {
+    font-size:  12px;
+    color:      var(--l-ink-muted);
+    margin:     2px 0 0;
+}
+
+/* Vertical divider between stats */
+.cf-stat-divider {
+    width:       1px;
+    height:      32px;
+    background:  #E5E7EB;
+    flex-shrink: 0;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   PAGE FOOTER
+   Dark theme — hardcoded values, no l- tokens.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.cf-footer {
+    background: var(--l-ink); /* #0A0A14 */
+    padding:    48px 0;
+}
+
+.cf-footer-inner {
+    max-width: 1120px;
+    margin:    0 auto;
+    padding:   0 32px;
+}
+
+/* ── Top row: brand left, links right ─────────────────────────────────────────── */
+
+.cf-footer-top {
+    display:         flex;
+    justify-content: space-between;
+    align-items:     center;
+}
+
+.cf-footer-brand {
+    display:     flex;
+    align-items: center;
+    gap:         16px;
+}
+
+/* "Built on Arc testnet" */
+.cf-footer-tagline {
+    font-size: 11px;
+    color:     rgba(255, 255, 255, 0.4);
+}
+
+/* Navigation links right */
+.cf-footer-links {
+    display:     flex;
+    align-items: center;
+    gap:         24px;
+    flex-wrap:   wrap;
+}
+
+.cf-footer-link {
+    font-size:       13px;
+    color:           rgba(255, 255, 255, 0.5);
+    text-decoration: none;
+    white-space:     nowrap;
+    transition:      color 150ms ease;
+}
+
+.cf-footer-link:hover { color: rgba(255, 255, 255, 0.9); }
+
+/* ── Bottom divider + copyright ───────────────────────────────────────────────── */
+
+.cf-footer-bottom {
+    border-top:  1px solid rgba(255, 255, 255, 0.08);
+    margin-top:  24px;
+    padding-top: 24px;
+    text-align:  center;
+}
+
+.cf-copyright {
+    font-size: 11px;
+    color:     rgba(255, 255, 255, 0.3);
+    margin:    0;
+}
+
+/* ── Responsive ────────────────────────────────────────────────────────────────── */
+
+@media (max-width: 900px) {
+    .cf-cta-inner  { padding: 0 20px; }
+    .cf-footer-inner { padding: 0 20px; }
+    .cf-footer-top { flex-direction: column; gap: 24px; align-items: flex-start; }
+    .cf-headline   { font-size: 36px; }
+}
+
+@media (max-width: 600px) {
+    .cf-cta-section { padding: 80px 0; }
+    .cf-headline    { font-size: 30px; }
+    .cf-stats       { gap: 16px; }
+}
