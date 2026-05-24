@@ -1,12 +1,16 @@
 /**
  * Shared UI primitives for developer documentation pages.
  *
- * CodeBlock  — dark code block with highlight.js syntax highlighting (github-dark
- *              theme, loaded from cdnjs) and a copy-on-hover button.
- * DocStep    — numbered step with an indigo badge, used in procedural guides.
- * CopyButton — inline copy-to-clipboard button with a 2-second flash state.
+ * CodeBlock  — dark code block with a top bar (language label + copy button)
+ *              and highlight.js syntax highlighting (github-dark theme, CDN).
+ * DocStep    — numbered step with an accent circle badge.
+ * CopyButton — compact inline clipboard button with 2-second flash state.
+ *
+ * Class prefix: dcb-
  */
 import { useState, useEffect, useRef, useCallback } from 'react'
+import { IconCopy } from '@tabler/icons-react'
+import './DocCodeBlock.css'
 
 // ── highlight.js lazy loader ──────────────────────────────────────────────────
 
@@ -47,10 +51,10 @@ function loadHljs(): Promise<HljsGlobal> {
 
     hljsPromise = new Promise<HljsGlobal>((resolve, reject) => {
         if (!document.getElementById('hljs-css')) {
-            const link = document.createElement('link')
-            link.id   = 'hljs-css'
-            link.rel  = 'stylesheet'
-            link.href = `${HLJS_BASE}/styles/github-dark.min.css`
+            const link  = document.createElement('link')
+            link.id     = 'hljs-css'
+            link.rel    = 'stylesheet'
+            link.href   = `${HLJS_BASE}/styles/github-dark.min.css`
             document.head.appendChild(link)
         }
 
@@ -81,27 +85,23 @@ interface CodeBlockProps {
 }
 
 /**
- * Dark code block with syntax highlighting applied after highlight.js loads.
+ * Dark code block with a top bar showing language label and a copy button.
+ * Syntax highlighting is applied once highlight.js loads from CDN.
  * The block is always readable as plain text if the CDN request fails.
- * A copy-to-clipboard button fades in on hover.
  */
 export function CodeBlock({ code, language = 'typescript' }: CodeBlockProps) {
-    const codeRef               = useRef<HTMLElement>(null)
-    const [copied,  setCopied]  = useState(false)
-    const [hovered, setHovered] = useState(false)
+    const codeRef              = useRef<HTMLElement>(null)
+    const [copied, setCopied]  = useState(false)
 
     useEffect(() => {
         const el = codeRef.current
         if (!el) return
 
         function applyHighlight(hljs: HljsGlobal): void {
-            // Remove the attribute hljs sets on highlighted elements so it
-            // will re-process when the code or language prop changes.
             el!.removeAttribute('data-highlighted')
             hljs.highlightElement(el!)
         }
 
-        // Solidity is not in the hljs core bundle — load its grammar first.
         const load = language === 'solidity'
             ? loadHljs().then(hljs => loadSolidityGrammar().then(() => applyHighlight(hljs)))
             : loadHljs().then(applyHighlight)
@@ -112,30 +112,27 @@ export function CodeBlock({ code, language = 'typescript' }: CodeBlockProps) {
     const copy = useCallback(() => {
         void navigator.clipboard.writeText(code)
         setCopied(true)
-        setTimeout(() => setCopied(false), 2000)
+        setTimeout(() => setCopied(false), 2_000)
     }, [code])
 
     return (
-        <div
-            className="relative rounded-xl overflow-hidden my-4"
-            onMouseEnter={() => setHovered(true)}
-            onMouseLeave={() => setHovered(false)}
-        >
-            <pre className="m-0 text-[13px] leading-relaxed overflow-x-auto bg-[#0d1117] p-5">
+        <div className="dcb-block">
+            <div className="dcb-topbar">
+                <span className="dcb-lang">{language}</span>
+                <button
+                    onClick={copy}
+                    aria-label="Copy code to clipboard"
+                    className={`dcb-copy-btn${copied ? ' dcb-copy-btn--copied' : ''}`}
+                >
+                    <IconCopy size={11} aria-hidden="true" />
+                    {copied ? 'Copied!' : 'Copy'}
+                </button>
+            </div>
+            <pre className="dcb-pre">
                 <code ref={codeRef} className={`language-${language}`}>
                     {code}
                 </code>
             </pre>
-            <button
-                onClick={copy}
-                aria-label="Copy code to clipboard"
-                className={`absolute top-3 right-3 text-[11px] px-2.5 py-1 rounded-md
-                    bg-white/10 text-gray-300 border border-white/10
-                    hover:bg-white/20 transition-all duration-150
-                    ${hovered ? 'opacity-100' : 'opacity-0'}`}
-            >
-                {copied ? 'Copied!' : 'Copy'}
-            </button>
         </div>
     )
 }
@@ -143,22 +140,22 @@ export function CodeBlock({ code, language = 'typescript' }: CodeBlockProps) {
 // ── DocStep ───────────────────────────────────────────────────────────────────
 
 interface DocStepProps {
-    /** Step number displayed in the badge. */
+    /** Step number displayed in the accent badge. */
     n:        number
     /** Bold step title. */
     title:    string
     children: React.ReactNode
 }
 
-/** Numbered step row with an indigo badge, for procedural guides. */
+/** Numbered step row with an accent circle badge, for procedural guides. */
 export function DocStep({ n, title, children }: DocStepProps) {
     return (
-        <div className="flex gap-4">
-            <div className="flex-shrink-0 w-7 h-7 rounded-full bg-indigo-600 flex items-center justify-center mt-0.5">
-                <span className="text-white text-[11px] font-bold tabular-nums">{n}</span>
+        <div className="dcb-step">
+            <div className="dcb-step-badge" aria-hidden="true">
+                <span className="dcb-step-num">{n}</span>
             </div>
-            <div className="flex-1 min-w-0 pb-8 last:pb-0">
-                <p className="text-sm font-semibold text-gray-900 mb-1">{title}</p>
+            <div className="dcb-step-body">
+                <p className="dcb-step-title">{title}</p>
                 {children}
             </div>
         </div>
@@ -176,18 +173,19 @@ interface CopyButtonProps {
 export function CopyButton({ value }: CopyButtonProps) {
     const [copied, setCopied] = useState(false)
 
-    function copy() {
+    function copy(): void {
         void navigator.clipboard.writeText(value)
         setCopied(true)
-        setTimeout(() => setCopied(false), 2000)
+        setTimeout(() => setCopied(false), 2_000)
     }
 
     return (
         <button
             onClick={copy}
-            className="ml-2 shrink-0 text-[11px] px-2 py-0.5 rounded border border-gray-200
-                text-gray-400 hover:text-gray-700 hover:border-gray-300 transition-colors"
+            className={`dcb-inline-copy${copied ? ' dcb-inline-copy--copied' : ''}`}
+            aria-label={`Copy ${value}`}
         >
+            <IconCopy size={10} aria-hidden="true" />
             {copied ? 'Copied!' : 'Copy'}
         </button>
     )

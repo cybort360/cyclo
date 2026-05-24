@@ -1,21 +1,17 @@
 /**
- * Stateless stepper component for the onboarding wizard.
+ * Stateless horizontal step indicator for the onboarding wizard.
  *
- * Renders 4 steps vertically with three visual states:
- *   - completed (index < currentStep): indigo filled circle, ✓, clickable
- *   - active    (index === currentStep): indigo filled circle, step number, not clickable
- *   - future    (index > currentStep): gray outlined circle, step number, not clickable
+ * Renders N circles connected by 0.5px separator lines. States:
+ *   - completed (index < currentStep): accent-filled, ✓, clickable
+ *   - active    (index === currentStep): accent border, step number
+ *   - future    (index > currentStep):  bg-border-bright border, step number
+ *   - flashing  (flashingStep === index): accent-filled ✓ (connect animation)
  *
- * Connector lines between steps are indigo when the lower step has been reached,
- * gray otherwise.
- *
- * Pass `flashingStep` to show a transient green success circle on the given step
- * index (used during the wallet-connect auto-advance animation).
+ * CSS: onb- classes from OnboardingPage.css (loaded by parent OnboardingPage).
  */
+import { Fragment } from 'react'
 
-/**
- * Represents a single step in the onboarding wizard.
- */
+/** One step entry for the onboarding wizard. */
 export interface OnboardingStep {
     title:       string
     description: string
@@ -25,109 +21,56 @@ interface OnboardingStepperProps {
     steps:        OnboardingStep[]
     currentStep:  number
     onStepClick:  (index: number) => void
-    /** Index of the step indicator to render in green during a success flash. */
+    /** Index of the step circle to render with the success-flash style. */
     flashingStep?: number | null
 }
 
-type StepState = 'completed' | 'active' | 'future'
-
-interface StepCircleProps {
-    index:      number
-    state:      StepState
-    /** When true, renders the circle in green with a ✓ regardless of state. */
-    isFlashing: boolean
-}
-
-function StepCircle({ index, state, isFlashing }: StepCircleProps) {
-    const base = 'w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold shrink-0 transition-colors duration-300'
-
-    if (isFlashing) {
-        return (
-            <div className={`${base} bg-green-500 text-white`}>✓</div>
-        )
-    }
-
-    if (state === 'completed') {
-        return (
-            <div className={`${base} bg-indigo-600 text-white`}>✓</div>
-        )
-    }
-
-    if (state === 'active') {
-        return (
-            <div className={`${base} bg-indigo-600 text-white`}>
-                {index + 1}
-            </div>
-        )
-    }
-
-    return (
-        <div className={`${base} border-2 border-gray-300 text-gray-400`}>
-            {index + 1}
-        </div>
-    )
-}
+type StepState = 'completed' | 'active' | 'future' | 'flashing'
 
 /**
- * Stateless stepper component for the onboarding wizard.
- * @param steps - Ordered list of steps to display.
+ * Horizontal step-indicator row for the onboarding wizard.
+ * @param steps       - Ordered list of steps to display.
  * @param currentStep - Zero-based index of the currently active step.
- * @param onStepClick - Called with the step index when a completed step is clicked.
- * @param flashingStep - Optional index of the step indicator to render in green (success flash).
- * @returns The vertical stepper UI with per-step state indicators and connector lines.
+ * @param onStepClick - Callback invoked with the step index when a completed step is clicked.
+ * @param flashingStep - Optional index of the step to render in the success-flash style.
+ * @returns Flex row of circles connected by thin separator lines.
  */
-export function OnboardingStepper({ steps, currentStep, onStepClick, flashingStep }: OnboardingStepperProps) {
+export function OnboardingStepper({
+    steps, currentStep, onStepClick, flashingStep,
+}: OnboardingStepperProps) {
     return (
-        <div className="w-full">
+        <div className="onb-stepper">
             {steps.map((step, index) => {
                 const isCompleted = index < currentStep
-                const isActive    = index === currentStep
-                const isLast      = index === steps.length - 1
-                const state: StepState = isCompleted ? 'completed' : isActive ? 'active' : 'future'
-                const stepIsFlashing = flashingStep != null && index === flashingStep
+                const isFlashing  = flashingStep != null && index === flashingStep
+                const state: StepState =
+                    isFlashing           ? 'flashing'  :
+                    isCompleted          ? 'completed' :
+                    index === currentStep ? 'active'   : 'future'
+
+                const label = state === 'completed' || state === 'flashing'
+                    ? '✓' : String(index + 1)
 
                 return (
-                    <div key={step.title} className="flex gap-4">
-
-                        {/* Left column: circle + vertical connector */}
-                        <div className="flex flex-col items-center">
-                            {isCompleted ? (
-                                <button
-                                    onClick={() => onStepClick(index)}
-                                    className="focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 rounded-full"
-                                    aria-label={`Go back to ${step.title}`}
-                                >
-                                    <StepCircle index={index} state={state} isFlashing={stepIsFlashing} />
-                                </button>
-                            ) : (
-                                <StepCircle index={index} state={state} isFlashing={stepIsFlashing} />
-                            )}
-
-                            {/* Connector line — omitted after the last step */}
-                            {!isLast && (
-                                <div
-                                    className={`w-0.5 my-1 flex-1 min-h-8 ${
-                                        index < currentStep ? 'bg-indigo-600' : 'bg-gray-200'
-                                    }`}
-                                />
-                            )}
-                        </div>
-
-                        {/* Right column: step title + description */}
-                        <div className={`min-w-0 ${isLast ? 'pb-0' : 'pb-8'}`}>
-                            <p className={`text-sm leading-none mt-1.5 ${
-                                isActive    ? 'text-indigo-700 font-semibold' :
-                                isCompleted ? 'text-gray-900'                 :
-                                              'text-gray-400'
-                            }`}>
-                                {step.title}
-                            </p>
-                            <p className="text-sm text-gray-500 mt-1 leading-snug">
-                                {step.description}
-                            </p>
-                        </div>
-
-                    </div>
+                    <Fragment key={step.title}>
+                        {index > 0 && <div className="onb-step-line" />}
+                        {isCompleted && !isFlashing ? (
+                            <button
+                                className={`onb-step-circle onb-step-circle--${state}`}
+                                onClick={() => onStepClick(index)}
+                                aria-label={`Go back to ${step.title}`}
+                            >
+                                {label}
+                            </button>
+                        ) : (
+                            <div
+                                className={`onb-step-circle onb-step-circle--${state}`}
+                                aria-label={step.title}
+                            >
+                                {label}
+                            </div>
+                        )}
+                    </Fragment>
                 )
             })}
         </div>

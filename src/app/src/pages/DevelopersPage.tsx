@@ -1,9 +1,10 @@
 /**
  * /developers — in-dashboard developer reference.
  * Two-column layout: sticky anchor nav (left) + section content (right).
- * Scroll-spy via IntersectionObserver highlights the active section.
+ * Scroll-spy via IntersectionObserver highlights the active nav link.
  * No API key UI — authentication is wallet-based and on-chain.
- * -mx-8 -mt-8 cancels Layout's px-8 py-8 padding so the nav sits flush-left.
+ *
+ * Class prefix: dvp-
  */
 import { useState, useEffect } from 'react'
 import { CodeBlock, DocStep, CopyButton } from '../components/DocCodeBlock'
@@ -12,6 +13,7 @@ import { SdkReferenceSection } from './SdkReferenceSection'
 import { ContractReferenceSection } from './ContractReferenceSection'
 import { ComposabilitySection } from './ComposabilitySection'
 import { WebhooksSection } from './WebhooksSection'
+import './DevelopersPage.css'
 
 // ── Network constants ─────────────────────────────────────────────────────────
 
@@ -46,7 +48,7 @@ const SUBSCRIBE_CODE = `\
 await client.subscribe(planId)
 // USDC allowance is managed automatically`
 
-// ── Network table rows ────────────────────────────────────────────────────────
+// ── Network table ─────────────────────────────────────────────────────────────
 
 interface NetworkRow {
     property: string
@@ -56,12 +58,12 @@ interface NetworkRow {
 }
 
 const NETWORK_ROWS: NetworkRow[] = [
-    { property: 'Network name',     value: 'Arc Testnet',                                    copyable: false                          },
-    { property: 'Chain ID',         value: '5042002',                                        copyable: false                          },
-    { property: 'RPC URL',          value: ARC_RPC_URL || '(VITE_ARC_RPC_URL not set)',      copyable: ARC_RPC_URL.length > 0         },
-    { property: 'USDC address',     value: USDC_ADDRESS || '(not configured)',               copyable: false                          },
-    { property: 'Contract address', value: CONTRACT_ADDRESS || '(not configured)',           copyable: CONTRACT_ADDRESS.length > 0    },
-    { property: 'Block explorer',   value: EXPLORER_URL,                                     copyable: false, href: EXPLORER_URL      },
+    { property: 'Network name',     value: 'Arc Testnet',                                  copyable: false                       },
+    { property: 'Chain ID',         value: '5042002',                                      copyable: false                       },
+    { property: 'RPC URL',          value: ARC_RPC_URL || '(VITE_ARC_RPC_URL not set)',    copyable: ARC_RPC_URL.length > 0      },
+    { property: 'USDC address',     value: USDC_ADDRESS || '(not configured)',             copyable: false                       },
+    { property: 'Contract address', value: CONTRACT_ADDRESS || '(not configured)',         copyable: CONTRACT_ADDRESS.length > 0 },
+    { property: 'Block explorer',   value: EXPLORER_URL,                                   copyable: false, href: EXPLORER_URL   },
 ]
 
 // ── Section manifest ──────────────────────────────────────────────────────────
@@ -83,68 +85,52 @@ type SectionId = (typeof DOC_SECTIONS)[number]['id']
  * Observes each doc section and returns the id of whichever section currently
  * occupies the top band of the viewport.
  *
- * rootMargin '-20% 0px -75% 0px' defines a spotlight: a section becomes
- * "active" the moment its top edge crosses into the top 20 % of the viewport.
- * The -75 % bottom margin prevents two sections from being active at once on
- * normal screen heights.
+ * rootMargin '-20% 0px -75% 0px' creates a spotlight: a section becomes
+ * "active" when its top edge enters the top 20% of the viewport.
+ * The -75% bottom margin prevents two sections from being active at once.
  */
 function useScrollSpy(): SectionId {
     const [activeId, setActiveId] = useState<SectionId>('quick-start')
 
     useEffect(() => {
         const observer = new IntersectionObserver(
-            (entries) => {
+            entries => {
                 for (const entry of entries) {
-                    if (entry.isIntersecting) {
-                        setActiveId(entry.target.id as SectionId)
-                    }
+                    if (entry.isIntersecting) setActiveId(entry.target.id as SectionId)
                 }
             },
             { rootMargin: '-20% 0px -75% 0px', threshold: 0 },
         )
-
         for (const { id } of DOC_SECTIONS) {
             const el = document.getElementById(id)
             if (el) observer.observe(el)
         }
-
         return () => observer.disconnect()
     }, [])
 
     return activeId
 }
 
-// ── Anchor nav ────────────────────────────────────────────────────────────────
+// ── Sub-components ────────────────────────────────────────────────────────────
 
-interface AnchorNavProps {
-    activeId: SectionId
-}
+interface AnchorNavProps { activeId: SectionId }
 
 function AnchorNav({ activeId }: AnchorNavProps) {
     return (
-        <ul className="space-y-0.5">
-            {DOC_SECTIONS.map(({ id, label }) => {
-                const isActive = id === activeId
-                return (
-                    <li key={id}>
-                        <a
-                            href={`#${id}`}
-                            className={`block px-3 py-1.5 rounded-lg text-sm transition-colors ${
-                                isActive
-                                    ? 'bg-indigo-50 text-indigo-700 font-medium'
-                                    : 'text-gray-500 hover:text-gray-900 hover:bg-gray-50'
-                            }`}
-                        >
-                            {label}
-                        </a>
-                    </li>
-                )
-            })}
+        <ul className="dvp-nav-list">
+            {DOC_SECTIONS.map(({ id, label }) => (
+                <li key={id}>
+                    <a
+                        href={`#${id}`}
+                        className={`dvp-nav-link${activeId === id ? ' dvp-nav-link--active' : ''}`}
+                    >
+                        {label}
+                    </a>
+                </li>
+            ))}
         </ul>
     )
 }
-
-// ── Section wrapper ───────────────────────────────────────────────────────────
 
 interface DocSectionProps {
     id:        SectionId
@@ -152,24 +138,12 @@ interface DocSectionProps {
     children?: React.ReactNode
 }
 
-/**
- * Wraps each documentation section with a consistent heading style, bottom
- * separator, and scroll-margin-top to ensure anchor links land below the
- * sticky dashboard header.
- */
 function DocSection({ id, title, children }: DocSectionProps) {
     return (
-        <section
-            id={id}
-            className="scroll-mt-20 pb-16 border-b border-gray-100 last:border-0 last:pb-0"
-        >
-            <h2 className="text-lg font-semibold text-gray-900 pb-3 border-b border-gray-100">
-                {title}
-            </h2>
-            <div className="mt-6">
-                {children ?? (
-                    <p className="text-sm text-gray-400 italic">Content coming soon.</p>
-                )}
+        <section id={id} className="dvp-section">
+            <h2 className="dvp-section-title">{title}</h2>
+            <div className="dvp-section-body">
+                {children ?? <p className="dvp-soon">Content coming soon.</p>}
             </div>
         </section>
     )
@@ -181,40 +155,31 @@ export function DevelopersPage() {
     const activeId = useScrollSpy()
 
     return (
-        /*
-         * -mx-8 -mt-8: cancel Layout's px-8 py-8 so the anchor nav can be
-         * flush-left with its own bg + border treatment, matching the visual
-         * weight of the outer sidebar.
-         */
-        <div className="flex -mx-8 -mt-8 min-h-screen">
+        <div className="dvp-wrap">
 
             {/* ── Left anchor nav ───────────────────────────────────────── */}
-            <aside className="w-[216px] flex-shrink-0 border-r border-gray-100 bg-white">
-                <div className="sticky top-[57px] px-5 pt-7 pb-12">
-                    <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-widest mb-3">
-                        On this page
-                    </p>
+            <aside className="dvp-nav">
+                <div className="dvp-nav-inner">
+                    <p className="dvp-nav-heading">On this page</p>
                     <AnchorNav activeId={activeId} />
                 </div>
             </aside>
 
             {/* ── Main content ──────────────────────────────────────────── */}
-            <div className="flex-1 min-w-0 px-10 pt-8 pb-24 max-w-3xl">
+            <div className="dvp-content">
 
-                {/* Page heading */}
-                <div className="mb-12">
-                    <h1 className="text-2xl font-bold text-gray-900">Developer reference</h1>
-                    <p className="text-sm text-gray-500 mt-1">
+                <div className="dvp-page-heading">
+                    <h1 className="dvp-page-title">Developer reference</h1>
+                    <p className="dvp-page-sub">
                         Integration guides, SDK reference, and on-chain contract documentation.
                     </p>
                 </div>
 
-                {/* Sections */}
-                <div className="space-y-0">
+                <div className="dvp-sections">
 
                     {/* ── Quick Start ─────────────────────────────────── */}
                     <DocSection id="quick-start" title="Quick Start">
-                        <p className="text-sm text-gray-600 mb-8 leading-relaxed">
+                        <p className="dvp-section-lead">
                             Start accepting subscriptions in minutes.
                         </p>
                         <DocStep n={1} title="Install the SDK">
@@ -233,61 +198,55 @@ export function DevelopersPage() {
 
                     {/* ── Network ─────────────────────────────────────── */}
                     <DocSection id="network" title="Network">
-                        <p className="text-sm text-gray-600 mb-6 leading-relaxed">
+                        <p className="dvp-section-lead">
                             All contract interactions happen on Arc Testnet. There are no API keys —
                             authentication is wallet-based and entirely on-chain.
                         </p>
-                        <table className="w-full text-sm border-collapse">
-                            <thead>
-                                <tr className="border-b border-gray-200">
-                                    <th className="text-left text-xs font-semibold text-gray-400 uppercase tracking-wide pb-2.5 w-44">
-                                        Property
-                                    </th>
-                                    <th className="text-left text-xs font-semibold text-gray-400 uppercase tracking-wide pb-2.5">
-                                        Value
-                                    </th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {NETWORK_ROWS.map(({ property, value, copyable, href }) => (
-                                    <tr key={property} className="border-b border-gray-100 last:border-0">
-                                        <td className="py-3 pr-4 text-gray-500 align-middle whitespace-nowrap">
-                                            {property}
-                                        </td>
-                                        <td className="py-3 align-middle">
-                                            <div className="flex items-center">
+                        <div className="dvp-net-wrap">
+                            <table className="dvp-net-table">
+                                <thead>
+                                    <tr>
+                                        <th className="dvp-net-th">Property</th>
+                                        <th className="dvp-net-th">Value</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {NETWORK_ROWS.map(({ property, value, copyable, href }) => (
+                                        <tr key={property} className="dvp-net-tr">
+                                            <td className="dvp-net-td">{property}</td>
+                                            <td className="dvp-net-td dvp-net-td--val">
                                                 {href ? (
                                                     <a
                                                         href={href}
                                                         target="_blank"
                                                         rel="noreferrer"
-                                                        className="font-mono text-indigo-600 hover:underline break-all"
+                                                        className="dvp-net-link"
                                                     >
                                                         {value}
                                                     </a>
                                                 ) : (
-                                                    <span className="font-mono text-gray-900 break-all">{value}</span>
+                                                    <span>{value}</span>
                                                 )}
                                                 {copyable && <CopyButton value={value} />}
-                                            </div>
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
                     </DocSection>
 
-                    {/* ── Remaining sections (content coming soon) ─────── */}
-                    <DocSection id="sdk-reference" title="SDK Reference">
+                    {/* ── Remaining sections ───────────────────────────── */}
+                    <DocSection id="sdk-reference"      title="SDK Reference">
                         <SdkReferenceSection />
                     </DocSection>
                     <DocSection id="contract-reference" title="Contract Reference">
                         <ContractReferenceSection />
                     </DocSection>
-                    <DocSection id="composability" title="Composability">
+                    <DocSection id="composability"      title="Composability">
                         <ComposabilitySection />
                     </DocSection>
-                    <DocSection id="webhooks" title="Webhooks">
+                    <DocSection id="webhooks"           title="Webhooks">
                         <WebhooksSection />
                     </DocSection>
 

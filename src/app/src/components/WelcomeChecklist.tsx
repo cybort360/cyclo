@@ -33,7 +33,7 @@ interface StepItemProps {
     disabled?: boolean
 }
 
-function StepItem({ n, label, checked, href, onClick, disabled }: StepItemProps): JSX.Element {
+function StepItem({ n, label, checked, href, onClick, disabled }: StepItemProps){
     const indicator = checked ? (
         <span className="w-6 h-6 rounded-full bg-green-500 flex items-center justify-center
                          text-white text-[11px] font-bold shrink-0 select-none">
@@ -73,7 +73,7 @@ function StepItem({ n, label, checked, href, onClick, disabled }: StepItemProps)
 
 export function WelcomeChecklist({
     address, hasPlans, hasSubscribers, firstActivePlanId,
-}: WelcomeChecklistProps): JSX.Element {
+}: WelcomeChecklistProps){
     const [copied, setCopied] = useState(false)
 
     const truncated = `${address.slice(0, 6)}…${address.slice(-4)}`
