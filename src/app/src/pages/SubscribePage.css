@@ -1,0 +1,480 @@
+/*
+ * Checkout page — /subscribe/:planId.
+ * Class prefix: co-
+ *
+ * Covers the full-page dark layout and all card sections.
+ * CheckoutSuccess, CheckoutPreFlight, and CheckoutLogoArea use co- classes
+ * defined here — they rely on this file being loaded by the parent page.
+ */
+
+/* ── Keyframes ───────────────────────────────────────────────────────────────── */
+
+@keyframes co-spin {
+    to { transform: rotate(360deg); }
+}
+
+/*
+ * Checkmark: circle circumference ≈ 157 (2π × 25); mark path length ≈ 36.
+ * Both animate dashoffset from hidden→drawn; mark is delayed 0.4s.
+ */
+@keyframes co-circle-draw {
+    from { stroke-dashoffset: 157; }
+    to   { stroke-dashoffset: 0;   }
+}
+
+@keyframes co-mark-draw {
+    from { stroke-dashoffset: 36; }
+    to   { stroke-dashoffset: 0;  }
+}
+
+@keyframes co-skeleton-pulse {
+    0%, 100% { opacity: 0.4; }
+    50%       { opacity: 0.8; }
+}
+
+/* ── Full-page wrapper ───────────────────────────────────────────────────────── */
+
+.co-outer {
+    min-height:      100vh;
+    background:      var(--bg-base);
+    display:         flex;
+    flex-direction:  column;
+    align-items:     center;
+    justify-content: center;
+    padding:         32px 24px;
+}
+
+.co-inner {
+    width:           100%;
+    max-width:       440px;
+    padding-top:     40px;
+    display:         flex;
+    flex-direction:  column;
+    gap:             20px;
+}
+
+/* ── Top nav ─────────────────────────────────────────────────────────────────── */
+
+.co-nav {
+    display:         flex;
+    justify-content: space-between;
+    align-items:     center;
+}
+
+.co-wordmark {
+    font-size:      13px;
+    font-weight:    500;
+    font-family:    ui-monospace, 'Cascadia Code', Consolas, monospace;
+    color:          var(--accent);
+    text-decoration: none;
+    letter-spacing: 0.06em;
+}
+
+.co-back-link {
+    font-size:       12px;
+    color:           var(--text-tertiary);
+    text-decoration: none;
+    transition:      color 120ms ease;
+}
+
+.co-back-link:hover { color: var(--text-secondary); }
+
+/* ── Cyclo attribution header ────────────────────────────────────────────────── */
+
+.co-cyclo-header {
+    display:         flex;
+    align-items:     center;
+    justify-content: center;
+    gap:             6px;
+    margin-bottom:   16px;
+}
+
+.co-cyclo-header--prominent {
+    margin-bottom: 24px;
+}
+
+.co-powered-by {
+    font-size: 11px;
+    color:     var(--text-muted);
+}
+
+/* ── Checkout card ───────────────────────────────────────────────────────────── */
+
+.co-card {
+    background:    var(--bg-surface);
+    border:        0.5px solid var(--bg-border);
+    border-radius: 16px;
+    padding:       32px;
+    display:       flex;
+    flex-direction: column;
+}
+
+/* ── Merchant branding area ──────────────────────────────────────────────────── */
+
+.co-brand {
+    padding-bottom: 20px;
+    margin-bottom:  20px;
+    border-bottom:  0.5px solid var(--bg-border);
+    display:        flex;
+    flex-direction: column;
+    gap:            8px;
+}
+
+.co-merchant-name {
+    font-size: 13px;
+    color:     var(--text-secondary);
+    margin:    0;
+}
+
+/* Logo placeholder — from CheckoutLogoArea */
+.co-logo-skel {
+    height:        32px;
+    width:         100px;
+    border-radius: 6px;
+    background:    var(--bg-surface-2);
+    animation:     co-skeleton-pulse 1.4s ease-in-out infinite;
+}
+
+.co-logo-img {
+    max-height:   32px;
+    object-fit:   contain;
+    display:      block;
+}
+
+.co-wordmark-fallback {
+    font-size:   15px;
+    font-weight: 500;
+    color:       var(--text-primary);
+}
+
+/* ── Plan details ────────────────────────────────────────────────────────────── */
+
+.co-plan-section {
+    display:        flex;
+    flex-direction: column;
+    gap:            8px;
+    margin-bottom:  4px;
+}
+
+.co-plan-name {
+    font-size:   18px;
+    font-weight: 500;
+    color:       var(--text-primary);
+    margin:      0;
+}
+
+.co-price-row {
+    display:     flex;
+    align-items: baseline;
+    gap:         6px;
+}
+
+.co-price {
+    font-size:   36px;
+    font-weight: 500;
+    color:       var(--accent);
+    font-family: ui-monospace, 'Cascadia Code', Consolas, monospace;
+    margin:      0;
+    line-height: 1;
+}
+
+.co-interval {
+    font-size: 16px;
+    color:     var(--text-secondary);
+}
+
+.co-trial-badge {
+    display:     inline-flex;
+    align-items: center;
+    padding:     4px 12px;
+    background:  var(--accent-subtle);
+    border-radius: 20px;
+    font-size:   11px;
+    font-family: ui-monospace, 'Cascadia Code', Consolas, monospace;
+    color:       var(--accent-dim);
+    align-self:  flex-start;
+}
+
+.co-merchant-addr {
+    font-size: 12px;
+    color:     var(--text-tertiary);
+    margin:    0;
+    word-break: break-all;
+}
+
+.co-merchant-addr code {
+    font-family: inherit;
+    font-size:   11px;
+}
+
+/* ── Divider ─────────────────────────────────────────────────────────────────── */
+
+.co-divider {
+    border:     none;
+    border-top: 0.5px solid var(--bg-border);
+    margin:     20px 0;
+}
+
+/* ── Inactive plan notice ────────────────────────────────────────────────────── */
+
+.co-inactive {
+    padding:     10px 14px;
+    background:  rgba(255, 68, 68, 0.06);
+    border-left: 2px solid var(--danger);
+    border-radius: 0 6px 6px 0;
+    font-size:   13px;
+    color:       var(--danger);
+}
+
+/* ── Action area ─────────────────────────────────────────────────────────────── */
+
+.co-action {
+    display:        flex;
+    flex-direction: column;
+    gap:            10px;
+}
+
+.co-btn {
+    width:         100%;
+    padding:       14px;
+    background:    var(--accent);
+    color:         #06101A;
+    font-size:     14px;
+    font-weight:   500;
+    border:        none;
+    border-radius: 8px;
+    cursor:        pointer;
+    display:       flex;
+    align-items:   center;
+    justify-content: center;
+    gap:           8px;
+    transition:    opacity 150ms ease;
+}
+
+.co-btn:hover:not(:disabled) { opacity: 0.9; }
+.co-btn:disabled { cursor: not-allowed; opacity: 0.5; }
+
+.co-btn--pending { opacity: 0.7; }
+
+/* Spinner inside dark-text button (accent bg → dark spinner) */
+.co-spinner {
+    display:      inline-block;
+    width:        14px;
+    height:       14px;
+    border:       2px solid rgba(6, 16, 26, 0.3);
+    border-top-color: #06101A;
+    border-radius: 50%;
+    animation:    co-spin 0.7s linear infinite;
+    flex-shrink:  0;
+}
+
+.co-btn-skeleton {
+    height:        50px;
+    border-radius: 8px;
+    background:    var(--bg-surface-2);
+    animation:     co-skeleton-pulse 1.4s ease-in-out infinite;
+}
+
+.co-phase-note {
+    margin:     0;
+    font-size:  12px;
+    color:      var(--text-tertiary);
+    text-align: center;
+    font-family: ui-monospace, 'Cascadia Code', Consolas, monospace;
+}
+
+.co-switch-btn {
+    width:         100%;
+    padding:       14px;
+    background:    var(--warning);
+    color:         #06101A;
+    font-size:     14px;
+    font-weight:   500;
+    border:        none;
+    border-radius: 8px;
+    cursor:        pointer;
+}
+
+.co-already {
+    padding:     12px 16px;
+    background:  rgba(0, 255, 135, 0.06);
+    border-left: 2px solid var(--accent-dim);
+    border-radius: 0 6px 6px 0;
+    font-size:   13px;
+    color:       var(--accent-dim);
+}
+
+/* ── Pre-flight banners (CheckoutPreFlight) ──────────────────────────────────── */
+
+.co-banner {
+    padding:     10px 16px;
+    border-radius: 0 6px 6px 0;
+    font-size:   13px;
+    line-height: 1.5;
+}
+
+.co-banner--amber {
+    background:  rgba(245, 158, 11, 0.08);
+    border-left: 2px solid var(--warning);
+    color:       var(--warning);
+}
+
+.co-banner--violet {
+    background:  rgba(124, 58, 237, 0.08);
+    border-left: 2px solid #7C3AED;
+    color:       #9F67FF;
+}
+
+.co-banner--danger {
+    background:  rgba(255, 68, 68, 0.08);
+    border-left: 2px solid var(--danger);
+    color:       var(--danger);
+}
+
+.co-banner--dismiss {
+    display:     flex;
+    align-items: flex-start;
+    gap:         10px;
+    background:  var(--bg-surface-2);
+    border:      0.5px solid var(--bg-border);
+    border-radius: 6px;
+    color:       var(--text-secondary);
+    font-size:   13px;
+    padding:     10px 14px;
+}
+
+.co-banner-link {
+    color:           inherit;
+    font-weight:     500;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+}
+
+.co-banner-dismiss-btn {
+    background: none;
+    border:     none;
+    padding:    0;
+    cursor:     pointer;
+    color:      inherit;
+    font-size:  16px;
+    line-height: 1;
+    opacity:    0.5;
+    flex-shrink: 0;
+    transition: opacity 120ms ease;
+}
+
+.co-banner-dismiss-btn:hover { opacity: 1; }
+
+/* ── Success state (CheckoutSuccess) ─────────────────────────────────────────── */
+
+.co-success {
+    display:        flex;
+    flex-direction: column;
+    align-items:    center;
+    text-align:     center;
+    gap:            16px;
+    padding:        8px 0;
+}
+
+.co-check-circle {
+    stroke-dasharray:  157;
+    stroke-dashoffset: 157;
+    animation: co-circle-draw 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+.co-check-mark {
+    stroke-dasharray:  36;
+    stroke-dashoffset: 36;
+    animation: co-mark-draw 0.35s ease-out 0.4s forwards;
+}
+
+.co-success-title {
+    font-size:   18px;
+    font-weight: 500;
+    color:       var(--text-primary);
+    margin:      0 0 6px;
+}
+
+.co-success-date {
+    font-size:   12px;
+    font-family: ui-monospace, 'Cascadia Code', Consolas, monospace;
+    color:       var(--text-secondary);
+    margin:      0;
+}
+
+.co-success-nft {
+    font-size:   11px;
+    font-family: ui-monospace, 'Cascadia Code', Consolas, monospace;
+    color:       var(--accent);
+    padding:     8px 14px;
+    background:  var(--accent-subtle);
+    border-radius: 6px;
+    width:       100%;
+    box-sizing:  border-box;
+}
+
+.co-success-portal {
+    display:         block;
+    padding:         12px;
+    background:      var(--bg-surface-2);
+    border:          0.5px solid var(--bg-border);
+    border-radius:   8px;
+    color:           var(--text-primary);
+    font-size:       13px;
+    font-weight:     500;
+    text-decoration: none;
+    width:           100%;
+    box-sizing:      border-box;
+    transition:      background 120ms ease;
+}
+
+.co-success-portal:hover { background: var(--bg-border); }
+
+.co-success-return {
+    font-size:       13px;
+    color:           var(--text-secondary);
+    text-decoration: none;
+    transition:      color 120ms ease;
+}
+
+.co-success-return:hover { color: var(--text-primary); }
+
+/* ── Footer ──────────────────────────────────────────────────────────────────── */
+
+.co-footer {
+    text-align:     center;
+    display:        flex;
+    flex-direction: column;
+    gap:            6px;
+}
+
+.co-footer-text {
+    font-size: 11px;
+    color:     var(--text-tertiary);
+    margin:    0;
+}
+
+.co-footer-link {
+    font-size:       11px;
+    color:           var(--text-tertiary);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+    transition:      color 120ms ease;
+}
+
+.co-footer-link:hover { color: var(--text-secondary); }
+
+/* ── Loading state ───────────────────────────────────────────────────────────── */
+
+.co-loading { color: var(--text-tertiary); font-size: 13px; margin: 0; }
+
+/* ── Mobile ≤ 480px ──────────────────────────────────────────────────────────── */
+
+@media (max-width: 480px) {
+    .co-outer  { padding: 0; justify-content: flex-start; }
+    .co-inner  { padding-top: 0; gap: 0; }
+    .co-nav    { padding: 16px 16px 12px; }
+    .co-card   { border-radius: 0; border-left: none; border-right: none; padding: 20px 16px; }
+    .co-price  { font-size: 28px; }
+    .co-footer { padding: 16px; }
+}

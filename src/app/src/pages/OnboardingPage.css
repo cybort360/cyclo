@@ -1,0 +1,312 @@
+/*
+ * Onboarding wizard — /onboarding.
+ * Class prefix: onb-
+ *
+ * Full-screen centered layout: horizontal step indicator + step content card.
+ * OnboardingStepper and OnboardingSteps use these classes.
+ */
+
+/* ── Outer wrapper ───────────────────────────────────────────────────────────── */
+
+.onb-outer {
+    min-height:      100vh;
+    background:      var(--bg-base);
+    display:         flex;
+    flex-direction:  column;
+    align-items:     center;
+    justify-content: center;
+    padding:         32px 24px;
+}
+
+.onb-inner {
+    width:          100%;
+    max-width:      480px;
+    display:        flex;
+    flex-direction: column;
+    gap:            24px;
+}
+
+/* ── Logo ────────────────────────────────────────────────────────────────────── */
+
+.onb-logo {
+    display:         flex;
+    justify-content: center;
+    margin-bottom:   40px;
+}
+
+/* ── Heading ─────────────────────────────────────────────────────────────────── */
+
+.onb-heading {
+    display:        flex;
+    flex-direction: column;
+    gap:            4px;
+}
+
+.onb-title {
+    font-size:   22px;
+    font-weight: 500;
+    color:       var(--text-primary);
+    margin:      0;
+}
+
+.onb-sub {
+    font-size: 13px;
+    color:     var(--text-secondary);
+    margin:    0;
+}
+
+/* ── Resume banner ───────────────────────────────────────────────────────────── */
+
+.onb-resume {
+    display:     flex;
+    align-items: center;
+    gap:         10px;
+    padding:     10px 16px;
+    background:  var(--accent-subtle);
+    border-left: 2px solid var(--accent-dim);
+    border-radius: 0 8px 8px 0;
+    font-size:   13px;
+    color:       var(--text-secondary);
+}
+
+.onb-resume-btn {
+    background:      none;
+    border:          none;
+    padding:         0;
+    cursor:          pointer;
+    color:           var(--accent);
+    font-size:       13px;
+    font-weight:     500;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+}
+
+/* ── Horizontal step indicator ───────────────────────────────────────────────── */
+
+.onb-stepper {
+    display:         flex;
+    align-items:     center;
+    justify-content: center;
+    gap:             0;
+}
+
+.onb-step-circle {
+    width:            28px;
+    height:           28px;
+    border-radius:    50%;
+    display:          flex;
+    align-items:      center;
+    justify-content:  center;
+    font-size:        11px;
+    font-family:      ui-monospace, 'Cascadia Code', Consolas, monospace;
+    flex-shrink:      0;
+    transition:       background 300ms ease, border-color 300ms ease, color 300ms ease;
+    cursor:           default;
+    box-sizing:       border-box;
+}
+
+.onb-step-circle--completed {
+    background: var(--accent);
+    color:      #06101A;
+    font-weight: 700;
+    cursor:     pointer;
+}
+
+.onb-step-circle--active {
+    background:  transparent;
+    border:      2px solid var(--accent);
+    color:       var(--accent);
+    font-weight: 600;
+}
+
+.onb-step-circle--future {
+    background: transparent;
+    border:     0.5px solid var(--bg-border-bright);
+    color:      var(--text-tertiary);
+}
+
+.onb-step-circle--flashing {
+    background: var(--accent);
+    color:      #06101A;
+    font-weight: 700;
+}
+
+.onb-step-line {
+    flex:       1;
+    height:     0.5px;
+    background: var(--bg-border);
+    min-width:  20px;
+    max-width:  48px;
+}
+
+/* ── Step content card ───────────────────────────────────────────────────────── */
+
+.onb-card {
+    background:     var(--bg-surface);
+    border:         0.5px solid var(--bg-border);
+    border-radius:  14px;
+    padding:        36px;
+    display:        flex;
+    flex-direction: column;
+    gap:            20px;
+}
+
+.onb-card-title {
+    font-size:   17px;
+    font-weight: 500;
+    color:       var(--text-primary);
+    margin:      0 0 4px;
+}
+
+.onb-card-sub {
+    font-size:   13px;
+    color:       var(--text-secondary);
+    line-height: 1.5;
+    margin:      0;
+}
+
+/* ── Form elements ───────────────────────────────────────────────────────────── */
+
+.onb-field {
+    display:        flex;
+    flex-direction: column;
+    gap:            5px;
+}
+
+.onb-label {
+    font-size:   12px;
+    font-weight: 500;
+    color:       var(--text-secondary);
+}
+
+.onb-input,
+.onb-select {
+    width:         100%;
+    box-sizing:    border-box;
+    padding:       10px 12px;
+    background:    var(--bg-base);
+    border:        0.5px solid var(--bg-border-bright);
+    border-radius: 8px;
+    color:         var(--text-primary);
+    font-size:     14px;
+    outline:       none;
+    transition:    border-color 150ms ease, box-shadow 150ms ease;
+    appearance:    none;
+}
+
+.onb-input::placeholder { color: var(--text-tertiary); }
+
+.onb-input:focus,
+.onb-select:focus {
+    border-color: var(--accent);
+    box-shadow:   0 0 0 3px var(--accent-glow);
+}
+
+/* ── Buttons ─────────────────────────────────────────────────────────────────── */
+
+.onb-btn--primary {
+    width:         100%;
+    padding:       12px;
+    background:    var(--accent);
+    color:         #06101A;
+    font-size:     14px;
+    font-weight:   500;
+    border:        none;
+    border-radius: 8px;
+    cursor:        pointer;
+    transition:    opacity 150ms ease;
+}
+
+.onb-btn--primary:hover:not(:disabled) { opacity: 0.9; }
+.onb-btn--primary:disabled { cursor: not-allowed; opacity: 0.4; }
+
+.onb-btn--secondary {
+    padding:       10px 20px;
+    background:    transparent;
+    color:         var(--text-secondary);
+    font-size:     13px;
+    font-weight:   500;
+    border:        0.5px solid var(--bg-border-bright);
+    border-radius: 8px;
+    cursor:        pointer;
+    transition:    color 120ms ease;
+}
+
+.onb-btn--secondary:hover:not(:disabled) { color: var(--text-primary); }
+.onb-btn--secondary:disabled { cursor: not-allowed; opacity: 0.4; }
+
+/* ── Balance display ─────────────────────────────────────────────────────────── */
+
+.onb-balance {
+    font-size:   13px;
+    color:       var(--text-secondary);
+    margin:      0;
+}
+
+.onb-balance-val {
+    font-family: ui-monospace, 'Cascadia Code', Consolas, monospace;
+    color:       var(--text-primary);
+}
+
+/* ── Error text ──────────────────────────────────────────────────────────────── */
+
+.onb-error {
+    font-size: 13px;
+    color:     var(--danger);
+    margin:    0;
+}
+
+/* ── Share link area ─────────────────────────────────────────────────────────── */
+
+.onb-url-row {
+    display: flex;
+    gap:     6px;
+}
+
+.onb-url-input {
+    flex:          1;
+    padding:       10px 12px;
+    background:    var(--bg-base);
+    border:        0.5px solid var(--bg-border-bright);
+    border-radius: 8px;
+    color:         var(--text-primary);
+    font-size:     13px;
+    font-family:   ui-monospace, 'Cascadia Code', Consolas, monospace;
+    outline:       none;
+}
+
+.onb-open-link {
+    display:       flex;
+    align-items:   center;
+    justify-content: center;
+    padding:       0 12px;
+    border:        0.5px solid var(--bg-border-bright);
+    border-radius: 8px;
+    color:         var(--text-secondary);
+    text-decoration: none;
+    font-size:     16px;
+    transition:    color 120ms ease;
+}
+
+.onb-open-link:hover { color: var(--text-primary); }
+
+.onb-qr-wrap { display: flex; justify-content: center; }
+
+/* ── Navigation row ──────────────────────────────────────────────────────────── */
+
+.onb-nav-row {
+    display: flex;
+    gap:     8px;
+}
+
+/* ── Skip link ───────────────────────────────────────────────────────────────── */
+
+.onb-skip {
+    font-size:       13px;
+    color:           var(--text-tertiary);
+    text-decoration: none;
+    align-self:      flex-start;
+    transition:      color 120ms ease;
+}
+
+.onb-skip:hover { color: var(--text-secondary); }

@@ -1,0 +1,505 @@
+/*
+ * Subscriber portal — /portal.
+ * Class prefix: prt-
+ *
+ * Header, card grid (2-col), subscription cards, modals, toasts.
+ * PortalCard.tsx and PortalModals.tsx use these classes — they rely on
+ * this file being loaded by the parent PortalPage.tsx.
+ */
+
+/* ── Page shell ──────────────────────────────────────────────────────────────── */
+
+.prt-page {
+    min-height:  100vh;
+    background:  var(--bg-base);
+}
+
+/* ── Header ──────────────────────────────────────────────────────────────────── */
+
+.prt-header {
+    background:    var(--bg-surface);
+    border-bottom: 0.5px solid var(--bg-border);
+}
+
+.prt-header-inner {
+    max-width:       900px;
+    margin:          0 auto;
+    padding:         12px 24px;
+    display:         flex;
+    align-items:     center;
+    justify-content: space-between;
+}
+
+.prt-header-brand {
+    display:     flex;
+    align-items: center;
+    gap:         6px;
+}
+
+
+.prt-header-right {
+    display:     flex;
+    align-items: center;
+    gap:         12px;
+}
+
+.prt-header-addr {
+    font-size:   11px;
+    font-family: ui-monospace, 'Cascadia Code', Consolas, monospace;
+    color:       var(--text-tertiary);
+}
+
+.prt-dashboard-btn {
+    font-size:       12px;
+    color:           var(--text-secondary);
+    text-decoration: none;
+    padding:         6px 12px;
+    border:          0.5px solid var(--bg-border-bright);
+    border-radius:   6px;
+    transition:      color 120ms ease, border-color 120ms ease;
+}
+
+.prt-dashboard-btn:hover {
+    color:        var(--text-primary);
+    border-color: var(--text-tertiary);
+}
+
+/* ── Content area ────────────────────────────────────────────────────────────── */
+
+.prt-content {
+    max-width: 900px;
+    margin:    0 auto;
+    padding:   32px 24px 80px;
+}
+
+.prt-page-title {
+    font-size:   20px;
+    font-weight: 500;
+    color:       var(--text-primary);
+    margin:      0 0 4px;
+}
+
+.prt-page-sub {
+    font-size: 13px;
+    color:     var(--text-secondary);
+    margin:    0 0 20px;
+}
+
+/* ── Error banner ────────────────────────────────────────────────────────────── */
+
+.prt-error {
+    padding:       10px 16px;
+    background:    rgba(255, 68, 68, 0.08);
+    border-left:   2px solid var(--danger);
+    border-radius: 0 6px 6px 0;
+    font-size:     13px;
+    color:         var(--danger);
+    margin-bottom: 16px;
+}
+
+/* ── Card grid ───────────────────────────────────────────────────────────────── */
+
+.prt-grid {
+    display:               grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap:                   8px;
+}
+
+/* ── Subscription card ───────────────────────────────────────────────────────── */
+
+.prt-card {
+    background:     var(--bg-surface);
+    border:         0.5px solid var(--bg-border);
+    border-radius:  10px;
+    padding:        20px;
+    display:        flex;
+    flex-direction: column;
+    transition:     opacity 300ms ease, transform 300ms ease;
+}
+
+.prt-card--fading { opacity: 0; transform: scale(0.97); }
+
+.prt-card-top {
+    display:         flex;
+    justify-content: space-between;
+    align-items:     flex-start;
+    margin-bottom:   12px;
+}
+
+.prt-nft-badge {
+    font-size:     9px;
+    font-family:   ui-monospace, 'Cascadia Code', Consolas, monospace;
+    color:         var(--accent);
+    background:    var(--accent-subtle);
+    padding:       3px 8px;
+    border-radius: 10px;
+    flex-shrink:   0;
+}
+
+.prt-nft-skel {
+    height:        18px;
+    width:         80px;
+    border-radius: 10px;
+    background:    var(--bg-surface-2);
+    animation:     prt-pulse 1.4s ease-in-out infinite;
+}
+
+.prt-plan-name {
+    font-size:   14px;
+    font-weight: 500;
+    color:       var(--text-primary);
+    margin:      0 0 8px;
+}
+
+.prt-price-row {
+    display:     flex;
+    align-items: baseline;
+    gap:         4px;
+    margin-bottom: 4px;
+}
+
+.prt-price {
+    font-size:   20px;
+    font-family: ui-monospace, 'Cascadia Code', Consolas, monospace;
+    color:       var(--accent);
+    font-weight: 500;
+    margin:      0;
+    line-height: 1;
+}
+
+.prt-interval {
+    font-size: 13px;
+    color:     var(--text-secondary);
+}
+
+.prt-trial-badge {
+    display:     inline-flex;
+    font-size:   11px;
+    font-family: ui-monospace, 'Cascadia Code', Consolas, monospace;
+    color:       var(--accent-dim);
+    background:  var(--accent-subtle);
+    padding:     2px 8px;
+    border-radius: 10px;
+    align-self:  flex-start;
+    margin-bottom: 4px;
+}
+
+.prt-countdown {
+    font-size:   11px;
+    color:       var(--text-secondary);
+    margin:      0;
+}
+
+/* ── Action row ──────────────────────────────────────────────────────────────── */
+
+.prt-actions {
+    border-top:    0.5px solid var(--bg-border);
+    margin-top:    14px;
+    padding-top:   14px;
+    display:       flex;
+    justify-content: flex-end;
+    gap:           16px;
+}
+
+.prt-btn-switch {
+    background:  none;
+    border:      none;
+    font-size:   12px;
+    color:       var(--text-secondary);
+    cursor:      pointer;
+    padding:     0;
+    transition:  color 120ms ease;
+}
+
+.prt-btn-switch:hover         { color: var(--text-primary); }
+.prt-btn-switch:disabled      { cursor: wait; opacity: 0.4; }
+
+.prt-btn-cancel {
+    background:  none;
+    border:      none;
+    font-size:   12px;
+    color:       var(--danger);
+    cursor:      pointer;
+    padding:     0;
+    opacity:     0.75;
+    transition:  opacity 120ms ease;
+}
+
+.prt-btn-cancel:hover         { opacity: 1; }
+.prt-btn-cancel:disabled      { cursor: wait; opacity: 0.35; }
+
+/* ── Connect prompt ──────────────────────────────────────────────────────────── */
+
+.prt-connect {
+    display:        flex;
+    flex-direction: column;
+    align-items:    center;
+    justify-content: center;
+    padding:        80px 24px;
+    text-align:     center;
+    gap:            16px;
+}
+
+.prt-connect-icon {
+    width:            48px;
+    height:           48px;
+    border-radius:    12px;
+    background:       var(--bg-surface);
+    border:           0.5px solid var(--bg-border);
+    display:          flex;
+    align-items:      center;
+    justify-content:  center;
+    font-size:        22px;
+    color:            var(--text-tertiary);
+}
+
+.prt-connect-title {
+    font-size:   16px;
+    font-weight: 500;
+    color:       var(--text-primary);
+    margin:      0;
+}
+
+.prt-connect-sub {
+    font-size:  13px;
+    color:      var(--text-secondary);
+    margin:     0;
+    max-width:  260px;
+}
+
+/* ── Empty state ─────────────────────────────────────────────────────────────── */
+
+.prt-empty {
+    display:        flex;
+    flex-direction: column;
+    align-items:    center;
+    padding:        64px 24px;
+    text-align:     center;
+    gap:            12px;
+}
+
+.prt-empty-icon {
+    font-size: 28px;
+    color:     var(--text-tertiary);
+}
+
+.prt-empty-title {
+    font-size:   15px;
+    font-weight: 500;
+    color:       var(--text-primary);
+    margin:      0;
+}
+
+.prt-empty-sub {
+    font-size: 13px;
+    color:     var(--text-secondary);
+    margin:    0;
+    max-width: 260px;
+}
+
+.prt-empty-link {
+    font-size:       13px;
+    color:           var(--accent);
+    text-decoration: none;
+}
+
+.prt-empty-link:hover { text-decoration: underline; }
+
+/* ── Loading skeleton ────────────────────────────────────────────────────────── */
+
+@keyframes prt-pulse {
+    0%, 100% { opacity: 0.4; }
+    50%       { opacity: 0.8; }
+}
+
+.prt-skel-card {
+    background:     var(--bg-surface);
+    border:         0.5px solid var(--bg-border);
+    border-radius:  10px;
+    padding:        20px;
+    display:        flex;
+    flex-direction: column;
+    gap:            12px;
+}
+
+.prt-skel-bar {
+    height:        10px;
+    border-radius: 4px;
+    background:    var(--bg-surface-2);
+    animation:     prt-pulse 1.4s ease-in-out infinite;
+}
+
+/* ── Modal overlay ───────────────────────────────────────────────────────────── */
+
+.prt-overlay {
+    position:        fixed;
+    inset:           0;
+    background:      rgba(6, 16, 26, 0.85);
+    backdrop-filter: blur(8px);
+    display:         flex;
+    align-items:     center;
+    justify-content: center;
+    z-index:         50;
+    padding:         0 16px;
+}
+
+.prt-modal {
+    background:    var(--bg-surface);
+    border:        0.5px solid var(--bg-border);
+    border-radius: 16px;
+    padding:       24px;
+    width:         100%;
+    max-width:     360px;
+    display:       flex;
+    flex-direction: column;
+    gap:           16px;
+}
+
+.prt-modal-icon {
+    width:           36px;
+    height:          36px;
+    border-radius:   8px;
+    background:      var(--bg-surface-2);
+    display:         flex;
+    align-items:     center;
+    justify-content: center;
+    font-size:       18px;
+    margin-bottom:   4px;
+}
+
+.prt-modal-title {
+    font-size:   15px;
+    font-weight: 500;
+    color:       var(--text-primary);
+    margin:      0 0 4px;
+}
+
+.prt-modal-sub {
+    font-size:   13px;
+    color:       var(--text-secondary);
+    line-height: 1.5;
+    margin:      0;
+}
+
+.prt-modal-actions {
+    display: flex;
+    gap:     8px;
+}
+
+.prt-modal-btn--danger {
+    flex:          1;
+    padding:       10px;
+    background:    var(--danger);
+    color:         #fff;
+    font-size:     13px;
+    font-weight:   500;
+    border:        none;
+    border-radius: 8px;
+    cursor:        pointer;
+    opacity:       1;
+    transition:    opacity 120ms ease;
+}
+
+.prt-modal-btn--danger:disabled { cursor: wait; opacity: 0.5; }
+
+.prt-modal-btn--secondary {
+    flex:          1;
+    padding:       10px;
+    background:    transparent;
+    color:         var(--text-secondary);
+    font-size:     13px;
+    border:        0.5px solid var(--bg-border-bright);
+    border-radius: 8px;
+    cursor:        pointer;
+    transition:    color 120ms ease;
+}
+
+.prt-modal-btn--secondary:hover { color: var(--text-primary); }
+.prt-modal-btn--secondary:disabled { cursor: wait; opacity: 0.4; }
+
+/* Switch plan modal */
+.prt-plan-list {
+    display:    flex;
+    flex-direction: column;
+    gap:        6px;
+    max-height: 240px;
+    overflow-y: auto;
+}
+
+.prt-plan-item {
+    width:         100%;
+    text-align:    left;
+    padding:       10px 14px;
+    border:        0.5px solid var(--bg-border);
+    border-radius: 8px;
+    background:    transparent;
+    cursor:        pointer;
+    transition:    border-color 120ms ease, background 120ms ease;
+}
+
+.prt-plan-item:hover       { background: var(--bg-surface-2); border-color: var(--bg-border-bright); }
+.prt-plan-item--selected   { border-color: var(--accent); background: var(--accent-subtle); }
+.prt-plan-item:disabled    { cursor: wait; opacity: 0.5; }
+
+.prt-plan-item-id   { font-size: 11px; color: var(--text-tertiary); font-family: ui-monospace, monospace; margin: 0 0 3px; }
+.prt-plan-item-price { font-size: 14px; font-weight: 500; color: var(--text-primary); font-family: ui-monospace, monospace; margin: 0; }
+.prt-plan-item-interval { color: var(--text-secondary); font-weight: 400; }
+.prt-plan-item-trial { font-size: 10px; color: var(--accent-dim); background: var(--accent-subtle); padding: 2px 6px; border-radius: 8px; }
+
+.prt-modal-btn--primary {
+    flex:          1;
+    padding:       10px;
+    background:    var(--accent);
+    color:         #06101A;
+    font-size:     13px;
+    font-weight:   500;
+    border:        none;
+    border-radius: 8px;
+    cursor:        pointer;
+    transition:    opacity 120ms ease;
+}
+
+.prt-modal-btn--primary:disabled { cursor: not-allowed; opacity: 0.4; }
+
+.prt-modal-empty {
+    font-size:  13px;
+    color:      var(--text-tertiary);
+    text-align: center;
+    padding:    20px 0;
+    margin:     0;
+}
+
+.prt-skel-plan-item {
+    height:        54px;
+    border-radius: 8px;
+    background:    var(--bg-surface-2);
+    animation:     prt-pulse 1.4s ease-in-out infinite;
+}
+
+/* ── Toast stack ─────────────────────────────────────────────────────────────── */
+
+.prt-toast-stack {
+    position:       fixed;
+    bottom:         20px;
+    right:          20px;
+    z-index:        100;
+    display:        flex;
+    flex-direction: column;
+    gap:            8px;
+    pointer-events: none;
+}
+
+.prt-toast {
+    display:         flex;
+    align-items:     center;
+    gap:             8px;
+    padding:         10px 16px;
+    border-radius:   8px;
+    font-size:       13px;
+    font-weight:     500;
+    pointer-events:  auto;
+    max-width:       280px;
+}
+
+.prt-toast--success { background: var(--bg-surface-2); border: 0.5px solid var(--accent-dim); color: var(--accent); }
+.prt-toast--error   { background: rgba(255, 68, 68, 0.12); border: 0.5px solid var(--danger); color: var(--danger); }
