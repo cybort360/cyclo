@@ -27,6 +27,17 @@
     align-items:           center;
 }
 
+/*
+ * Grid items default to min-width: auto, which resolves to the minimum
+ * content size. The right column contains a <pre white-space:pre> whose
+ * minimum content size is the length of the longest code line (~360px).
+ * Without min-width: 0 the column can't shrink below that, pushing the
+ * code card wider than the viewport on small screens and misaligning it
+ * relative to the text content above.
+ */
+.dv-left,
+.dv-right { min-width: 0; }
+
 /* ── Left column ──────────────────────────────────────────────────────────────── */
 
 /* Eyebrow pill — consistent with all other sections */
@@ -69,6 +80,9 @@
     border-radius: 16px;
     padding:       28px;
     box-shadow:    var(--l-shadow-lg);
+    /* Clip the <pre> scroll container to the card boundary so it never
+       expands the card's visual box beyond the grid item.               */
+    overflow:      hidden;
 }
 
 /* Three macOS-style traffic light dots */

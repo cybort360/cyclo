@@ -216,6 +216,12 @@
     .hs-inner            { padding: 0 20px; padding-top: 120px; }
     .hs-h1               { font-size: 42px; }
     .hs-sub              { font-size: 16px; }
+    /*
+     * Remove the full-viewport height requirement when the right-column
+     * mockup is hidden — without this, the hero is 100vh tall but the
+     * copy only fills ~40% of it, leaving a large empty gap on mobile.
+     */
+    .hs-section          { min-height: auto; padding-bottom: 56px; }
 }
 
 @media (max-width: 600px) {
