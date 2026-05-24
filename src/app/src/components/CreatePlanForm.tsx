@@ -1,27 +1,36 @@
 /**
  * Form for creating a new subscription plan.
+ *
  * Price is entered in whole USDC (e.g. "9.99") and converted to 6-decimal units.
- * Interval is chosen from a three-option segmented toggle (Weekly / Monthly / Yearly)
- * and stored internally as seconds; the user never sees the raw second value.
+ * Interval is chosen from a three-pill segmented toggle (Weekly / Monthly / Yearly).
  * Trial duration is entered in days and converted to seconds.
+ *
+ * The optional AI strip sends the natural-language input to /api/ai/parse-plan
+ * and pre-fills all fields with the parsed values.
+ *
+ * Class prefix: cpf-
  */
-import { useState, useEffect, type FormEvent } from 'react';
-import { toUsdcUnits, INTERVAL_WEEKLY, INTERVAL_MONTHLY, INTERVAL_YEARLY } from '../utils/formatting';
+import { useState, useEffect, type FormEvent } from 'react'
+import { toUsdcUnits, INTERVAL_WEEKLY, INTERVAL_MONTHLY, INTERVAL_YEARLY } from '../utils/formatting'
+import './CreatePlanForm.css'
+
+// ── Types ─────────────────────────────────────────────────────────────────────
 
 export interface CreatePlanInitialValues {
-    price:        string;
+    price:        string
     /** Days value from the AI parser (7 / 30 / 365). Mapped to the nearest preset. */
-    intervalDays: string;
-    trialDays:    string;
+    intervalDays: string
+    trialDays:    string
 }
 
 interface CreatePlanFormProps {
-    isPending:     boolean;
-    onCreate:      (price: bigint, interval: bigint, trialDuration: bigint) => Promise<void>;
-    initialValues?: CreatePlanInitialValues;
+    isPending:      boolean
+    onCreate:       (price: bigint, interval: bigint, trialDuration: bigint) => Promise<void>
+    initialValues?: CreatePlanInitialValues
 }
 
-/** The three interval presets. Order matches the toggle left→right layout. */
+// ── Constants ─────────────────────────────────────────────────────────────────
+
 const INTERVAL_OPTIONS = [
     { label: 'Weekly',  seconds: String(INTERVAL_WEEKLY)  },
     { label: 'Monthly', seconds: String(INTERVAL_MONTHLY) },
@@ -30,92 +39,129 @@ const INTERVAL_OPTIONS = [
 
 type IntervalSeconds = (typeof INTERVAL_OPTIONS)[number]['seconds']
 
-/**
- * Maps the AI parser's intervalDays (7 / 30 / 365) to the corresponding
- * preset seconds string. Defaults to Monthly for any unrecognised value.
- */
 const DAYS_TO_SECONDS: Record<string, IntervalSeconds> = {
     '7':   String(INTERVAL_WEEKLY)  as IntervalSeconds,
     '30':  String(INTERVAL_MONTHLY) as IntervalSeconds,
     '365': String(INTERVAL_YEARLY)  as IntervalSeconds,
 }
 
-const inputStyle: React.CSSProperties = {
-    padding:      '8px 12px',
-    border:       '1px solid #e5e4e7',
-    borderRadius: '6px',
-    fontSize:     '15px',
-    width:        '100%',
-    boxSizing:    'border-box',
-};
+// ── Component ─────────────────────────────────────────────────────────────────
 
 export function CreatePlanForm({ isPending, onCreate, initialValues }: CreatePlanFormProps) {
-    const [price,    setPrice]    = useState('');
-    const [interval, setInterval] = useState<IntervalSeconds>(String(INTERVAL_MONTHLY) as IntervalSeconds);
-    const [trial,    setTrial]    = useState('');
-    const [error,    setError]    = useState('');
+    // STUB: planName is display-only — SubscriptionManager contract does not
+    // persist plan names on-chain. Stored locally only until contract supports it.
+    const [planName, setPlanName] = useState('')
+    const [price,    setPrice]    = useState('')
+    const [interval, setInterval] = useState<IntervalSeconds>(String(INTERVAL_MONTHLY) as IntervalSeconds)
+    const [trial,    setTrial]    = useState('')
+    const [error,    setError]    = useState('')
+
+    // AI strip state
+    const [nlInput,  setNlInput]  = useState('')
+    const [parsing,  setParsing]  = useState(false)
 
     // Sync AI-suggested values into form state when the parent supplies them.
     useEffect(() => {
-        if (!initialValues) return;
-        setPrice(initialValues.price);
-        setInterval(DAYS_TO_SECONDS[initialValues.intervalDays] ?? (String(INTERVAL_MONTHLY) as IntervalSeconds));
-        setTrial(initialValues.trialDays);
-    }, [initialValues]);
+        if (!initialValues) return
+        setPrice(initialValues.price)
+        setInterval(DAYS_TO_SECONDS[initialValues.intervalDays] ?? (String(INTERVAL_MONTHLY) as IntervalSeconds))
+        setTrial(initialValues.trialDays)
+    }, [initialValues])
 
-    async function handleSubmit(e: FormEvent) {
-        e.preventDefault();
-        setError('');
-
-        const priceRaw  = toUsdcUnits(price);
-        // interval is already in seconds — no day conversion needed
-        const intervalSecs = BigInt(interval);
-        const trialSecs    = trial.trim() === '' ? 0n : BigInt(Math.round(parseFloat(trial) * 86400));
-
-        if (priceRaw === 0n) { setError('Price must be greater than zero.'); return; }
-
+    /** Sends the NL input to the AI endpoint and pre-fills form fields. */
+    async function parseNaturalLanguage(): Promise<void> {
+        if (!nlInput.trim()) return
+        setParsing(true)
         try {
-            await onCreate(priceRaw, intervalSecs, trialSecs);
-            setPrice('');
-            setInterval(String(INTERVAL_MONTHLY) as IntervalSeconds);
-            setTrial('');
+            const res  = await fetch('/api/ai/parse-plan', {
+                method:  'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body:    JSON.stringify({ input: nlInput }),
+            })
+            const data = await res.json() as { price: number; intervalDays: number; trialDays: number }
+            setPrice(String(data.price))
+            setInterval(DAYS_TO_SECONDS[String(data.intervalDays)] ?? (String(INTERVAL_MONTHLY) as IntervalSeconds))
+            setTrial(String(data.trialDays))
+            setNlInput('')
+        } finally {
+            setParsing(false)
+        }
+    }
+
+    async function handleSubmit(e: FormEvent): Promise<void> {
+        e.preventDefault()
+        setError('')
+        const priceRaw    = toUsdcUnits(price)
+        const intervalSec = BigInt(interval)
+        const trialSec    = trial.trim() === '' ? 0n : BigInt(Math.round(parseFloat(trial) * 86_400))
+        if (priceRaw === 0n) { setError('Price must be greater than zero.'); return }
+        try {
+            await onCreate(priceRaw, intervalSec, trialSec)
+            setPlanName(''); setPrice(''); setInterval(String(INTERVAL_MONTHLY) as IntervalSeconds); setTrial('')
         } catch (err) {
-            setError(err instanceof Error ? err.message : 'Transaction failed.');
+            setError(err instanceof Error ? err.message : 'Transaction failed.')
         }
     }
 
     return (
-        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px', maxWidth: '400px' }}>
-            <label style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                <span style={{ fontWeight: 600 }}>Price (USDC)</span>
+        <form className="cpf-form" onSubmit={handleSubmit}>
+
+            {/* AI strip */}
+            <div className="cpf-ai-strip">
+                <span className="cpf-ai-label">✦ AI</span>
                 <input
-                    type="number" step="0.000001" min="0" placeholder="e.g. 9.99"
-                    value={price} onChange={e => setPrice(e.target.value)}
-                    style={inputStyle} required
+                    className="cpf-ai-input"
+                    value={nlInput}
+                    onChange={e => setNlInput(e.target.value)}
+                    onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); void parseNaturalLanguage() } }}
+                    placeholder='e.g. "monthly plan $9.99 with 7-day trial"'
+                />
+                <button
+                    type="button"
+                    className="cpf-ai-btn"
+                    onClick={() => void parseNaturalLanguage()}
+                    disabled={parsing || !nlInput.trim()}
+                >
+                    {parsing ? '…' : 'Fill'}
+                </button>
+            </div>
+
+            {/* Plan name — display only */}
+            <label className="cpf-field">
+                <span className="cpf-label">Plan name <span className="cpf-label-opt">— optional</span></span>
+                <input
+                    className="cpf-input"
+                    type="text"
+                    placeholder="e.g. Pro monthly"
+                    value={planName}
+                    onChange={e => setPlanName(e.target.value)}
                 />
             </label>
 
-            {/* Billing interval — segmented toggle */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                <span style={{ fontWeight: 600 }}>Billing interval</span>
-                <div style={{ display: 'flex', border: '1px solid #e5e4e7', borderRadius: '6px', overflow: 'hidden' }}>
-                    {INTERVAL_OPTIONS.map((opt, idx) => (
+            {/* Price */}
+            <label className="cpf-field">
+                <span className="cpf-label">Price (USDC)</span>
+                <input
+                    className="cpf-input"
+                    type="number" step="0.000001" min="0"
+                    placeholder="e.g. 9.99"
+                    value={price}
+                    onChange={e => setPrice(e.target.value)}
+                    required
+                />
+            </label>
+
+            {/* Billing interval */}
+            <div className="cpf-field">
+                <span className="cpf-label">Billing interval</span>
+                <div className="cpf-toggle" role="group" aria-label="Billing interval">
+                    {INTERVAL_OPTIONS.map(opt => (
                         <button
                             key={opt.seconds}
                             type="button"
+                            className={`cpf-toggle-btn${interval === opt.seconds ? ' cpf-toggle-btn--active' : ''}`}
                             onClick={() => setInterval(opt.seconds)}
-                            style={{
-                                flex:        1,
-                                padding:     '8px 0',
-                                border:      'none',
-                                borderRight: idx < INTERVAL_OPTIONS.length - 1 ? '1px solid #e5e4e7' : 'none',
-                                background:  interval === opt.seconds ? '#6366f1' : '#fff',
-                                color:       interval === opt.seconds ? '#fff' : '#374151',
-                                fontSize:    '14px',
-                                fontWeight:  interval === opt.seconds ? 600 : 400,
-                                cursor:      'pointer',
-                                transition:  'background 0.15s, color 0.15s',
-                            }}
+                            aria-pressed={interval === opt.seconds}
                         >
                             {opt.label}
                         </button>
@@ -123,26 +169,29 @@ export function CreatePlanForm({ isPending, onCreate, initialValues }: CreatePla
                 </div>
             </div>
 
-            <label style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                <span style={{ fontWeight: 600 }}>Free trial (days) <span style={{ color: '#6b6375', fontWeight: 400 }}>— optional</span></span>
+            {/* Free trial */}
+            <label className="cpf-field">
+                <span className="cpf-label">Free trial (days) <span className="cpf-label-opt">— optional</span></span>
                 <input
-                    type="number" step="1" min="0" placeholder="e.g. 7  (leave blank for no trial)"
-                    value={trial} onChange={e => setTrial(e.target.value)}
-                    style={inputStyle}
+                    className="cpf-input"
+                    type="number" step="1" min="0"
+                    placeholder="e.g. 7  (leave blank for no trial)"
+                    value={trial}
+                    onChange={e => setTrial(e.target.value)}
                 />
             </label>
+
             {trial !== '' && Number(trial) > 0 && (
-                <p style={{ margin: 0, fontSize: '13px', color: '#6b6375' }}>
+                <p className="cpf-trial-hint">
                     Subscribers get {trial} day{Number(trial) !== 1 ? 's' : ''} free before the first charge.
                 </p>
             )}
-            {error && <p style={{ color: '#dc2626', margin: 0, fontSize: '14px' }}>{error}</p>}
-            <button
-                type="submit" disabled={isPending}
-                style={{ padding: '10px 20px', background: '#6366f1', color: '#fff', border: 'none', borderRadius: '6px', cursor: isPending ? 'wait' : 'pointer', fontSize: '15px' }}
-            >
-                {isPending ? 'Submitting…' : 'Create Plan'}
+
+            {error && <p className="cpf-error">{error}</p>}
+
+            <button type="submit" className="cpf-submit" disabled={isPending}>
+                {isPending ? 'Submitting…' : 'Create plan'}
             </button>
         </form>
-    );
+    )
 }
