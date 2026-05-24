@@ -1,74 +1,72 @@
-import { useState, useEffect } from 'react'
+/**
+ * Overview page — center-column content for /dashboard.
+ *
+ * Structure:
+ *   GreetingBar       — time-aware greeting + merchant name / current date-time
+ *   WelcomeChecklist  — shown until merchant has both a plan and a subscriber
+ *   (or, after graduation:)
+ *   AtRiskCard        — warning banner when past-due subscriptions exist
+ *   RevenueCard       — Recharts area chart with period selector
+ *   OverviewStatCards — four themed stat cards (Revenue / Subscribers / Charges / Fees)
+ *   RecentSettlementsTable — live socket-powered table
+ *
+ * Class prefix: ov-
+ */
+import { useState, useEffect, useMemo } from 'react'
 import { useAccount } from 'wagmi'
 import { Link } from 'wouter'
 import { useAnalytics } from '../hooks/useAnalytics'
+import { useSubscriberList } from '../hooks/useSubscriberList'
 import { useSocket } from '../hooks/useSocket'
 import { useAtRiskRevenue } from '../hooks/useAtRiskRevenue'
-import { InsightsCard } from '../components/InsightsCard'
+import { useMerchantProfile } from '../context/MerchantProfileContext'
+import { useRightPanel } from '../context/RightPanelContext'
 import { WelcomeChecklist } from '../components/WelcomeChecklist'
+import { LogoIcon } from '../components/Logo'
+import { RevenueCard } from '../components/RevenueCard'
+import { RecentSettlementsTable } from '../components/RecentSettlementsTable'
+import { OverviewPanel } from '../components/OverviewPanel'
+import { OverviewStatCards } from '../components/OverviewStatCards'
+import './OverviewPage.css'
 
-const fmt = (n: number) =>
-  n.toLocaleString('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 2 })
+// ── Constants ─────────────────────────────────────────────────────────────────
 
 const ONBOARDING_DISMISSED_KEY = 'cyclo_onboarding_dismissed'
 
-interface OnboardingBannerProps {
-    onDismiss: () => void
+// ── Helpers ───────────────────────────────────────────────────────────────────
+
+function greeting(hour: number): string {
+    if (hour < 12) return 'Good morning'
+    if (hour < 17) return 'Good afternoon'
+    return 'Good evening'
 }
 
-function OnboardingBanner({ onDismiss }: OnboardingBannerProps): JSX.Element {
-    return (
-        <div className="flex items-center gap-3 px-5 py-3 bg-indigo-50 border border-indigo-200 rounded-xl text-sm">
-            <span className="text-indigo-500">★</span>
-            <p className="flex-1 text-gray-700">
-                Welcome to Cyclo. Set up your first plan in 90 seconds.
-            </p>
-            <Link href="/onboarding">
-                <a className="text-indigo-600 font-medium hover:underline whitespace-nowrap">
-                    Get started →
-                </a>
-            </Link>
-            <button
-                onClick={onDismiss}
-                className="text-gray-400 hover:text-gray-600 text-base leading-none"
-                aria-label="Dismiss banner"
-            >
-                ×
-            </button>
-        </div>
-    )
+function fmtUsdc(n: number): string {
+    return n.toLocaleString('en-US', {
+        style: 'currency', currency: 'USD', minimumFractionDigits: 2,
+    })
 }
 
-// ── At-risk revenue card ──────────────────────────────────────────────────────
+// ── Sub-components ────────────────────────────────────────────────────────────
 
 interface AtRiskCardProps {
     count:       number
     totalAmount: number
 }
 
-function AtRiskCard({ count, totalAmount }: AtRiskCardProps): JSX.Element {
+function AtRiskCard({ count, totalAmount }: AtRiskCardProps) {
     const label = count === 1 ? 'subscription is' : 'subscriptions are'
     return (
-        <div className="flex items-start justify-between gap-6 px-5 py-4
-                        bg-amber-50 border border-amber-200 rounded-xl">
-            <div className="space-y-1 min-w-0">
-                <p className="text-[11px] font-semibold text-amber-700 uppercase tracking-wide">
-                    At-risk revenue
-                </p>
-                <p className="text-2xl font-bold text-amber-900 tabular-nums">
-                    {fmt(totalAmount)}
-                </p>
-                <p className="text-sm text-amber-700/80 leading-snug">
-                    {count} {label} in the grace period. The keeper will retry up to
-                    3&nbsp;times before marking {count === 1 ? 'it' : 'them'} as failed.
+        <div className="ov-atrisk">
+            <div className="ov-atrisk-body">
+                <p className="ov-atrisk-label">At-risk revenue</p>
+                <p className="ov-atrisk-value">{fmtUsdc(totalAmount)}</p>
+                <p className="ov-atrisk-sub">
+                    {count} {label} in the grace period. The keeper retries up
+                    to 3 times before marking {count === 1 ? 'it' : 'them'} as failed.
                 </p>
             </div>
-            <Link href="/past-due">
-                <a className="shrink-0 self-center text-sm font-medium text-amber-700
-                              hover:text-amber-900 whitespace-nowrap transition-colors">
-                    View past due →
-                </a>
-            </Link>
+            <Link href="/past-due" className="ov-atrisk-link">View past due →</Link>
         </div>
     )
 }
@@ -76,219 +74,150 @@ function AtRiskCard({ count, totalAmount }: AtRiskCardProps): JSX.Element {
 // ── Page ──────────────────────────────────────────────────────────────────────
 
 export function OverviewPage() {
-  const { isConnected, address } = useAccount()
-  const { data, isLoading } = useAnalytics()
-  const { onPaymentCharged } = useSocket()
-  const { count: pastDueCount, totalAmount: pastDueTotalAmount } = useAtRiskRevenue()
+    const { isConnected, address } = useAccount()
+    const { data }                  = useAnalytics()
+    const { data: subscribers }     = useSubscriberList()
+    const { onPaymentCharged }      = useSocket()
+    const { profile }               = useMerchantProfile()
+    const { count: pastDueCount, totalAmount: pastDueTotalAmount } = useAtRiskRevenue()
 
-  // Live counters — incremented by socket events, never reset mid-session.
-  // These are additive on top of the initial data fetch.
-  const [liveChargesCount,  setLiveChargesCount]  = useState(0)
-  const [liveUsdcProcessed, setLiveUsdcProcessed] = useState(0)
+    // Inject right-panel content for the duration of this page's lifetime.
+    // OverviewPanel is self-contained (fetches its own data via shared React Query cache),
+    // so [] deps is correct — the panel manages its own updates.
+    const panel = useMemo(() => <OverviewPanel />, [])
+    useRightPanel(panel, [])
 
-  const [dismissed,  setDismissed]  = useState(false)
-  // Tracks whether this merchant has ever had both a plan and a subscriber.
-  // Once true (persisted to localStorage), the welcome state is never shown again.
-  const [graduated, setGraduated] = useState(false)
+    const [liveUsdcProcessed, setLiveUsdcProcessed] = useState(0)
+    const [dismissed,  setDismissed]  = useState(false)
+    const [graduated,  setGraduated]  = useState(false)
 
-  // Restore per-address flags from localStorage when the wallet resolves or changes.
-  // Reset first so stale state from a previous address never bleeds through.
-  useEffect(() => { setGraduated(false); setDismissed(false) }, [address])
-  useEffect(() => {
-    if (!address) return
-    const addr = address.toLowerCase()
-    if (localStorage.getItem(ONBOARDING_DISMISSED_KEY) === addr) setDismissed(true)
-    if (localStorage.getItem(`cyclo_grad_${addr}`) === '1')      setGraduated(true)
-  }, [address])
+    // Reset per-address flags when wallet changes to prevent bleed-through
+    useEffect(() => { setGraduated(false); setDismissed(false) }, [address])
+    useEffect(() => {
+        if (!address) return
+        const addr = address.toLowerCase()
+        if (localStorage.getItem(ONBOARDING_DISMISSED_KEY) === addr) setDismissed(true)
+        if (localStorage.getItem(`cyclo_grad_${addr}`) === '1')      setGraduated(true)
+    }, [address])
 
-  // Graduate permanently once the merchant has both a plan and a subscriber.
-  useEffect(() => {
-    if (!address || !data || graduated) return
-    if (data.plans.length > 0 && data.activeSubscribers > 0) {
-      localStorage.setItem(`cyclo_grad_${address.toLowerCase()}`, '1')
-      setGraduated(true)
+    // Graduate permanently once the merchant has both a plan and a subscriber
+    useEffect(() => {
+        if (!address || !data || graduated) return
+        if (data.plans.length > 0 && data.activeSubscribers > 0) {
+            localStorage.setItem(`cyclo_grad_${address.toLowerCase()}`, '1')
+            setGraduated(true)
+        }
+    }, [address, data, graduated])
+
+    function handleDismiss(): void {
+        if (!address) return
+        localStorage.setItem(ONBOARDING_DISMISSED_KEY, address.toLowerCase())
+        setDismissed(true)
     }
-  }, [address, data, graduated])
 
-  function handleDismiss(): void {
-    if (!address) return
-    localStorage.setItem(ONBOARDING_DISMISSED_KEY, address.toLowerCase())
-    setDismissed(true)
-  }
+    useEffect(() => {
+        return onPaymentCharged(payload => {
+            setLiveUsdcProcessed(u => u + parseFloat(payload.amount))
+        })
+    }, [onPaymentCharged])
 
-  useEffect(() => {
-    return onPaymentCharged((payload) => {
-      setLiveChargesCount(c  => c  + 1)
-      setLiveUsdcProcessed(u => u + parseFloat(payload.amount))
-    })
-  }, [onPaymentCharged])
+    // Greeting bar values
+    const now        = new Date()
+    const greetText  = greeting(now.getHours())
+    const merchantName = profile?.business_name ?? (address ? address.slice(0, 6) : 'there')
+    const dateText   = now.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })
+    const timeText   = now.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })
 
-  if (!isConnected) {
+    // Stats derived from analytics data
+    // Note: liveUsdcProcessed is passed separately as liveRevenueDelta — OverviewStatCards
+    // owns the addition so it can pulse the Revenue and Fees cards independently.
+    const activeSubscribers = data?.activeSubscribers ?? 0
+
+    // Welcome state: shown until the merchant has both a plan and a subscriber
+    const hasPlans       = (data?.plans.length      ?? 0) > 0
+    const hasSubscribers = (data?.activeSubscribers  ?? 0) > 0
+    const dataReady      = data !== undefined
+    const showWelcome    = !!address && dataReady && !graduated && !(hasPlans && hasSubscribers)
+
+    if (!isConnected) {
+        return (
+            <div className="ov-gate">
+                <div className="ov-gate-icon">
+                    <LogoIcon size={48} />
+                </div>
+                <h1 className="ov-gate-heading">Welcome to Cyclo</h1>
+                <p className="ov-gate-sub">
+                    On-chain recurring USDC billing on Arc testnet.
+                    Connect your wallet to get started.
+                </p>
+                <Link href="/connect" className="ov-gate-btn">Connect wallet</Link>
+            </div>
+        )
+    }
+
     return (
-      <div className="max-w-md mx-auto mt-20 text-center">
-        <div className="w-12 h-12 bg-indigo-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
-          <span className="text-2xl">⬡</span>
+        <div className="ov-page">
+
+            {/* ── Greeting bar ──────────────────────────────────────────── */}
+            <div className="ov-greeting-bar">
+                <p className="ov-greeting">{greetText}, {merchantName}</p>
+                <p className="ov-datetime">{dateText} · {timeText}</p>
+            </div>
+
+            {showWelcome ? (
+                <WelcomeChecklist
+                    address={address!}
+                    hasPlans={hasPlans}
+                    hasSubscribers={hasSubscribers}
+                    firstActivePlanId={data?.plans[0]?.planId}
+                />
+            ) : (
+                <>
+                    {/* Onboarding entry point — suppressed while welcome checklist is active */}
+                    {dataReady && !dismissed && !graduated && !hasPlans && (
+                        <div className="ov-onboarding-banner">
+                            <span className="ov-onboarding-icon">★</span>
+                            <p className="ov-onboarding-text">
+                                Welcome to Cyclo. Set up your first plan in 90 seconds.
+                            </p>
+                            <Link href="/onboarding" className="ov-onboarding-cta">
+                                Get started →
+                            </Link>
+                            <button
+                                onClick={handleDismiss}
+                                className="ov-onboarding-dismiss"
+                                aria-label="Dismiss banner"
+                            >
+                                ×
+                            </button>
+                        </div>
+                    )}
+
+                    {pastDueCount > 0 && (
+                        <AtRiskCard count={pastDueCount} totalAmount={pastDueTotalAmount} />
+                    )}
+
+                    {/* ── Revenue chart ──────────────────────────────────── */}
+                    <RevenueCard
+                        dailyRevenue={data?.dailyRevenue ?? []}
+                        liveRevenue={liveUsdcProcessed}
+                    />
+
+                    {/* ── Stat cards ─────────────────────────────────────── */}
+                    <OverviewStatCards
+                        totalRevenue={data?.totalRevenue ?? 0}
+                        activeSubscribers={activeSubscribers}
+                        totalCharges={data?.totalCharges ?? 0}
+                        liveRevenueDelta={liveUsdcProcessed}
+                    />
+
+                    {/* ── Live settlements table ─────────────────────────── */}
+                    <RecentSettlementsTable
+                        subscribers={subscribers ?? []}
+                        plans={data?.plans ?? []}
+                    />
+                </>
+            )}
         </div>
-        <h1 className="text-xl font-semibold text-gray-900 mb-2">Welcome to Cyclo</h1>
-        <p className="text-gray-500 text-sm mb-6">
-          On-chain recurring USDC billing on Arc testnet. Connect your wallet to get started.
-        </p>
-        <Link href="/connect">
-          <a className="bg-indigo-600 text-white px-5 py-2.5 rounded-xl text-sm font-medium hover:bg-indigo-700">
-            Connect wallet
-          </a>
-        </Link>
-      </div>
     )
-  }
-
-  // Welcome state: shown until the merchant has ever had both a plan and a subscriber.
-  const hasPlans          = (data?.plans.length      ?? 0) > 0
-  const hasSubscribers    = (data?.activeSubscribers  ?? 0) > 0
-  const showWelcome       = !!address && !isLoading && data !== undefined
-                            && !graduated && !(hasPlans && hasSubscribers)
-  const firstActivePlanId = data?.plans[0]?.planId
-
-  // Patch Total Revenue with the live socket delta.
-  // After the 30-second React Query refetch the fetched total naturally catches up,
-  // at which point liveUsdcProcessed can be thought of as "in-flight" additional
-  // charges that arrived between fetches.
-  const displayedTotalRevenue = (data?.totalRevenue ?? 0) + liveUsdcProcessed
-
-  const kpis = [
-    {
-      label: 'Monthly Recurring Revenue',
-      value: isLoading ? '—' : fmt(data?.mrr ?? 0),
-      sub:   'from active subscriptions',
-    },
-    {
-      label: 'Total Revenue',
-      value: isLoading ? '—' : fmt(displayedTotalRevenue),
-      sub:   'all time',
-    },
-    {
-      label: 'Active Subscribers',
-      value: isLoading ? '—' : String(data?.activeSubscribers ?? 0),
-      sub:   'across all plans',
-    },
-    {
-      label: 'Charges Today',
-      // Counter starts from what arrives live after page load.
-      // The initial historical count is included in Total Revenue above.
-      value: String(liveChargesCount),
-      sub:   'received since page load',
-      live:  true,
-    },
-  ]
-
-  return (
-    <div className="max-w-4xl space-y-8">
-
-      {/* Page header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">Overview</h1>
-          <p className="text-sm text-gray-500 mt-0.5">
-            {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
-          </p>
-        </div>
-        <Link href="/plans">
-          <a className="bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-indigo-700">
-            + Create plan
-          </a>
-        </Link>
-      </div>
-
-      {/* Onboarding entry banner — suppressed during welcome state (checklist covers it) */}
-      {!showWelcome && isConnected && !!address && !isLoading && data !== undefined && data.plans.length === 0 && !dismissed && (
-        <OnboardingBanner onDismiss={handleDismiss} />
-      )}
-
-      {showWelcome ? (
-        <WelcomeChecklist
-          address={address!}
-          hasPlans={hasPlans}
-          hasSubscribers={hasSubscribers}
-          firstActivePlanId={firstActivePlanId}
-        />
-      ) : (
-        <>
-          {/* At-risk revenue — only shown when past-due subscriptions exist */}
-          {pastDueCount > 0 && (
-            <AtRiskCard count={pastDueCount} totalAmount={pastDueTotalAmount} />
-          )}
-
-          {/* KPIs */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {kpis.map(({ label, value, sub, live }) => (
-              <div key={label}
-                className={`bg-white border rounded-2xl p-5 ${live ? 'border-indigo-200 bg-indigo-50/40' : ''}`}
-              >
-                <p className="text-xs font-medium text-gray-400 uppercase tracking-wide">{label}</p>
-                <p className={`text-3xl font-bold mt-2 ${live ? 'text-indigo-600' : 'text-gray-900'}`}>{value}</p>
-                <p className="text-xs text-gray-400 mt-1">{sub}</p>
-              </div>
-            ))}
-          </div>
-
-          <InsightsCard />
-
-          {/* Quick actions */}
-          <div>
-            <h2 className="text-sm font-medium text-gray-500 uppercase tracking-wide mb-3">Quick actions</h2>
-            <div className="grid grid-cols-3 gap-3">
-              {[
-                { href: '/plans',       icon: '☰', label: 'Create a plan',   desc: 'Set price, interval, and trial period' },
-                { href: '/subscribers', icon: '◎', label: 'Add a subscriber', desc: 'Subscribe a wallet to an existing plan' },
-                { href: '/webhooks',    icon: '⊹', label: 'Add a webhook',    desc: 'Get notified when payments are charged' },
-              ].map(({ href, icon, label, desc }) => (
-                <Link key={href} href={href}>
-                  <a className="bg-white border rounded-xl p-4 hover:border-indigo-300 hover:shadow-sm transition-all block">
-                    <span className="text-xl">{icon}</span>
-                    <p className="font-medium text-gray-900 text-sm mt-2">{label}</p>
-                    <p className="text-xs text-gray-400 mt-0.5">{desc}</p>
-                  </a>
-                </Link>
-              ))}
-            </div>
-          </div>
-
-          {/* Plan breakdown */}
-          {(data?.plans.length ?? 0) > 0 && (
-            <div>
-              <div className="flex items-center justify-between mb-3">
-                <h2 className="text-sm font-medium text-gray-500 uppercase tracking-wide">Plans</h2>
-                <Link href="/plans">
-                  <a className="text-xs text-indigo-600 hover:underline">View all →</a>
-                </Link>
-              </div>
-              <div className="bg-white border rounded-2xl overflow-hidden">
-                <table className="w-full text-sm">
-                  <thead className="bg-gray-50 border-b">
-                    <tr>
-                      {['Plan', 'Price', 'Subscribers', 'MRR'].map(h => (
-                        <th key={h} className="text-left px-5 py-3 text-xs font-medium text-gray-400 uppercase tracking-wide">
-                          {h}
-                        </th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y">
-                    {data!.plans.map(p => (
-                      <tr key={p.planId.toString()} className="hover:bg-gray-50">
-                        <td className="px-5 py-3 font-medium text-gray-900">Plan {p.planId.toString()}</td>
-                        <td className="px-5 py-3 text-gray-600">{fmt(p.price)}</td>
-                        <td className="px-5 py-3 text-gray-600">{p.activeSubscribers}</td>
-                        <td className="px-5 py-3 font-medium text-gray-900">{fmt(p.mrr)}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          )}
-        </>
-      )}
-    </div>
-  )
 }

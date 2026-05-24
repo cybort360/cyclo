@@ -1,0 +1,501 @@
+/*
+ * Merchant dashboard — three-column layout shell.
+ * Class prefix: sl-  (sidebar layout)   Tokens: tokens.css (Ivory & Indigo)
+ * No borders anywhere — depth from shadows only.
+ *
+ * Structure:
+ *   .sl-root         flex row, 100vh, overflow hidden
+ *     .sl-sidebar    220px fixed, left col
+ *     .sl-main       flex-1 scroll container
+ *       .sl-topbar   sticky frosted-glass header
+ *       .sl-content  page content
+ *     .sl-rightpanel 280px fixed, right col
+ */
+
+/* ── Root shell ───────────────────────────────────────────────────────────────── */
+
+.sl-root {
+    display:  flex;
+    height:   100vh;
+    overflow: hidden;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════════
+   SIDEBAR
+   ═══════════════════════════════════════════════════════════════════════════════ */
+
+.sl-sidebar {
+    width:          220px;
+    flex-shrink:    0;
+    background:     var(--bg-surface);
+    box-shadow:     var(--shadow-panel);
+    display:        flex;
+    flex-direction: column;
+    height:         100vh;
+    overflow:       hidden;
+    position:       relative;
+    z-index:        10; /* above main content to cast shadow */
+}
+
+/* ── Top section: logo + merchant info ────────────────────────────────────────── */
+
+.sl-top {
+    padding: 24px 20px 16px;
+}
+
+/* Logo row */
+.sl-wordmark {
+    display:         inline-flex;
+    align-items:     center;
+    text-decoration: none;
+}
+
+/* Merchant info block */
+.sl-merchant-info {
+    margin-top: 14px;
+}
+
+.sl-merchant-name {
+    font-size:     13px;
+    font-weight:   500;
+    color:         var(--text-primary);
+    margin:        0;
+    white-space:   nowrap;
+    overflow:      hidden;
+    text-overflow: ellipsis;
+}
+
+/* "Arc testnet" pill */
+.sl-network-pill {
+    display:        inline-block;
+    background:     var(--accent-light);
+    color:          var(--accent);
+    font-size:      10px;
+    font-weight:    500;
+    padding:        3px 9px;
+    border-radius:  var(--radius-pill);
+    margin-top:     5px;
+}
+
+/* ── Navigation ───────────────────────────────────────────────────────────────── */
+
+.sl-nav {
+    flex:       1;
+    padding:    8px 10px;
+    overflow-y: auto;
+}
+
+.sl-nav::-webkit-scrollbar       { width: 3px; }
+.sl-nav::-webkit-scrollbar-track { background: transparent; }
+.sl-nav::-webkit-scrollbar-thumb { background: #D1D5DB; border-radius: 2px; }
+
+/* Group label */
+.sl-nav-group-label {
+    padding:        14px 10px 5px;
+    font-size:      9px;
+    color:          var(--text-muted);
+    letter-spacing: 0.1em;
+    font-weight:    600;
+    text-transform: uppercase;
+    user-select:    none;
+}
+
+.sl-nav-group:first-child .sl-nav-group-label { padding-top: 4px; }
+
+/* ── Nav item ─────────────────────────────────────────────────────────────────── */
+
+.sl-nav-item {
+    position:        relative;
+    display:         flex;
+    align-items:     center;
+    gap:             10px;
+    padding:         9px 12px;
+    border-radius:   var(--radius-md);
+    color:           var(--text-secondary);
+    text-decoration: none;
+    transition:      var(--transition-fast);
+    cursor:          pointer;
+    width:           100%;
+}
+
+/* Icon inherits color from parent */
+.sl-nav-item svg { color: var(--text-muted); transition: var(--transition-fast); }
+
+/* Hover */
+.sl-nav-item:hover {
+    background: var(--bg-surface-2);
+    transform:  translateX(2px);
+}
+.sl-nav-item:hover svg      { color: var(--text-secondary); }
+.sl-nav-item:hover .sl-nav-label { color: var(--text-primary); }
+
+/* Active */
+.sl-nav-item--active {
+    background: var(--accent-light);
+}
+
+.sl-nav-item--active svg              { color: var(--accent); }
+.sl-nav-item--active .sl-nav-label    { color: var(--accent); font-weight: 600; }
+
+/* Active — left accent bar pseudo-element */
+.sl-nav-item--active::before {
+    content:       '';
+    position:      absolute;
+    left:          0;
+    top:           50%;
+    transform:     translateY(-50%);
+    width:         3px;
+    height:        18px;
+    background:    var(--accent);
+    border-radius: 0 3px 3px 0;
+    box-shadow:    0 0 8px var(--accent-shadow);
+}
+
+/* Label */
+.sl-nav-label {
+    font-size:  13px;
+    line-height: 1;
+    flex:        1;
+    min-width:   0;
+    color:       var(--text-secondary);
+    transition:  var(--transition-fast);
+}
+
+/* Past Due badge */
+.sl-nav-badge {
+    font-size:     9px;
+    font-weight:   600;
+    background:    var(--warning-light);
+    color:         var(--warning);
+    border-radius: var(--radius-pill);
+    padding:       2px 7px;
+    min-width:     16px;
+    text-align:    center;
+    line-height:   1.5;
+    flex-shrink:   0;
+}
+
+/* Pitch tag */
+.sl-nav-tag {
+    font-size:     8px;
+    font-weight:   600;
+    border-radius: var(--radius-sm);
+    padding:       1px 5px;
+    line-height:   1.5;
+    flex-shrink:   0;
+    letter-spacing: 0.02em;
+}
+
+.sl-nav-tag--pitch {
+    background: var(--violet-light);
+    color:      var(--violet);
+}
+
+/* ── Sidebar bottom: wallet row ───────────────────────────────────────────────── */
+
+.sl-bottom {
+    padding: 16px 20px;
+}
+
+/* Connected wallet row */
+.sl-wallet-row {
+    display:     flex;
+    align-items: center;
+    gap:         10px;
+}
+
+/* Gradient avatar circle */
+.sl-wallet-avatar {
+    width:            32px;
+    height:           32px;
+    border-radius:    50%;
+    background:       linear-gradient(135deg, var(--accent) 0%, var(--violet) 100%);
+    box-shadow:       0 2px 8px var(--accent-shadow);
+    display:          flex;
+    align-items:      center;
+    justify-content:  center;
+    font-size:        11px;
+    font-weight:      600;
+    color:            #fff;
+    flex-shrink:      0;
+    user-select:      none;
+    font-family:      ui-monospace, 'Cascadia Code', Consolas, monospace;
+}
+
+.sl-wallet-info {
+    min-width: 0;
+    flex:      1;
+}
+
+/* Wallet address (mono, truncated) */
+.sl-wallet-addr {
+    font-size:     11px;
+    font-family:   ui-monospace, 'Cascadia Code', Consolas, monospace;
+    color:         var(--text-secondary);
+    white-space:   nowrap;
+    overflow:      hidden;
+    text-overflow: ellipsis;
+    margin:        0;
+}
+
+/* USDC balance */
+.sl-wallet-balance {
+    font-size:   12px;
+    font-family: ui-monospace, 'Cascadia Code', Consolas, monospace;
+    color:       var(--accent);
+    font-weight: 600;
+    margin:      2px 0 0;
+}
+
+/* Not-connected link */
+.sl-connect-link {
+    display:         block;
+    font-size:       12px;
+    color:           var(--text-secondary);
+    text-decoration: none;
+    transition:      var(--transition-fast);
+}
+.sl-connect-link:hover { color: var(--accent); }
+
+/* ═══════════════════════════════════════════════════════════════════════════════
+   MAIN COLUMN
+   ═══════════════════════════════════════════════════════════════════════════════ */
+
+.sl-main {
+    flex:       1;
+    min-width:  0;
+    background: var(--bg-base);
+    overflow-y: auto;
+}
+
+/* ── Sticky top bar ───────────────────────────────────────────────────────────── */
+
+/*
+ * position: sticky within the sl-main scroll container.
+ * Frosted-glass matches --bg-base (#F2F1EC) at 85% opacity.
+ */
+.sl-topbar {
+    position:              sticky;
+    top:                   0;
+    z-index:               50;
+    height:                56px;
+    background:            rgba(242, 241, 236, 0.85);
+    backdrop-filter:       blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    box-shadow:
+        0 1px 0  rgba(0, 0, 0, 0.06),
+        0 2px 16px rgba(0, 0, 0, 0.04);
+    padding:               0 20px;
+    display:               grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items:           center;
+    gap:                   16px;
+}
+
+/* Left column wrapper — holds mobile Logo + desktop page title */
+.sl-topbar-left {
+    display:    flex;
+    align-items: center;
+    min-width:  0;
+}
+
+/* Mobile Logo — only visible when sidebar is hidden */
+.sl-topbar-logo {
+    display:         none;
+    text-decoration: none;
+    flex-shrink:     0;
+}
+
+/* Page title — visible on desktop */
+.sl-topbar-title {
+    font-size:      14px;
+    font-weight:    600;
+    color:          var(--text-primary);
+    letter-spacing: -0.01em;
+    white-space:    nowrap;
+    overflow:       hidden;
+    text-overflow:  ellipsis;
+}
+
+/* ── Search ───────────────────────────────────────────────────────────────────── */
+
+.sl-search {
+    position: relative;
+    width:    300px;
+    display:  flex;
+    align-items: center;
+}
+
+.sl-search-icon {
+    position:       absolute;
+    left:           12px;
+    color:          var(--text-muted);
+    pointer-events: none;
+    line-height:    0;
+    flex-shrink:    0;
+}
+
+.sl-search-input {
+    width:         100%;
+    height:        36px;
+    background:    var(--bg-surface);
+    box-shadow:    var(--shadow-card);
+    border:        none;
+    border-radius: var(--radius-pill);
+    padding:       0 16px 0 34px;
+    font-size:     13px;
+    color:         var(--text-primary);
+    outline:       none;
+    transition:    var(--transition-fast);
+}
+
+.sl-search-input::placeholder { color: var(--text-muted); }
+
+.sl-search-input:focus {
+    box-shadow:
+        var(--shadow-card),
+        0 0 0 3px rgba(79, 70, 229, 0.12);
+}
+
+/* ── Topbar right ─────────────────────────────────────────────────────────────── */
+
+.sl-topbar-right {
+    display:         flex;
+    align-items:     center;
+    justify-content: flex-end;
+    gap:             12px;
+}
+
+/* Vertical divider */
+.sl-topbar-divider {
+    width:      1px;
+    height:     18px;
+    background: rgba(0, 0, 0, 0.07);
+    flex-shrink: 0;
+}
+
+/* Gradient merchant avatar */
+.sl-avatar {
+    width:           32px;
+    height:          32px;
+    border-radius:   50%;
+    background:      linear-gradient(135deg, var(--accent) 0%, var(--violet) 100%);
+    box-shadow:      0 2px 8px var(--accent-shadow);
+    display:         flex;
+    align-items:     center;
+    justify-content: center;
+    font-size:       11px;
+    font-weight:     600;
+    font-family:     ui-monospace, 'Cascadia Code', Consolas, monospace;
+    color:           #fff;
+    flex-shrink:     0;
+    cursor:          default;
+    user-select:     none;
+    transition:      var(--transition-fast);
+}
+
+.sl-avatar:hover {
+    box-shadow:
+        0 0 0 3px var(--accent-dim),
+        0 2px 8px var(--accent-shadow);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════════
+   WRONG NETWORK BANNER
+   ═══════════════════════════════════════════════════════════════════════════════ */
+
+.sl-network-banner {
+    display:     flex;
+    align-items: center;
+    gap:         16px;
+    padding:     10px 20px;
+    background:  var(--warning-light);
+    font-size:   13px;
+    color:       var(--warning);
+}
+
+.sl-network-banner-text { flex: 1; }
+
+.sl-network-switch-btn {
+    padding:      5px 12px;
+    background:   var(--warning);
+    color:        #fff;
+    border:       none;
+    border-radius: var(--radius-sm);
+    font-size:    11px;
+    font-weight:  600;
+    cursor:       pointer;
+    flex-shrink:  0;
+    transition:   var(--transition-fast);
+}
+
+.sl-network-switch-btn:hover    { opacity: 0.85; }
+.sl-network-switch-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* ═══════════════════════════════════════════════════════════════════════════════
+   PAGE CONTENT + RIGHT PANEL
+   ═══════════════════════════════════════════════════════════════════════════════ */
+
+.sl-content { padding: 24px; }
+
+.sl-rightpanel {
+    width:       280px;
+    flex-shrink: 0;
+    background:  var(--bg-surface);
+    /* Shadow casts leftward — opposite direction from the sidebar */
+    box-shadow:  -2px 0 24px rgba(0, 0, 0, 0.06);
+    overflow-y:  auto;
+    padding:     20px 16px;
+}
+
+.sl-rightpanel::-webkit-scrollbar       { width: 3px; }
+.sl-rightpanel::-webkit-scrollbar-track { background: transparent; }
+.sl-rightpanel::-webkit-scrollbar-thumb { background: #D1D5DB; border-radius: 2px; }
+
+/* ═══════════════════════════════════════════════════════════════════════════════
+   AI CHAT BUTTON
+   ═══════════════════════════════════════════════════════════════════════════════ */
+
+.sl-ai-btn {
+    position:        fixed;
+    bottom:          24px;
+    right:           300px; /* 280px right panel + 20px gap */
+    width:           40px;
+    height:          40px;
+    background:      var(--accent);
+    color:           #fff;
+    border:          none;
+    border-radius:   50%;
+    display:         flex;
+    align-items:     center;
+    justify-content: center;
+    font-size:       16px;
+    cursor:          pointer;
+    z-index:         200;
+    box-shadow:      var(--shadow-btn-accent);
+    transition:      var(--transition-fast);
+}
+
+.sl-ai-btn:hover {
+    background: var(--accent-hover);
+    transform:  scale(1.05);
+}
+
+/* ── Mobile (< 768px) — sidebar hidden, Logo appears in topbar ──────────────── */
+
+@media (max-width: 767px) {
+    /* Hide the sidebar — Logo moves to the topbar */
+    .sl-sidebar { display: none; }
+
+    /* Show Logo in topbar left */
+    .sl-topbar-logo  { display: flex; }
+
+    /* Hide the page title — Logo is the identifier at this size */
+    .sl-topbar-title { display: none; }
+
+    /* Let the topbar collapse to a tighter layout */
+    .sl-topbar { padding: 0 16px; gap: 12px; }
+
+    /* Narrow the search on mobile */
+    .sl-search { width: 180px; }
+}

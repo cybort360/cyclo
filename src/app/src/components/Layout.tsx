@@ -1,192 +1,315 @@
-import { Link, useRoute } from 'wouter'
+/**
+ * Merchant dashboard — three-column layout shell.
+ *
+ *   [Sidebar 220px fixed] | [Main: topbar + content, scrollable] | [RightPanel 280px]
+ *
+ * Pages inject right-panel content via useRightPanel() from RightPanelContext.
+ * Uses Ivory & Indigo tokens from src/styles/tokens.css.
+ * Class prefix: sl-  (sidebar layout)
+ */
+import { Link, useRoute, useLocation } from 'wouter'
 import { useAccount, useChainId, useSwitchChain } from 'wagmi'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, type ReactNode, type ComponentType } from 'react'
+import {
+    IconLayoutDashboard, IconUsers, IconAlertTriangle, IconStack2,
+    IconReceipt, IconBuildingBank, IconChartBar, IconWebhook,
+    IconCode, IconBook, IconPlayerPlay, IconSearch,
+} from '@tabler/icons-react'
 import { useMerchantProfile } from '../context/MerchantProfileContext'
+import { useSubscriptionManager } from '../hooks/useSubscriptionManager'
+import { RightPanelCtx } from '../context/RightPanelContext'
 import { ProfileSetupModal } from './ProfileSetupModal'
 import { AIChatPanel } from './AIChatPanel'
 import { SocketStatusIndicator } from './SocketStatusIndicator'
-import { arcTestnet } from '../wagmi'
+import Logo from './Logo'
+import { fromUsdcUnits } from '../utils/formatting'
 import { usePastDueCount } from '../hooks/usePastDueCount'
+import { arcTestnet } from '../wagmi'
+import './Layout.css'
 
-const nav = [
-  { path: '/dashboard',   label: 'Overview',    icon: '▦' },
-  { path: '/plans',       label: 'Plans',       icon: '☰' },
-  { path: '/past-due',    label: 'Past Due',    icon: '△' },
-  { path: '/subscribers', label: 'Subscribers', icon: '◎' },
-  { path: '/settlements', label: 'Settlements', icon: '⇅' },
-  { path: '/analytics',   label: 'Analytics',   icon: '∿' },
-  { path: '/webhooks',    label: 'Webhooks',    icon: '⊹' },
-  { path: '/developers',  label: 'Developers',  icon: '⌥' },
+// ── Nav configuration ─────────────────────────────────────────────────────────
+
+// Tabler icon components accept many SVG props; we only use size + aria-hidden.
+// ComponentType<any> avoids coupling to Tabler's internal prop types.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type NavIcon = ComponentType<any>
+
+interface NavItemDef {
+    path:  string
+    label: string
+    icon:  NavIcon
+    tag?:  'pitch'
+}
+
+interface NavGroupDef {
+    label: string
+    items: NavItemDef[]
+}
+
+const NAV_GROUPS: NavGroupDef[] = [
+    {
+        label: 'Workspace',
+        items: [
+            { path: '/dashboard',   label: 'Dashboard',   icon: IconLayoutDashboard },
+            { path: '/subscribers', label: 'Subscribers', icon: IconUsers           },
+            { path: '/past-due',    label: 'Past Due',    icon: IconAlertTriangle   },
+            { path: '/plans',       label: 'Plans',       icon: IconStack2          },
+            { path: '/settlements', label: 'Settlements', icon: IconReceipt         },
+            { path: '/treasury',    label: 'Treasury',    icon: IconBuildingBank    },
+        ],
+    },
+    {
+        label: 'Analytics',
+        items: [
+            { path: '/analytics', label: 'Analytics', icon: IconChartBar },
+            { path: '/webhooks',  label: 'Webhooks',  icon: IconWebhook  },
+        ],
+    },
+    {
+        label: 'Developers',
+        items: [
+            { path: '/developers', label: 'API & SDK',     icon: IconCode                     },
+            { path: '/docs',       label: 'Documentation', icon: IconBook                     },
+            { path: '/demo',       label: 'Live demo',     icon: IconPlayerPlay, tag: 'pitch' },
+        ],
+    },
 ]
 
-interface NavItemProps {
-  path:   string
-  label:  string
-  icon:   string
-  /** Live badge count. Rendered only when > 0. */
-  badge?: number
+/** Route path → top-bar title. */
+const PAGE_TITLES: Record<string, string> = {
+    '/dashboard':   'Overview',
+    '/subscribers': 'Subscribers',
+    '/past-due':    'Past Due',
+    '/plans':       'Plans',
+    '/settlements': 'Settlements',
+    '/treasury':    'Treasury',
+    '/analytics':   'Analytics',
+    '/webhooks':    'Webhooks',
+    '/developers':  'API & SDK',
+    '/connect':     'Connect',
+    '/docs':        'Documentation',
+    '/demo':        'Live Demo',
 }
 
-function NavItem({ path, label, icon, badge }: NavItemProps) {
-  const [active] = useRoute(path === '/dashboard' ? path : `${path}*`)
-  return (
-    <Link href={path}>
-      <a className={`flex w-full items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-        active
-          ? 'bg-indigo-50 text-indigo-700'
-          : 'text-gray-500 hover:text-gray-900 hover:bg-gray-50'
-      }`}>
-        <span className="text-base w-5 text-center">{icon}</span>
-        {label}
-        {badge !== undefined && badge > 0 && (
-          <span className="ml-auto text-[10px] font-semibold bg-amber-100 text-amber-700 rounded-full px-1.5 py-0.5 min-w-[18px] text-center tabular-nums leading-none">
-            {badge > 99 ? '99+' : badge}
-          </span>
-        )}
-      </a>
-    </Link>
-  )
+// ── NavItem ───────────────────────────────────────────────────────────────────
+
+interface NavItemProps extends NavItemDef {
+    badge?: number
 }
+
+function NavItem({ path, label, icon: Icon, tag, badge }: NavItemProps) {
+    const [active] = useRoute(path === '/dashboard' ? path : `${path}*`)
+    return (
+        <Link href={path}>
+            <a className={`sl-nav-item${active ? ' sl-nav-item--active' : ''}`}>
+                <Icon size={16} aria-hidden="true" />
+                <span className="sl-nav-label">{label}</span>
+                {badge !== undefined && badge > 0 && (
+                    <span className="sl-nav-badge">{badge > 99 ? '99+' : badge}</span>
+                )}
+                {tag === 'pitch' && (
+                    <span className="sl-nav-tag sl-nav-tag--pitch">Pitch</span>
+                )}
+            </a>
+        </Link>
+    )
+}
+
+// ── WrongNetworkBanner ────────────────────────────────────────────────────────
 
 function WrongNetworkBanner() {
-  const { switchChain, isPending } = useSwitchChain()
-  return (
-    <div className="flex items-center gap-4 px-8 py-3 bg-amber-50 border-b border-amber-200 text-amber-800 text-sm">
-      <span className="flex-1">
-        Wrong network — please switch to <strong>Arc Testnet</strong> (chain ID {arcTestnet.id}).
-      </span>
-      <button
-        onClick={() => switchChain({ chainId: arcTestnet.id })}
-        disabled={isPending}
-        className="px-3 py-1.5 bg-amber-500 text-white rounded-lg text-xs font-semibold hover:bg-amber-600 disabled:opacity-60"
-      >
-        {isPending ? 'Switching…' : 'Switch network'}
-      </button>
-    </div>
-  )
+    const { switchChain, isPending } = useSwitchChain()
+    return (
+        <div className="sl-network-banner">
+            <span className="sl-network-banner-text">
+                Wrong network — switch to <strong>Arc Testnet</strong> (chain ID {arcTestnet.id}).
+            </span>
+            <button
+                className="sl-network-switch-btn"
+                disabled={isPending}
+                onClick={() => switchChain({ chainId: arcTestnet.id })}
+            >
+                {isPending ? 'Switching…' : 'Switch network'}
+            </button>
+        </div>
+    )
 }
 
-export function Layout({ children }: { children: React.ReactNode }) {
-  const { address, isConnected } = useAccount()
-  const chainId = useChainId()
-  const onCorrectChain = !isConnected || chainId === arcTestnet.id
-  const { profile } = useMerchantProfile()
-  const [showProfileSetup, setShowProfileSetup] = useState(false)
-  const [showAI, setShowAI] = useState(false)
-  const pastDueCount = usePastDueCount()
+// ── Layout ────────────────────────────────────────────────────────────────────
 
-  useEffect(() => {
-    if (isConnected && address && profile === null) {
-      const t = setTimeout(() => setShowProfileSetup(true), 1000)
-      return () => clearTimeout(t)
-    }
-    if (profile) setShowProfileSetup(false)
-  }, [isConnected, address, profile])
+export function Layout({ children }: { children: ReactNode }) {
+    const { address, isConnected } = useAccount()
+    const chainId                  = useChainId()
+    const onCorrectChain           = !isConnected || chainId === arcTestnet.id
+    const { profile }              = useMerchantProfile()
+    const { usdcBalance }          = useSubscriptionManager()
+    const pastDueCount             = usePastDueCount()
+    const [location]               = useLocation()
 
-  return (
-    <div className="min-h-screen bg-gray-50 flex">
+    const [showProfileSetup, setShowProfileSetup] = useState(false)
+    const [showAI, setShowAI]                     = useState(false)
+    const [rightPanelContent, setRightPanel]      = useState<ReactNode>(null)
 
-      {showProfileSetup && (
-        <ProfileSetupModal onComplete={() => setShowProfileSetup(false)} />
-      )}
+    // Prompt merchant to complete their profile 1 s after connecting
+    useEffect(() => {
+        if (isConnected && address && profile === null) {
+            const t = setTimeout(() => setShowProfileSetup(true), 1_000)
+            return () => clearTimeout(t)
+        }
+        if (profile) setShowProfileSetup(false)
+    }, [isConnected, address, profile])
 
-      {/* Sidebar */}
-      <aside className="w-56 bg-white border-r flex-shrink-0 flex flex-col fixed h-full">
+    const pageTitle = PAGE_TITLES[location] ?? 'Dashboard'
+    const shortAddr = address ? `${address.slice(0, 6)}…${address.slice(-4)}` : null
+    /** Two-character initials derived from the wallet address. */
+    const avatarInitials = address ? address.slice(2, 4).toUpperCase() : null
 
-        {/* Logo — links to dashboard overview */}
-        <div className="px-4 py-5 border-b">
-          <Link href="/dashboard">
-            <a className="flex items-center gap-2 no-underline">
-              <div className="w-7 h-7 bg-indigo-600 rounded-lg flex items-center justify-center">
-                <span className="text-white text-xs font-bold">C</span>
-              </div>
-              <span className="font-semibold text-gray-900">Cyclo</span>
-            </a>
-          </Link>
-          {profile && (
-            <p className="text-xs text-gray-400 mt-1 truncate">{profile.business_name}</p>
-          )}
-        </div>
+    return (
+        <RightPanelCtx.Provider value={setRightPanel}>
 
-        {/* Nav */}
-        <nav className="flex-1 px-2 py-4 space-y-0.5">
-          {nav.map(item => (
-            <NavItem
-              key={item.path}
-              {...item}
-              badge={item.path === '/past-due' ? pastDueCount : undefined}
-            />
-          ))}
-        </nav>
+            {showProfileSetup && (
+                <ProfileSetupModal onComplete={() => setShowProfileSetup(false)} />
+            )}
 
-        {/* Footer links */}
-        <div className="px-2 pb-2">
-          <Link href="/onboarding">
-            <a className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-gray-400 hover:text-gray-900 hover:bg-gray-50 transition-colors">
-              <span className="text-base w-5 text-center">✎</span>
-              Setup guide
-            </a>
-          </Link>
-          <a
-            href="/stats"
-            className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-gray-400 hover:text-gray-900 hover:bg-gray-50 transition-colors"
-          >
-            <span className="text-base w-5 text-center">⊞</span>
-            Public stats
-          </a>
-        </div>
+            <div className="sl-root">
 
-        {/* Wallet */}
-        <div className="px-4 py-4 border-t">
-          {isConnected ? (
-            <div>
-              <p className="text-xs text-gray-400">Connected</p>
-              <p className="text-xs font-mono text-gray-600 truncate mt-0.5">
-                {address?.slice(0, 6)}...{address?.slice(-4)}
-              </p>
+                {/* ── Column 1: Left sidebar ──────────────────────────── */}
+                <aside className="sl-sidebar">
+
+                    {/* ── Top section: logo + merchant info ────────────── */}
+                    <div className="sl-top">
+
+                        {/* Logo row */}
+                        <Link href="/dashboard">
+                            <a className="sl-wordmark" aria-label="Cyclo dashboard">
+                                <Logo size={24} wordmarkSize={13} />
+                            </a>
+                        </Link>
+
+                        {/* Merchant info — only when profile is loaded */}
+                        {profile && (
+                            <div className="sl-merchant-info">
+                                <p className="sl-merchant-name">{profile.business_name}</p>
+                                <span className="sl-network-pill">Arc testnet</span>
+                            </div>
+                        )}
+                    </div>
+
+                    {/* ── Navigation ───────────────────────────────────── */}
+                    <nav className="sl-nav" aria-label="Dashboard navigation">
+                        {NAV_GROUPS.map(group => (
+                            <div key={group.label} className="sl-nav-group">
+                                <p className="sl-nav-group-label">{group.label}</p>
+                                {group.items.map(item => (
+                                    <NavItem
+                                        key={item.path}
+                                        {...item}
+                                        badge={item.path === '/past-due' ? pastDueCount : undefined}
+                                    />
+                                ))}
+                            </div>
+                        ))}
+                    </nav>
+
+                    {/* ── Bottom: wallet row ────────────────────────────── */}
+                    <div className="sl-bottom">
+                        {shortAddr ? (
+                            /* Connected — gradient avatar + address + balance */
+                            <div className="sl-wallet-row">
+                                <div
+                                    className="sl-wallet-avatar"
+                                    title={address}
+                                    aria-label={`Wallet ${shortAddr}`}
+                                >
+                                    {avatarInitials}
+                                </div>
+                                <div className="sl-wallet-info">
+                                    <p className="sl-wallet-addr">{shortAddr}</p>
+                                    {usdcBalance !== undefined && (
+                                        <p className="sl-wallet-balance">
+                                            {fromUsdcUnits(usdcBalance).toFixed(2)} USDC
+                                        </p>
+                                    )}
+                                </div>
+                            </div>
+                        ) : (
+                            /* Not connected */
+                            <Link href="/connect">
+                                <a className="sl-connect-link">Connect wallet →</a>
+                            </Link>
+                        )}
+                    </div>
+
+                </aside>
+
+                {/* ── Column 2: Main content ──────────────────────────── */}
+                <main className="sl-main">
+
+                    {/* ── Sticky top bar ───────────────────────────────── */}
+                    <header className="sl-topbar">
+
+                        {/* Left: Logo on mobile (sidebar hidden) / page title on desktop */}
+                        <div className="sl-topbar-left">
+                            <Link href="/dashboard">
+                                <a className="sl-topbar-logo" aria-label="Cyclo dashboard">
+                                    <Logo size={22} wordmarkSize={12} />
+                                </a>
+                            </Link>
+                            <span className="sl-topbar-title">{pageTitle}</span>
+                        </div>
+
+                        {/* Centre: search */}
+                        <div className="sl-search">
+                            <IconSearch
+                                size={14}
+                                className="sl-search-icon"
+                                aria-hidden="true"
+                            />
+                            <input
+                                type="text"
+                                className="sl-search-input"
+                                placeholder="Search subscribers, plans, tx..."
+                                aria-label="Search"
+                            />
+                        </div>
+
+                        {/* Right: socket indicator + divider + avatar */}
+                        <div className="sl-topbar-right">
+                            <SocketStatusIndicator />
+                            <div className="sl-topbar-divider" aria-hidden="true" />
+                            {avatarInitials && (
+                                <div className="sl-avatar" title={address}>
+                                    {avatarInitials}
+                                </div>
+                            )}
+                        </div>
+
+                    </header>
+
+                    {isConnected && !onCorrectChain && <WrongNetworkBanner />}
+
+                    <div className="sl-content">
+                        {children}
+                    </div>
+                </main>
+
+                {/* ── Column 3: Right panel ───────────────────────────── */}
+                <aside className="sl-rightpanel" aria-label="Page context panel">
+                    {rightPanelContent}
+                </aside>
+
             </div>
-          ) : (
-            <Link href="/connect">
-              <a className="text-sm text-indigo-600 font-medium hover:underline">
-                Connect wallet →
-              </a>
-            </Link>
-          )}
-        </div>
-      </aside>
 
-      {/* Main content */}
-      <main className="flex-1 ml-56 min-h-screen">
+            {showAI && <AIChatPanel onClose={() => setShowAI(false)} />}
+            <button
+                onClick={() => setShowAI(v => !v)}
+                className="sl-ai-btn"
+                title="Cyclo AI"
+                aria-label="Open AI assistant"
+            >
+                ✦
+            </button>
 
-        {/* Top bar */}
-        <header className="bg-white border-b px-8 py-4 flex items-center justify-between sticky top-0 z-10">
-          <div />
-          <div className="flex items-center gap-3">
-            <SocketStatusIndicator />
-            <a href="/docs" className="text-sm text-gray-500 hover:text-gray-900">
-              Docs
-            </a>
-            <a href="/demo" className="text-sm bg-indigo-600 text-white px-3 py-1.5 rounded-lg hover:bg-indigo-700">
-              Live demo
-            </a>
-          </div>
-        </header>
-
-        {isConnected && !onCorrectChain && <WrongNetworkBanner />}
-
-        <div className="px-8 py-8">
-          {children}
-        </div>
-      </main>
-
-      {showAI && <AIChatPanel onClose={() => setShowAI(false)} />}
-      <button
-        onClick={() => setShowAI(v => !v)}
-        className="fixed bottom-6 right-6 w-12 h-12 bg-indigo-600 text-white rounded-full shadow-lg hover:bg-indigo-700 flex items-center justify-center text-xl z-40"
-        title="Cyclo AI"
-      >
-        ✦
-      </button>
-    </div>
-  )
+        </RightPanelCtx.Provider>
+    )
 }
