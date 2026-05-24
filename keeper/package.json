@@ -1,0 +1,13 @@
+{
+  "name": "@cyclo/keeper",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "pg": "^8.11.0",
+    "p-limit": "^5.0.0"
+  },
+  "devDependencies": {
+    "@types/pg": "^8.11.0"
+  }
+}
