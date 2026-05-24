@@ -1,0 +1,300 @@
+/*
+ * AIChatPanel — floating assistant panel anchored to the right panel footer.
+ * Class prefix: ai-
+ *
+ * Uses Ivory & Indigo dashboard tokens (tokens.css).
+ * The panel floats above the trigger button, which lives in the right-panel footer.
+ */
+
+/* ── Floating panel ──────────────────────────────────────────────────────────── */
+
+.ai-panel {
+    position:       absolute;
+    bottom:         calc(100% + 8px); /* sits just above the footer */
+    right:          0;
+    left:           0;
+    max-height:     520px;
+    z-index:        300;
+    display:        flex;
+    flex-direction: column;
+    background:     var(--bg-surface);
+    border:         0.5px solid var(--bg-border-bright);
+    border-radius:  var(--radius-lg);
+    box-shadow:
+        0 0 0 1px rgba(0,0,0,0.04),
+        0 8px 32px rgba(0,0,0,0.16),
+        0 2px 8px  rgba(0,0,0,0.08);
+    overflow:       hidden;
+}
+
+/* ── Header ──────────────────────────────────────────────────────────────────── */
+
+.ai-header {
+    display:         flex;
+    align-items:     center;
+    justify-content: space-between;
+    padding:         12px 14px;
+    border-bottom:   0.5px solid var(--bg-border);
+    flex-shrink:     0;
+}
+
+.ai-header-left {
+    display:     flex;
+    align-items: center;
+    gap:         8px;
+}
+
+.ai-icon {
+    width:           26px;
+    height:          26px;
+    border-radius:   var(--radius-sm);
+    background:      var(--accent);
+    display:         flex;
+    align-items:     center;
+    justify-content: center;
+    color:           #fff;
+    font-size:       13px;
+    flex-shrink:     0;
+}
+
+.ai-title {
+    font-size:      12px;
+    font-weight:    600;
+    color:          var(--text-primary);
+    font-family:    ui-monospace, 'Cascadia Code', Consolas, monospace;
+    letter-spacing: 0.03em;
+    margin:         0;
+}
+
+.ai-badge {
+    font-size:      9px;
+    font-family:    ui-monospace, 'Cascadia Code', Consolas, monospace;
+    font-weight:    600;
+    color:          var(--accent);
+    background:     var(--accent-subtle);
+    padding:        2px 6px;
+    border-radius:  var(--radius-pill);
+    letter-spacing: 0.04em;
+}
+
+.ai-close {
+    width:        24px;
+    height:       24px;
+    border:       none;
+    background:   transparent;
+    color:        var(--text-muted);
+    cursor:       pointer;
+    border-radius: var(--radius-sm);
+    display:      flex;
+    align-items:  center;
+    justify-content: center;
+    font-size:    16px;
+    line-height:  1;
+    padding:      0;
+    transition:   background var(--transition-fast), color var(--transition-fast);
+}
+
+.ai-close:hover {
+    background: var(--bg-surface-2);
+    color:      var(--text-primary);
+}
+
+/* ── Messages area ───────────────────────────────────────────────────────────── */
+
+.ai-messages {
+    flex:       1;
+    overflow-y: auto;
+    padding:    12px 12px 8px;
+    display:    flex;
+    flex-direction: column;
+    gap:        8px;
+    min-height: 0;
+}
+
+.ai-messages::-webkit-scrollbar       { width: 3px; }
+.ai-messages::-webkit-scrollbar-track { background: transparent; }
+.ai-messages::-webkit-scrollbar-thumb { background: var(--bg-border-bright); border-radius: 2px; }
+
+/* ── Empty / suggestion state ────────────────────────────────────────────────── */
+
+.ai-empty-hint {
+    font-size:   11px;
+    color:       var(--text-tertiary);
+    text-align:  center;
+    margin:      4px 0 10px;
+    font-family: ui-monospace, 'Cascadia Code', Consolas, monospace;
+    line-height: 1.5;
+}
+
+.ai-suggestion {
+    display:    block;
+    width:      100%;
+    text-align: left;
+    padding:    7px 10px;
+    font-size:  11px;
+    color:      var(--text-secondary);
+    background: var(--bg-surface-2);
+    border:     0.5px solid var(--bg-border);
+    border-radius: var(--radius-md);
+    cursor:     pointer;
+    transition: background var(--transition-fast), color var(--transition-fast), border-color var(--transition-fast);
+    line-height: 1.4;
+}
+
+.ai-suggestion:hover {
+    background:   var(--accent-subtle);
+    color:        var(--accent);
+    border-color: var(--accent-dim);
+}
+
+/* ── Chat bubbles ────────────────────────────────────────────────────────────── */
+
+.ai-bubble-row {
+    display: flex;
+}
+
+.ai-bubble-row--user      { justify-content: flex-end; }
+.ai-bubble-row--assistant { justify-content: flex-start; }
+
+.ai-bubble {
+    max-width:    85%;
+    padding:      7px 10px;
+    border-radius: 10px;
+    font-size:    12px;
+    line-height:  1.5;
+    white-space:  pre-wrap;
+    word-break:   break-word;
+}
+
+.ai-bubble--user {
+    background: var(--accent);
+    color:      #fff;
+    border-bottom-right-radius: 3px;
+}
+
+.ai-bubble--assistant {
+    background: var(--bg-surface-2);
+    color:      var(--text-primary);
+    border:     0.5px solid var(--bg-border);
+    border-bottom-left-radius: 3px;
+}
+
+/* ── Typing indicator ────────────────────────────────────────────────────────── */
+
+.ai-typing {
+    display:    flex;
+    gap:        4px;
+    padding:    8px 10px;
+    background: var(--bg-surface-2);
+    border:     0.5px solid var(--bg-border);
+    border-radius:            10px;
+    border-bottom-left-radius: 3px;
+    align-self: flex-start;
+}
+
+.ai-dot {
+    width:            5px;
+    height:           5px;
+    border-radius:    50%;
+    background:       var(--text-muted);
+    animation:        ai-bounce 1.2s ease-in-out infinite;
+}
+
+.ai-dot:nth-child(2) { animation-delay: 150ms; }
+.ai-dot:nth-child(3) { animation-delay: 300ms; }
+
+@keyframes ai-bounce {
+    0%, 80%, 100% { transform: translateY(0);    opacity: 0.4; }
+    40%            { transform: translateY(-4px); opacity: 1;   }
+}
+
+/* ── Input row ───────────────────────────────────────────────────────────────── */
+
+.ai-input-row {
+    display:       flex;
+    align-items:   center;
+    gap:           6px;
+    padding:       10px 10px;
+    border-top:    0.5px solid var(--bg-border);
+    flex-shrink:   0;
+    background:    var(--bg-surface);
+}
+
+.ai-input {
+    flex:          1;
+    height:        32px;
+    background:    var(--bg-surface-2);
+    border:        0.5px solid var(--bg-border);
+    border-radius: var(--radius-pill);
+    padding:       0 12px;
+    font-size:     12px;
+    color:         var(--text-primary);
+    outline:       none;
+    transition:    border-color var(--transition-fast), box-shadow var(--transition-fast);
+    font-family:   inherit;
+}
+
+.ai-input::placeholder { color: var(--text-muted); }
+
+.ai-input:focus {
+    border-color: var(--accent-dim);
+    box-shadow:   0 0 0 2px rgba(79, 70, 229, 0.1);
+}
+
+.ai-input:disabled { opacity: 0.5; }
+
+.ai-send {
+    width:           28px;
+    height:          28px;
+    border-radius:   50%;
+    background:      var(--accent);
+    color:           #fff;
+    border:          none;
+    cursor:          pointer;
+    display:         flex;
+    align-items:     center;
+    justify-content: center;
+    font-size:       13px;
+    flex-shrink:     0;
+    transition:      background var(--transition-fast), opacity var(--transition-fast);
+}
+
+.ai-send:hover    { background: var(--accent-hover); }
+.ai-send:disabled { opacity: 0.35; cursor: not-allowed; }
+
+/* ── Trigger button (inside right-panel footer) ──────────────────────────────── */
+
+.ai-trigger {
+    display:         flex;
+    align-items:     center;
+    gap:             6px;
+    padding:         7px 12px;
+    background:      var(--bg-surface-2);
+    border:          0.5px solid var(--bg-border);
+    border-radius:   var(--radius-pill);
+    color:           var(--text-secondary);
+    font-size:       11px;
+    font-family:     ui-monospace, 'Cascadia Code', Consolas, monospace;
+    font-weight:     600;
+    letter-spacing:  0.03em;
+    cursor:          pointer;
+    transition:      background var(--transition-fast), color var(--transition-fast),
+                     border-color var(--transition-fast), box-shadow var(--transition-fast);
+    white-space:     nowrap;
+}
+
+.ai-trigger:hover,
+.ai-trigger--active {
+    background:   var(--accent-subtle);
+    color:        var(--accent);
+    border-color: var(--accent-dim);
+    box-shadow:   0 0 0 2px rgba(79,70,229,0.08);
+}
+
+.ai-trigger-dot {
+    width:        6px;
+    height:       6px;
+    border-radius: 50%;
+    background:   currentColor;
+    flex-shrink:  0;
+}

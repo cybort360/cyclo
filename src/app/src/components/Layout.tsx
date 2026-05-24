@@ -26,6 +26,7 @@ import { fromUsdcUnits } from '../utils/formatting'
 import { usePastDueCount } from '../hooks/usePastDueCount'
 import { arcTestnet } from '../wagmi'
 import './Layout.css'
+import './AIChatPanel.css'
 
 // ── Nav configuration ─────────────────────────────────────────────────────────
 
@@ -314,20 +315,26 @@ export function Layout({ children }: { children: ReactNode }) {
 
                 {/* ── Column 3: Right panel ───────────────────────────── */}
                 <aside className={`sl-rightpanel${isPanelOpen ? ' sl-rightpanel--open' : ''}`} aria-label="Page context panel">
-                    {rightPanelContent}
+                    <div className="sl-rightpanel-body">
+                        {rightPanelContent}
+                    </div>
+
+                    {/* AI trigger lives at the bottom of the right panel */}
+                    <div className="sl-rightpanel-footer">
+                        {showAI && <AIChatPanel onClose={() => setShowAI(false)} />}
+                        <button
+                            onClick={() => setShowAI(v => !v)}
+                            className={`ai-trigger${showAI ? ' ai-trigger--active' : ''}`}
+                            aria-label={showAI ? 'Close AI assistant' : 'Open AI assistant'}
+                            aria-expanded={showAI}
+                        >
+                            <span className="ai-trigger-dot" aria-hidden="true" />
+                            Cyclo AI
+                        </button>
+                    </div>
                 </aside>
 
             </div>
-
-            {showAI && <AIChatPanel onClose={() => setShowAI(false)} />}
-            <button
-                onClick={() => setShowAI(v => !v)}
-                className="sl-ai-btn"
-                title="Cyclo AI"
-                aria-label="Open AI assistant"
-            >
-                ✦
-            </button>
 
         </RightPanelCtx.Provider>
     )
