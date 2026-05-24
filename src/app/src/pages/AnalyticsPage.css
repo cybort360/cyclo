@@ -1,0 +1,55 @@
+/*
+ * Analytics page shell.
+ * Class prefix: alp-
+ *
+ * Owns the page header and the date-range pill selector.
+ * Chart / table content lives in AnalyticsTab.
+ */
+
+/* ── Header ─────────────────────────────────────────────────────────────────── */
+
+.alp-header {
+    display:         flex;
+    align-items:     center;
+    justify-content: space-between;
+    margin-bottom:   20px;
+}
+
+.alp-title {
+    font-size:   22px;
+    font-weight: 500;
+    color:       var(--text-primary);
+    margin:      0;
+}
+
+/* ── Date range selector ─────────────────────────────────────────────────────── */
+
+.alp-range {
+    display:       flex;
+    gap:           2px;
+    background:    var(--bg-surface);
+    border:        0.5px solid var(--bg-border);
+    border-radius: 24px;
+    padding:       3px;
+}
+
+.alp-range-btn {
+    padding:     4px 14px;
+    font-size:   10px;
+    font-family: ui-monospace, 'Cascadia Code', Consolas, monospace;
+    color:       var(--text-secondary);
+    background:  transparent;
+    border:      none;
+    border-radius: 20px;
+    cursor:      pointer;
+    transition:  background 150ms ease, color 150ms ease;
+    line-height: 1.6;
+}
+
+.alp-range-btn:hover { color: var(--text-primary); }
+
+.alp-range-btn--active {
+    background:  var(--accent);
+    color:       #06101A;
+    font-weight: 500;
+}

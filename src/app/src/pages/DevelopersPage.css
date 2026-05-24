@@ -1,0 +1,205 @@
+/*
+ * DevelopersPage — in-dashboard developer reference.
+ * Class prefix: dvp-
+ *
+ * Two-column layout: sticky anchor nav (216px) + scrollable content.
+ * Negative margin cancels sl-content's 24px padding so the nav sits flush
+ * with the left sidebar and the top topbar, matching the layout's visual weight.
+ */
+
+/* ── Outer shell ─────────────────────────────────────────────────────────────── */
+
+.dvp-wrap {
+    display:    flex;
+    margin:     -24px;
+    min-height: 100%;
+}
+
+/* ── Anchor nav ──────────────────────────────────────────────────────────────── */
+
+.dvp-nav {
+    width:       216px;
+    flex-shrink: 0;
+    background:  var(--bg-surface);
+    border-right: 0.5px solid var(--bg-border);
+}
+
+.dvp-nav-inner {
+    position:  sticky;
+    top:       0;
+    padding:   28px 20px 48px;
+}
+
+.dvp-nav-heading {
+    font-size:      10px;
+    font-weight:    500;
+    font-family:    ui-monospace, 'Cascadia Code', Consolas, monospace;
+    color:          var(--text-tertiary);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin:         0 0 10px;
+}
+
+.dvp-nav-list {
+    list-style: none;
+    margin:     0;
+    padding:    0;
+    display:    flex;
+    flex-direction: column;
+    gap:        2px;
+}
+
+.dvp-nav-link {
+    display:       block;
+    padding:       6px 10px;
+    border-radius: 6px;
+    font-size:     13px;
+    color:         var(--text-secondary);
+    text-decoration: none;
+    transition:    background 120ms ease, color 120ms ease;
+}
+
+.dvp-nav-link:hover {
+    color:      var(--text-primary);
+    background: var(--bg-surface-2);
+}
+
+.dvp-nav-link--active {
+    color:      var(--accent);
+    background: var(--accent-subtle);
+    font-weight: 500;
+}
+
+/* ── Main content ────────────────────────────────────────────────────────────── */
+
+.dvp-content {
+    flex:      1;
+    min-width: 0;
+    padding:   32px 40px 80px;
+    max-width: 780px;
+}
+
+/* ── Page heading ────────────────────────────────────────────────────────────── */
+
+.dvp-page-heading {
+    margin-bottom: 40px;
+}
+
+.dvp-page-title {
+    font-size:   22px;
+    font-weight: 500;
+    color:       var(--text-primary);
+    margin:      0 0 4px;
+}
+
+.dvp-page-sub {
+    font-size: 13px;
+    color:     var(--text-secondary);
+    margin:    0;
+}
+
+/* ── Sections ────────────────────────────────────────────────────────────────── */
+
+.dvp-sections {
+    display:        flex;
+    flex-direction: column;
+    gap:            0;
+}
+
+.dvp-section {
+    padding-bottom: 56px;
+    border-bottom:  0.5px solid var(--bg-border);
+    scroll-margin-top: 24px;
+}
+
+.dvp-section:last-child {
+    border-bottom:  none;
+    padding-bottom: 0;
+}
+
+.dvp-section-title {
+    font-size:     15px;
+    font-weight:   500;
+    color:         var(--text-primary);
+    margin:        0 0 12px;
+    padding-bottom: 12px;
+    border-bottom: 0.5px solid var(--bg-border);
+}
+
+.dvp-section-body {
+    margin-top: 20px;
+}
+
+.dvp-section-lead {
+    font-size:   13px;
+    color:       var(--text-secondary);
+    line-height: 1.6;
+    margin:      0 0 20px;
+}
+
+/* ── Network table ───────────────────────────────────────────────────────────── */
+
+.dvp-net-table {
+    width:          100%;
+    border-collapse: collapse;
+    font-size:       13px;
+}
+
+.dvp-net-th {
+    text-align:     left;
+    font-size:      9px;
+    font-family:    ui-monospace, 'Cascadia Code', Consolas, monospace;
+    color:          var(--text-tertiary);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding:        8px 12px;
+    background:     var(--bg-surface);
+    border-bottom:  0.5px solid var(--bg-border);
+}
+
+.dvp-net-th:first-child { width: 180px; }
+
+.dvp-net-tr {
+    border-bottom: 0.5px solid var(--bg-border);
+    transition:    background 120ms ease;
+}
+
+.dvp-net-tr:last-child { border-bottom: none; }
+.dvp-net-tr:hover      { background: var(--bg-surface-2); }
+
+.dvp-net-td {
+    padding:    10px 12px;
+    color:      var(--text-secondary);
+    white-space: nowrap;
+    vertical-align: middle;
+}
+
+.dvp-net-td--val {
+    color:       var(--text-primary);
+    font-family: ui-monospace, 'Cascadia Code', Consolas, monospace;
+    font-size:   12px;
+    word-break:  break-all;
+    white-space: normal;
+}
+
+.dvp-net-wrap {
+    background:    var(--bg-surface);
+    border:        0.5px solid var(--bg-border);
+    border-radius: 10px;
+    overflow:      hidden;
+}
+
+.dvp-net-link {
+    color:           var(--accent);
+    text-decoration: none;
+}
+
+.dvp-net-link:hover { text-decoration: underline; }
+
+/* ── Coming soon placeholder ─────────────────────────────────────────────────── */
+
+.dvp-soon {
+    font-size:  13px;
+    font-style: italic;
+    color:      var(--text-tertiary);
+}

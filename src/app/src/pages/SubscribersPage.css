@@ -1,0 +1,121 @@
+/*
+ * Subscribers page shell.
+ * Class prefix: sbp-
+ *
+ * Structure:
+ *   .sbp-page          — outer wrapper
+ *   .sbp-header        — flex row: title + count pill | buttons
+ *   .sbp-search-wrap   — full-width search bar
+ */
+
+/* ── Header ─────────────────────────────────────────────────────────────────── */
+
+.sbp-header {
+    display:         flex;
+    align-items:     center;
+    justify-content: space-between;
+    margin-bottom:   20px;
+    gap:             16px;
+    flex-wrap:       wrap;
+}
+
+.sbp-header-left {
+    display:     flex;
+    align-items: center;
+    gap:         10px;
+}
+
+.sbp-title {
+    font-size:   22px;
+    font-weight: 500;
+    color:       var(--text-primary);
+    margin:      0;
+    line-height: 1;
+}
+
+.sbp-count-pill {
+    font-size:   12px;
+    font-family: ui-monospace, 'Cascadia Code', Consolas, monospace;
+    color:       var(--text-secondary);
+    background:  var(--bg-surface);
+    border:      0.5px solid var(--bg-border);
+    border-radius: 20px;
+    padding:     3px 10px;
+    line-height: 1.6;
+}
+
+.sbp-header-right {
+    display:     flex;
+    align-items: center;
+    gap:         8px;
+}
+
+.sbp-btn-secondary {
+    font-size:   12px;
+    color:       var(--text-secondary);
+    background:  transparent;
+    border:      0.5px solid var(--bg-border);
+    border-radius: 6px;
+    padding:     8px 16px;
+    cursor:      pointer;
+    transition:  color 150ms ease, border-color 150ms ease;
+    line-height: 1;
+}
+
+.sbp-btn-secondary:hover {
+    color:        var(--text-primary);
+    border-color: var(--bg-border-bright);
+}
+
+.sbp-btn-primary {
+    font-size:   12px;
+    font-weight: 500;
+    color:       #06101A;
+    background:  var(--accent);
+    border:      none;
+    border-radius: 6px;
+    padding:     8px 16px;
+    cursor:      pointer;
+    transition:  background 150ms ease;
+    line-height: 1;
+}
+
+.sbp-btn-primary:hover    { background: var(--accent-dim); }
+.sbp-btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* ── Search bar ─────────────────────────────────────────────────────────────── */
+
+.sbp-search-wrap {
+    position:      relative;
+    display:       flex;
+    align-items:   center;
+    margin-bottom: 16px;
+}
+
+.sbp-search-icon {
+    position:       absolute;
+    left:           14px;
+    color:          var(--text-tertiary);
+    pointer-events: none;
+    line-height:    0;
+    flex-shrink:    0;
+}
+
+.sbp-search-input {
+    width:         100%;
+    background:    var(--bg-surface);
+    border:        0.5px solid var(--bg-border);
+    border-radius: 8px;
+    padding:       10px 14px 10px 38px;
+    font-size:     13px;
+    color:         var(--text-primary);
+    outline:       none;
+    transition:    border-color 150ms ease, box-shadow 150ms ease;
+}
+
+.sbp-search-input::placeholder { color: var(--text-tertiary); }
+
+.sbp-search-input:focus {
+    border-color: var(--accent);
+    box-shadow:   0 0 0 3px var(--accent-glow);
+}

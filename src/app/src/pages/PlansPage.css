@@ -1,0 +1,121 @@
+/*
+ * Plans page shell.
+ * Class prefix: plp-
+ *
+ * Structure:
+ *   .plp-header        — flex row: title | "Create plan" button
+ *   .plp-success       — ephemeral success toast
+ *   .plp-modal-overlay — full-screen backdrop
+ *   .plp-modal         — centered modal card
+ *   .plp-modal-header  — title + close button
+ */
+
+/* ── Header ─────────────────────────────────────────────────────────────────── */
+
+.plp-header {
+    display:         flex;
+    align-items:     center;
+    justify-content: space-between;
+    margin-bottom:   24px;
+}
+
+.plp-title {
+    font-size:   22px;
+    font-weight: 500;
+    color:       var(--text-primary);
+    margin:      0;
+}
+
+.plp-create-btn {
+    display:     flex;
+    align-items: center;
+    gap:         6px;
+    font-size:   12px;
+    font-weight: 500;
+    color:       #06101A;
+    background:  var(--accent);
+    border:      none;
+    border-radius: 6px;
+    padding:     8px 16px;
+    cursor:      pointer;
+    line-height: 1;
+    transition:  background 150ms ease;
+}
+
+.plp-create-btn:hover { background: var(--accent-dim); }
+
+/* ── Success toast ──────────────────────────────────────────────────────────── */
+
+.plp-success {
+    padding:       10px 16px;
+    background:    var(--accent-subtle);
+    border-radius: 8px;
+    font-size:     13px;
+    font-family:   ui-monospace, 'Cascadia Code', Consolas, monospace;
+    color:         var(--accent);
+    margin-bottom: 16px;
+}
+
+/* ── Modal overlay ──────────────────────────────────────────────────────────── */
+
+.plp-overlay {
+    position:        fixed;
+    inset:           0;
+    z-index:         200;
+    background:      rgba(6, 16, 26, 0.85);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    display:         flex;
+    align-items:     center;
+    justify-content: center;
+    padding:         24px;
+}
+
+/* ── Modal card ─────────────────────────────────────────────────────────────── */
+
+.plp-modal {
+    background:    var(--bg-surface-2);
+    border:        0.5px solid var(--bg-border);
+    border-radius: 14px;
+    padding:       28px;
+    width:         100%;
+    max-width:     420px;
+    max-height:    90vh;
+    overflow-y:    auto;
+    position:      relative;
+}
+
+.plp-modal::-webkit-scrollbar       { width: 3px; }
+.plp-modal::-webkit-scrollbar-track { background: transparent; }
+.plp-modal::-webkit-scrollbar-thumb { background: var(--bg-border-bright); border-radius: 2px; }
+
+/* ── Modal header ───────────────────────────────────────────────────────────── */
+
+.plp-modal-header {
+    display:         flex;
+    align-items:     center;
+    justify-content: space-between;
+    margin-bottom:   24px;
+}
+
+.plp-modal-title {
+    font-size:   16px;
+    font-weight: 500;
+    color:       var(--text-primary);
+    margin:      0;
+}
+
+.plp-modal-close {
+    background:  transparent;
+    border:      none;
+    color:       var(--text-secondary);
+    cursor:      pointer;
+    padding:     4px;
+    display:     flex;
+    align-items: center;
+    line-height: 0;
+    border-radius: 4px;
+    transition:  background 150ms ease, color 150ms ease;
+}
+
+.plp-modal-close:hover { background: var(--bg-border); color: var(--text-primary); }

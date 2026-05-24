@@ -1,0 +1,133 @@
+/*
+ * Settlements page shell.
+ * Class prefix: sep-
+ *
+ * Structure:
+ *   .sep-header        — title + export button
+ *   .sep-summary-bar   — total settled | protocol fees
+ *   .sep-plan-select   — plan filter dropdown
+ *   .sep-empty         — per-plan empty state
+ */
+
+/* ── Header ─────────────────────────────────────────────────────────────────── */
+
+.sep-header {
+    display:         flex;
+    align-items:     center;
+    justify-content: space-between;
+    margin-bottom:   20px;
+    gap:             16px;
+}
+
+.sep-title {
+    font-size:   22px;
+    font-weight: 500;
+    color:       var(--text-primary);
+    margin:      0;
+}
+
+.sep-header-right {
+    display:     flex;
+    align-items: center;
+    gap:         10px;
+}
+
+.sep-export-btn {
+    font-size:   12px;
+    color:       var(--text-secondary);
+    background:  transparent;
+    border:      0.5px solid var(--bg-border);
+    border-radius: 6px;
+    padding:     8px 16px;
+    cursor:      pointer;
+    transition:  color 150ms ease, border-color 150ms ease;
+    line-height: 1;
+}
+
+.sep-export-btn:hover          { color: var(--text-primary); border-color: var(--bg-border-bright); }
+.sep-export-btn:disabled       { opacity: 0.4; cursor: not-allowed; }
+
+/* ── Plan filter select ─────────────────────────────────────────────────────── */
+
+.sep-plan-select {
+    font-size:     12px;
+    color:         var(--text-secondary);
+    background:    var(--bg-surface);
+    border:        0.5px solid var(--bg-border);
+    border-radius: 6px;
+    padding:       8px 12px;
+    outline:       none;
+    cursor:        pointer;
+    appearance:    none;
+    transition:    border-color 150ms ease;
+}
+
+.sep-plan-select:focus { border-color: var(--bg-border-bright); }
+
+/* ── Summary bar ────────────────────────────────────────────────────────────── */
+
+.sep-summary {
+    display:       flex;
+    align-items:   center;
+    gap:           0;
+    margin-bottom: 16px;
+    background:    var(--bg-surface);
+    border:        0.5px solid var(--bg-border);
+    border-radius: 10px;
+    overflow:      hidden;
+}
+
+.sep-summary-stat {
+    display:        flex;
+    flex-direction: column;
+    gap:            4px;
+    padding:        14px 20px;
+    flex:           1;
+}
+
+.sep-summary-divider {
+    width:        0.5px;
+    align-self:   stretch;
+    background:   var(--bg-border);
+    flex-shrink:  0;
+}
+
+.sep-summary-label {
+    font-size:      9px;
+    font-family:    ui-monospace, 'Cascadia Code', Consolas, monospace;
+    color:          var(--text-tertiary);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.sep-summary-value {
+    font-size:   16px;
+    font-family: ui-monospace, 'Cascadia Code', Consolas, monospace;
+    color:       var(--accent);
+    line-height: 1;
+    letter-spacing: -0.01em;
+}
+
+/* ── Per-plan empty state ───────────────────────────────────────────────────── */
+
+.sep-plan-empty {
+    background:    var(--bg-surface);
+    border:        0.5px solid var(--bg-border);
+    border-radius: 12px;
+    padding:       60px 24px;
+    text-align:    center;
+}
+
+.sep-plan-empty-heading {
+    font-size:   13px;
+    font-weight: 500;
+    color:       var(--text-secondary);
+    margin:      0 0 6px;
+}
+
+.sep-plan-empty-sub {
+    font-size:  12px;
+    color:      var(--text-tertiary);
+    margin:     0;
+    line-height: 1.5;
+}
