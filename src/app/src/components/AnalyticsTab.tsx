@@ -1,70 +1,65 @@
 /**
- * Merchant analytics — KPI cards, revenue-over-time chart, per-plan breakdown.
- * Reads on-chain events to compute MRR, total revenue, and active subscriber counts.
+ * AnalyticsTab — KPI cards, two Recharts charts, and per-plan breakdown table.
  *
+ * Receives `days` from AnalyticsPage and filters dailyRevenue accordingly.
  * Socket.io integration:
- *   'payment.charged' events patch local state in real time without triggering
- *   a full refetch. Two counters are maintained:
- *     - liveChargesCount  — number of charges received since page load
- *     - liveRevenueToday  — USDC sum of those charges
- *   The revenue chart's today bar is updated inline from liveRevenueToday.
+ *   'payment.charged' events patch liveRevenueToday and liveChargesCount in
+ *   real time; today's revenue bar is updated without a full refetch.
+ *
+ * Recharts SVG note: SVG presentation attributes do not accept CSS custom
+ * properties (var(--...)), so all colours are hex constants mirroring tokens.
+ *
+ * Class prefix: alt-
  */
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, type ReactNode } from 'react'
 import { useAccount } from 'wagmi'
 import {
-    AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip,
+    LineChart, Line, AreaChart, Area,
+    XAxis, YAxis, CartesianGrid, Tooltip,
     ResponsiveContainer,
 } from 'recharts'
-import { useAnalytics } from '../hooks/useAnalytics'
+import { useAnalytics, type DailyRevenue, type PlanMetrics } from '../hooks/useAnalytics'
 import { useSocket } from '../hooks/useSocket'
-import type { DailyRevenue } from '../hooks/useAnalytics'
-import { EmptyState } from './EmptyState'
+import { DataTable, type DataTableColumn } from './DataTable'
+import './AnalyticsTab.css'
 
-const ANALYTICS_EMPTY_ICON = (
-    <div className="w-11 h-11 rounded-full bg-gray-100 flex items-center justify-center">
-        <svg className="w-5 h-5 text-gray-400" fill="none" viewBox="0 0 24 24"
-             stroke="currentColor" strokeWidth={1.75}>
-            <path strokeLinecap="round" strokeLinejoin="round"
-                d="M3 3v18h18" />
-            <path strokeLinecap="round" strokeLinejoin="round"
-                d="M7 16l4-5 4 3 4-6" />
-        </svg>
-    </div>
-)
+// ── Recharts hex constants (mirror tokens.css — update both together) ──────────
 
-const card: React.CSSProperties = {
-    border: '1px solid #e5e4e7', borderRadius: '12px', padding: '20px',
-    background: '#fff', boxShadow: '0 1px 3px rgba(0,0,0,0.06)',
-}
-const liveCard: React.CSSProperties = {
-    ...card,
-    border: '1px solid #c7d2fe',
-    background: 'rgba(238,242,255,0.4)',
-}
-const thStyle: React.CSSProperties = {
-    textAlign: 'left', padding: '10px 16px', borderBottom: '1px solid #e5e4e7',
-    fontWeight: 600, fontSize: '13px', color: '#6b6375',
-}
-const tdStyle: React.CSSProperties = {
-    padding: '10px 16px', borderBottom: '1px solid #f4f3f6', fontSize: '14px',
+const C_ACCENT = '#00FF87', C_FILL_START = 'rgba(0,255,135,0.18)',  C_FILL_END = 'rgba(0,255,135,0)'
+const C_GRID   = '#0E2A3A', C_AXIS       = '#1A3A50'
+const C_VIOLET = '#7C3AED', C_VIOLET_FILL_START = 'rgba(124,58,237,0.18)', C_VIOLET_FILL_END = 'rgba(124,58,237,0)'
+
+// ── Plan breakdown columns ─────────────────────────────────────────────────────
+
+const PLAN_COLS: DataTableColumn[] = [
+    { key: 'plan',        label: 'Plan',        width: '90px',   mono: true   },
+    { key: 'subscribers', label: 'Subscribers',  width: '110px',  align: 'right' },
+    { key: 'revenue',     label: 'Revenue',      width: '120px',  align: 'right', mono: true },
+    { key: 'churn',       label: 'Churn Rate',   width: '110px',  align: 'right' },
+]
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+
+function fmtUsdc(n: number): string {
+    return n.toLocaleString('en-US', {
+        style:                 'currency',
+        currency:              'USD',
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+    })
 }
 
-function fmt(n: number): string {
-    return n.toLocaleString('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 2 })
+/** ISO date string for N days ago from today. */
+function dateNDaysAgo(days: number): string {
+    const d = new Date()
+    d.setDate(d.getDate() - (days - 1))
+    return d.toISOString().split('T')[0]!
 }
 
-function todayDateString(): string {
-    return new Date().toISOString().split('T')[0]
-}
-
-/**
- * Merges a live USDC delta into an existing dailyRevenue array without mutating it.
- * If today already has an entry, its revenue is incremented.
- * If not, a new entry for today is appended.
- */
+/** Merges a live USDC delta into dailyRevenue without mutating. */
 function mergeRevenueToday(base: DailyRevenue[], liveAmount: number): DailyRevenue[] {
     if (liveAmount === 0) return base
-    const today = todayDateString()
+    const today = new Date().toISOString().split('T')[0]!
     const idx   = base.findIndex(d => d.date === today)
     if (idx >= 0) {
         return base.map((d, i) => i === idx ? { ...d, revenue: d.revenue + liveAmount } : d)
@@ -72,145 +67,228 @@ function mergeRevenueToday(base: DailyRevenue[], liveAmount: number): DailyReven
     return [...base, { date: today, revenue: liveAmount }]
 }
 
-export function AnalyticsTab() {
-    const { address }         = useAccount()
-    const { data, isLoading } = useAnalytics()
+// STUB: Requires per-day subscription event data from the hook. Currently
+//       approximates a linear ramp toward the current active subscriber count.
+function buildSubscriberSeries(
+    totalSubscribers: number,
+    days: number,
+): Array<{ date: string; subscribers: number }> {
+    const result: Array<{ date: string; subscribers: number }> = []
+    const now = new Date()
+    for (let i = days - 1; i >= 0; i--) {
+        const d = new Date(now)
+        d.setDate(d.getDate() - i)
+        result.push({
+            date:        d.toISOString().split('T')[0]!,
+            subscribers: Math.round(totalSubscribers * ((days - i) / days)),
+        })
+    }
+    return result
+}
+
+// ── Custom tooltip ────────────────────────────────────────────────────────────
+
+interface TooltipEntry {
+    active?:  boolean
+    payload?: Array<{ value?: number }>
+    label?:   string
+}
+
+function RevenueTooltip({ active, payload, label }: TooltipEntry) {
+    if (!active || !payload?.length) return null
+    return (
+        <div className="alt-tooltip">
+            <p className="alt-tooltip-label">{label}</p>
+            <p className="alt-tooltip-value">{fmtUsdc(payload[0]?.value ?? 0)}</p>
+        </div>
+    )
+}
+
+function SubTooltip({ active, payload, label }: TooltipEntry) {
+    if (!active || !payload?.length) return null
+    return (
+        <div className="alt-tooltip">
+            <p className="alt-tooltip-label">{label}</p>
+            <p className="alt-tooltip-value">{payload[0]?.value ?? 0} subs</p>
+        </div>
+    )
+}
+
+// ── Plan breakdown row builder ─────────────────────────────────────────────────
+
+function buildPlanRows(plans: PlanMetrics[]): Record<string, ReactNode>[] {
+    return plans.map(p => ({
+        plan:        `Plan ${p.planId.toString()}`,
+        subscribers: String(p.activeSubscribers),
+        revenue:     fmtUsdc(p.totalRevenue),
+        // STUB: Churn rate requires historical cancellation data per plan interval;
+        //       not available from the current analytics hook.
+        churn: '—',
+    }))
+}
+
+// ── Component ─────────────────────────────────────────────────────────────────
+
+interface AnalyticsTabProps {
+    /** Number of days to display in charts and KPI calculations. */
+    days: 7 | 30 | 90
+}
+
+export function AnalyticsTab({ days }: AnalyticsTabProps) {
+    const { address }          = useAccount()
+    const { data, isLoading }  = useAnalytics()
     const { onPaymentCharged } = useSocket()
 
-    // Number of charges received via socket since this page was mounted.
-    const [liveChargesCount, setLiveChargesCount] = useState(0)
-    // Cumulative USDC received via socket since mount — patched into Total Revenue
-    // and today's chart bar in real time.
-    const [liveRevenueToday, setLiveRevenueToday] = useState(0)
+    const [liveChargesCount,  setLiveChargesCount]  = useState(0)
+    const [liveRevenueToday,  setLiveRevenueToday]  = useState(0)
 
     useEffect(() => {
-        return onPaymentCharged((payload) => {
+        return onPaymentCharged(payload => {
             setLiveChargesCount(c => c + 1)
             setLiveRevenueToday(r => r + parseFloat(payload.amount))
         })
     }, [onPaymentCharged])
 
-    // Chart data with today's live revenue merged in — recomputed only when either
-    // the fetched daily data or the live delta changes.
-    const chartData: DailyRevenue[] = useMemo(
-        () => mergeRevenueToday(data?.dailyRevenue ?? [], liveRevenueToday),
-        [data?.dailyRevenue, liveRevenueToday]
+    // Revenue chart data: historical + live patch, filtered to selected range
+    const revenueData: DailyRevenue[] = useMemo(() => {
+        const cutoff  = dateNDaysAgo(days)
+        const patched = mergeRevenueToday(data?.dailyRevenue ?? [], liveRevenueToday)
+        return patched.filter(d => d.date >= cutoff)
+    }, [data?.dailyRevenue, liveRevenueToday, days])
+
+    // Subscriber growth series (approximated from total active count)
+    const subGrowthData = useMemo(
+        () => buildSubscriberSeries(data?.activeSubscribers ?? 0, days),
+        [data?.activeSubscribers, days],
+    )
+
+    const planRows = useMemo(
+        () => buildPlanRows(data?.plans ?? []),
+        [data?.plans],
     )
 
     if (!address) {
-        return <p style={{ color: '#6b6375', marginTop: '32px' }}>Connect your wallet to view analytics.</p>
-    }
-    if (isLoading) {
-        return <p style={{ color: '#6b6375', marginTop: '32px' }}>Loading analytics…</p>
+        return <p className="alt-loading">Connect your wallet to view analytics.</p>
     }
 
-    // No plans + no live charges = merchant has never had any activity.
-    // Show the empty state instead of a dashboard full of zeroes.
+    if (isLoading) {
+        return <p className="alt-loading">Loading analytics…</p>
+    }
+
     if ((data?.plans.length ?? 0) === 0 && liveChargesCount === 0) {
         return (
-            <EmptyState
-                icon={ANALYTICS_EMPTY_ICON}
-                heading="No data yet"
-                subtext="Analytics will appear here once your first payment is settled. Come back after your first billing cycle."
-            />
+            <p className="alt-empty-text" style={{ padding: '60px 0', textAlign: 'center' }}>
+                Analytics will appear here once your first payment is settled.
+            </p>
         )
     }
 
     const kpis = [
-        {
-            label: 'Monthly Recurring Revenue',
-            value: fmt(data?.mrr ?? 0),
-            live:  false,
-        },
-        {
-            // Patch: add live socket revenue on top of the fetched all-time total.
-            // The 30-second refetch will naturally absorb the delta into the base figure.
-            label: 'Total Revenue',
-            value: fmt((data?.totalRevenue ?? 0) + liveRevenueToday),
-            live:  false,
-        },
-        {
-            label: 'Active Subscribers',
-            value: String(data?.activeSubscribers ?? 0),
-            live:  false,
-        },
-        {
-            label: 'Charges Today',
-            value: String(liveChargesCount),
-            live:  true,
-        },
+        { label: 'MRR',               value: fmtUsdc(data?.mrr ?? 0),                              live: false },
+        { label: 'Total Revenue',     value: fmtUsdc((data?.totalRevenue ?? 0) + liveRevenueToday), live: false },
+        { label: 'Active Subscribers',value: String(data?.activeSubscribers ?? 0),                  live: false },
+        { label: 'Charges Today',     value: String(liveChargesCount),                              live: true  },
     ]
 
     return (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '28px', marginTop: '8px' }}>
+        <div className="alt-root">
 
-            {/* KPI cards — 4-column grid; last card is the live socket counter */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '16px' }}>
+            {/* ── KPI cards ─────────────────────────────────────────── */}
+            <div className="alt-kpi-grid">
                 {kpis.map(({ label, value, live }) => (
-                    <div key={label} style={live ? liveCard : card}>
-                        <p style={{ fontSize: '13px', color: live ? '#6366f1' : '#6b6375', margin: '0 0 6px' }}>
-                            {label}
-                        </p>
-                        <p style={{ fontSize: '24px', fontWeight: 600, margin: 0, color: live ? '#4f46e5' : 'inherit' }}>
-                            {value}
-                        </p>
+                    <div key={label} className={`alt-kpi-card${live ? ' alt-kpi-card--live' : ''}`}>
+                        <p className="alt-kpi-label">{label}</p>
+                        <p className="alt-kpi-value">{value}</p>
                     </div>
                 ))}
             </div>
 
-            {/* Revenue over time — today's bar is patched in real time by liveRevenueToday */}
-            {chartData.length > 0 && (
-                <div style={card}>
-                    <p style={{ fontSize: '13px', fontWeight: 500, color: '#374151', margin: '0 0 16px' }}>
-                        Revenue over time
-                    </p>
-                    <ResponsiveContainer width="100%" height={220}>
-                        <AreaChart data={chartData}>
+            {/* ── Charts ────────────────────────────────────────────── */}
+            <div className="alt-chart-row">
+
+                {/* Revenue over time — line chart */}
+                <div className="alt-chart-card">
+                    <p className="alt-chart-title">Revenue</p>
+                    <ResponsiveContainer width="100%" height={180}>
+                        <LineChart data={revenueData}>
                             <defs>
-                                <linearGradient id="rev" x1="0" y1="0" x2="0" y2="1">
-                                    <stop offset="5%"  stopColor="#6366f1" stopOpacity={0.15} />
-                                    <stop offset="95%" stopColor="#6366f1" stopOpacity={0} />
+                                <linearGradient id="altRevFill" x1="0" y1="0" x2="0" y2="1">
+                                    <stop offset="5%"  stopColor={C_FILL_START} />
+                                    <stop offset="95%" stopColor={C_FILL_END}   />
                                 </linearGradient>
                             </defs>
-                            <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                            <XAxis dataKey="date" tick={{ fontSize: 11 }} />
-                            <YAxis tick={{ fontSize: 11 }} tickFormatter={v => `$${v}`} />
-                            <Tooltip formatter={(v: number) => fmt(v)} />
-                            <Area
+                            <CartesianGrid strokeDasharray="3 3" stroke={C_GRID} />
+                            <XAxis
+                                dataKey="date"
+                                tick={{ fontSize: 10, fill: C_AXIS }}
+                                tickLine={false}
+                                axisLine={false}
+                            />
+                            <YAxis
+                                tick={{ fontSize: 10, fill: C_AXIS }}
+                                tickLine={false}
+                                axisLine={false}
+                                tickFormatter={v => `$${v}`}
+                            />
+                            <Tooltip content={<RevenueTooltip />} />
+                            <Line
                                 type="monotone"
                                 dataKey="revenue"
-                                stroke="#6366f1"
-                                fill="url(#rev)"
+                                stroke={C_ACCENT}
+                                strokeWidth={2}
+                                dot={false}
+                                activeDot={{ r: 4, fill: C_ACCENT, strokeWidth: 0 }}
+                            />
+                        </LineChart>
+                    </ResponsiveContainer>
+                </div>
+
+                {/* Subscriber growth — area chart */}
+                <div className="alt-chart-card">
+                    <p className="alt-chart-title">Subscriber Growth</p>
+                    <ResponsiveContainer width="100%" height={180}>
+                        <AreaChart data={subGrowthData}>
+                            <defs>
+                                <linearGradient id="altSubFill" x1="0" y1="0" x2="0" y2="1">
+                                    <stop offset="5%"  stopColor={C_VIOLET_FILL_START} />
+                                    <stop offset="95%" stopColor={C_VIOLET_FILL_END}   />
+                                </linearGradient>
+                            </defs>
+                            <CartesianGrid strokeDasharray="3 3" stroke={C_GRID} />
+                            <XAxis
+                                dataKey="date"
+                                tick={{ fontSize: 10, fill: C_AXIS }}
+                                tickLine={false}
+                                axisLine={false}
+                            />
+                            <YAxis
+                                tick={{ fontSize: 10, fill: C_AXIS }}
+                                tickLine={false}
+                                axisLine={false}
+                                allowDecimals={false}
+                            />
+                            <Tooltip content={<SubTooltip />} />
+                            <Area
+                                type="monotone"
+                                dataKey="subscribers"
+                                stroke={C_VIOLET}
+                                fill="url(#altSubFill)"
                                 strokeWidth={2}
                             />
                         </AreaChart>
                     </ResponsiveContainer>
                 </div>
-            )}
+            </div>
 
-            {/* Per-plan breakdown */}
-            {(data?.plans.length ?? 0) > 0 && (
-                <div style={{ ...card, padding: 0, overflow: 'hidden' }}>
-                    <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '14px' }}>
-                        <thead style={{ background: '#f9fafb' }}>
-                            <tr>
-                                {['Plan ID', 'Price', 'Active Subs', 'MRR', 'Total Revenue'].map(h => (
-                                    <th key={h} style={thStyle}>{h}</th>
-                                ))}
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {data!.plans.map(p => (
-                                <tr key={p.planId.toString()}>
-                                    <td style={{ ...tdStyle, fontFamily: 'monospace' }}>{p.planId.toString()}</td>
-                                    <td style={tdStyle}>{fmt(p.price)}</td>
-                                    <td style={tdStyle}>{p.activeSubscribers}</td>
-                                    <td style={tdStyle}>{fmt(p.mrr)}</td>
-                                    <td style={tdStyle}>{fmt(p.totalRevenue)}</td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
+            {/* ── Plan breakdown ─────────────────────────────────────── */}
+            {planRows.length > 0 && (
+                <div>
+                    <p className="alt-breakdown-label">Plan Breakdown</p>
+                    <DataTable
+                        columns={PLAN_COLS}
+                        rows={planRows}
+                        skeletonRows={3}
+                    />
                 </div>
             )}
 
