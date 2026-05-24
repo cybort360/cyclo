@@ -111,6 +111,18 @@
     margin:      0 0 4px;
 }
 
+/* ── Responsive ─────────────────────────────────────────────────────────────── */
+
+@media (max-width: 767px) {
+    /*
+     * Reduce code font and step gap on mobile so code blocks have maximum
+     * horizontal room. The step badge (24px) + gap + body still flex correctly;
+     * min-width:0 on .dcb-step-body already prevents overflow.
+     */
+    .dcb-pre  { font-size: 12px; padding: 12px; }
+    .dcb-step { gap: 12px; }
+}
+
 /* ── CopyButton (inline table cell) ─────────────────────────────────────────── */
 
 .dcb-inline-copy {

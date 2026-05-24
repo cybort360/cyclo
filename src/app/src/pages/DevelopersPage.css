@@ -203,3 +203,61 @@
     font-style: italic;
     color:      var(--text-tertiary);
 }
+
+/* ── Responsive ──────────────────────────────────────────────────────────────── */
+
+/*
+ * Desktop: [216px sticky TOC | flex:1 content]
+ * Mobile:  [full-width horizontal pill strip] stacked above [full-width content]
+ *
+ * The 216px side nav consumes 57 % of a 375px screen and the content's own
+ * 40px padding leaves only ~79px of usable inner width — code blocks and step
+ * titles get crushed. Stacking eliminates the constraint entirely.
+ */
+@media (max-width: 767px) {
+    .dvp-wrap { flex-direction: column; }
+
+    /* ── Nav → horizontal scrollable pill strip ─────────────────────────── */
+
+    .dvp-nav {
+        width:         100%;
+        border-right:  none;
+        border-bottom: 0.5px solid var(--bg-border);
+    }
+
+    .dvp-nav-inner {
+        position:  static; /* un-stick — topbar already handles fixed chrome */
+        padding:   0;
+    }
+
+    /* "ON THIS PAGE" label hidden — save vertical space, links speak for themselves */
+    .dvp-nav-heading { display: none; }
+
+    .dvp-nav-list {
+        flex-direction:     row;
+        flex-wrap:          nowrap;
+        gap:                4px;
+        overflow-x:         auto;
+        padding:            10px 16px;
+        /* Hide scrollbar visually — still scrollable via touch */
+        scrollbar-width:    none;
+        -ms-overflow-style: none;
+    }
+    .dvp-nav-list::-webkit-scrollbar { display: none; }
+
+    .dvp-nav-link {
+        white-space: nowrap;  /* keep each label on one line */
+        font-size:   12px;
+        padding:     5px 10px;
+    }
+
+    /* ── Content → full width ───────────────────────────────────────────── */
+
+    .dvp-content {
+        padding:   24px 20px 60px;
+        max-width: 100%;           /* override the 780px desktop cap */
+    }
+
+    /* Slightly shorter section spacing on mobile */
+    .dvp-section { padding-bottom: 40px; }
+}
