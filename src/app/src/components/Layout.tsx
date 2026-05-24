@@ -13,7 +13,7 @@ import { useState, useEffect, type ReactNode, type ComponentType } from 'react'
 import {
     IconLayoutDashboard, IconUsers, IconAlertTriangle, IconStack2,
     IconReceipt, IconBuildingBank, IconChartBar, IconWebhook,
-    IconCode, IconBook, IconPlayerPlay, IconSearch,
+    IconCode, IconBook, IconPlayerPlay, IconSearch, IconLayoutSidebarRight,
 } from '@tabler/icons-react'
 import { useMerchantProfile } from '../context/MerchantProfileContext'
 import { useSubscriptionManager } from '../hooks/useSubscriptionManager'
@@ -149,6 +149,10 @@ export function Layout({ children }: { children: ReactNode }) {
     const [showProfileSetup, setShowProfileSetup] = useState(false)
     const [showAI, setShowAI]                     = useState(false)
     const [rightPanelContent, setRightPanel]      = useState<ReactNode>(null)
+    const [isPanelOpen, setIsPanelOpen]           = useState(false)
+
+    // Close the right panel drawer whenever the route changes
+    useEffect(() => { setIsPanelOpen(false) }, [location])
 
     // Prompt merchant to complete their profile 1 s after connecting
     useEffect(() => {
@@ -273,8 +277,16 @@ export function Layout({ children }: { children: ReactNode }) {
                             />
                         </div>
 
-                        {/* Right: socket indicator + divider + avatar */}
+                        {/* Right: panel toggle (mobile) + socket indicator + divider + avatar */}
                         <div className="sl-topbar-right">
+                            <button
+                                onClick={() => setIsPanelOpen(v => !v)}
+                                className="sl-panel-toggle"
+                                aria-label={isPanelOpen ? 'Close panel' : 'Open panel'}
+                                aria-expanded={isPanelOpen}
+                            >
+                                <IconLayoutSidebarRight size={18} aria-hidden="true" />
+                            </button>
                             <SocketStatusIndicator />
                             <div className="sl-topbar-divider" aria-hidden="true" />
                             {avatarInitials && (
@@ -293,8 +305,15 @@ export function Layout({ children }: { children: ReactNode }) {
                     </div>
                 </main>
 
+                {/* Mobile backdrop — closes the right panel on tap */}
+                <div
+                    className={`sl-panel-backdrop${isPanelOpen ? ' sl-panel-backdrop--open' : ''}`}
+                    onClick={() => setIsPanelOpen(false)}
+                    aria-hidden="true"
+                />
+
                 {/* ── Column 3: Right panel ───────────────────────────── */}
-                <aside className="sl-rightpanel" aria-label="Page context panel">
+                <aside className={`sl-rightpanel${isPanelOpen ? ' sl-rightpanel--open' : ''}`} aria-label="Page context panel">
                     {rightPanelContent}
                 </aside>
 
