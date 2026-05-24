@@ -1,118 +1,181 @@
 /**
- * Table of PaymentCharged events for the merchant's plans.
- * Shows each settlement and the running total USDC received.
+ * SettlementsTable — custom dark-token table of PaymentCharged events.
  *
- * newTxHashes — optional set of transaction hashes that arrived via the
- * Socket.io keeper feed. Rows whose txHash is in this set receive a
- * brief highlight animation when they first appear.
+ * Implements its own CSS grid rows (not the DataTable component) so that
+ * live rows arriving via Socket.io can receive a per-row slide-down animation
+ * via the `stl-row--new` class.
+ *
+ * Columns: Time | Subscriber | Plan | Amount | Fee | Tx hash
+ *
+ * Time: derived from nextChargeTimestamp − plan.interval. Shows "just now"
+ * for rows currently in newTxHashes (recently arrived via socket).
+ *
+ * Fee: 3% of the settlement amount (Cyclo protocol fee).
+ *
+ * Class prefix: stl-
  */
-import type { PaymentEvent } from '../hooks/useSubscriptionManager';
-import { fromUsdcUnits } from '../utils/formatting';
-import { EmptyState } from './EmptyState';
+import { useMemo } from 'react'
+import { IconExternalLink } from '@tabler/icons-react'
+import type { PlanEvent, PaymentEvent } from '../hooks/useSubscriptionManager'
+import { fromUsdcUnits, relativeTime } from '../utils/formatting'
+import './SettlementsTable.css'
 
-const SETTLEMENTS_EMPTY_ICON = (
-    <div className="w-11 h-11 rounded-full bg-gray-100 flex items-center justify-center">
-        <svg className="w-5 h-5 text-gray-400" fill="none" viewBox="0 0 24 24"
-             stroke="currentColor" strokeWidth={1.75}>
-            <path strokeLinecap="round" strokeLinejoin="round"
-                d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2" />
-            <rect x="9" y="3" width="6" height="4" rx="1" />
-            <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6M9 16h4" />
-        </svg>
-    </div>
-);
+// ── Constants ─────────────────────────────────────────────────────────────────
 
-interface SettlementsTableProps {
-    settlements:  PaymentEvent[];
-    isLoading:    boolean;
-    error?:       string;
-    /** txHashes currently mid-highlight; supplied by SettlementsPage for live rows. */
-    newTxHashes?: ReadonlySet<string>;
-}
+/** Cyclo protocol fee: 3% of each settlement. */
+const PROTOCOL_FEE_BPS = 3
 
-const thStyle: React.CSSProperties = { textAlign: 'left', padding: '10px 12px', borderBottom: '1px solid #e5e4e7', fontWeight: 600, fontSize: '13px', color: '#6b6375' };
-const tdStyle: React.CSSProperties = { padding: '10px 12px', borderBottom: '1px solid #f4f3f6', fontSize: '14px' };
+/** CSS grid template shared by header and every data row. */
+const GRID = '80px 150px 90px 100px 80px 1fr'
+
+const SKELETON_ROWS = 5
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
 
 /**
- * Returns a locale date string for a Unix-second timestamp.
- * Returns "—" for rows where the timestamp is unavailable (0n sentinel),
- * which is the case for live socket rows that lack nextChargeTimestamp.
+ * Derives an approximate charge timestamp from nextChargeTimestamp − interval.
+ * Returns null when either value is unavailable (0n sentinels for live rows).
  */
-function formatTimestamp(ts: bigint): string {
-    if (ts === 0n) return '—';
-    return new Date(Number(ts) * 1000).toLocaleDateString();
+function chargeTime(event: PaymentEvent, planMap: Map<string, PlanEvent>): string | null {
+    if (event.nextChargeTimestamp === 0n) return null
+    const plan = planMap.get(event.planId.toString())
+    if (!plan) return null
+    const chargedAt = Number(event.nextChargeTimestamp - plan.interval) * 1_000
+    return relativeTime(new Date(chargedAt).toISOString())
 }
 
-export function SettlementsTable({ settlements, isLoading, error, newTxHashes }: SettlementsTableProps) {
-    if (isLoading) return <p style={{ color: '#6b6375' }}>Loading settlements…</p>;
-    if (error)     return <p style={{ color: '#dc2626' }}>Failed to load settlements: {error}</p>;
-    if (settlements.length === 0) return (
-        <EmptyState
-            icon={SETTLEMENTS_EMPTY_ICON}
-            heading="No settlements yet"
-            subtext="Settlements appear here as the keeper processes due payments. Check back after your first billing cycle."
-        />
-    );
+/** Truncates a hex hash to "0x1234…5678" format. */
+function shortHash(hash: string): string {
+    return `${hash.slice(0, 8)}…${hash.slice(-4)}`
+}
 
-    const totalSettled = settlements.reduce((acc, s) => acc + s.amount, 0n);
+/** Formats a fee amount: 3% of the raw USDC bigint. */
+function feeDisplay(amount: bigint): string {
+    const fee = fromUsdcUnits(amount) * PROTOCOL_FEE_BPS / 100
+    return fee.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 4 })
+}
+
+// ── Sub-components ────────────────────────────────────────────────────────────
+
+/** Skeleton row shown while initial data loads. */
+function SkeletonRow() {
+    return (
+        <div className="stl-row stl-row--skeleton" style={{ gridTemplateColumns: GRID }} aria-hidden="true">
+            {Array.from({ length: 6 }, (_, i) => (
+                <div key={i} className="stl-cell">
+                    <span className="stl-skeleton-bar" />
+                </div>
+            ))}
+        </div>
+    )
+}
+
+// ── Component ─────────────────────────────────────────────────────────────────
+
+export interface SettlementsTableProps {
+    settlements:  PaymentEvent[]
+    plans:        PlanEvent[]
+    isLoading:    boolean
+    error?:       string
+    /** txHashes arriving live via socket — used to apply the slide-in animation. */
+    newTxHashes?: ReadonlySet<string>
+}
+
+export function SettlementsTable({ settlements, plans, isLoading, error, newTxHashes }: SettlementsTableProps) {
+    const planMap = useMemo(() => new Map(plans.map(p => [p.planId.toString(), p])), [plans])
 
     return (
-        <>
-            {/* Keyframe defined inline — no external CSS file or animation library needed. */}
-            <style>{`
-                @keyframes cyclo-row-highlight {
-                    0%   { background-color: #eef2ff; }
-                    60%  { background-color: #eef2ff; }
-                    100% { background-color: transparent; }
-                }
-            `}</style>
+        <div className="stl-wrap" role="table">
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                <div style={{ fontWeight: 600, fontSize: '18px' }}>
-                    Total received: <span style={{ color: '#6366f1' }}>{fromUsdcUnits(totalSettled)} USDC</span>
-                </div>
-                <div style={{ overflowX: 'auto' }}>
-                    <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                        <thead>
-                            <tr>
-                                <th style={thStyle}>Plan ID</th>
-                                <th style={thStyle}>Subscriber</th>
-                                <th style={thStyle}>Amount (USDC)</th>
-                                <th style={thStyle}>Next charge</th>
-                                <th style={thStyle}>Tx</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {settlements.map((s, i) => {
-                                const isNew = newTxHashes?.has(s.txHash) ?? false;
-                                return (
-                                    <tr
-                                        key={`${s.txHash}-${i}`}
-                                        style={isNew ? { animation: 'cyclo-row-highlight 2s ease-out forwards' } : undefined}
-                                    >
-                                        <td style={tdStyle}>{s.planId.toString()}</td>
-                                        <td style={tdStyle}>
-                                            <code style={{ fontSize: '13px' }}>{s.subscriber.slice(0, 8)}…{s.subscriber.slice(-4)}</code>
-                                        </td>
-                                        <td style={tdStyle}>{fromUsdcUnits(s.amount)}</td>
-                                        <td style={tdStyle}>{formatTimestamp(s.nextChargeTimestamp)}</td>
-                                        <td style={tdStyle}>
-                                            <a
-                                                href={`https://testnet.arcscan.app/tx/${s.txHash}`}
-                                                target="_blank"
-                                                rel="noreferrer"
-                                                style={{ color: '#6366f1', fontSize: '13px' }}
-                                            >
-                                                {s.txHash.slice(0, 10)}…
-                                            </a>
-                                        </td>
-                                    </tr>
-                                );
-                            })}
-                        </tbody>
-                    </table>
-                </div>
+            {/* Header */}
+            <div className="stl-header" style={{ gridTemplateColumns: GRID }} role="row">
+                {['Time', 'Subscriber', 'Plan', 'Amount', 'Fee', 'Tx hash'].map(label => (
+                    <div key={label} className="stl-th" role="columnheader">{label}</div>
+                ))}
             </div>
-        </>
-    );
+
+            {/* Loading skeleton */}
+            {isLoading && Array.from({ length: SKELETON_ROWS }, (_, i) => (
+                <SkeletonRow key={i} />
+            ))}
+
+            {/* Error */}
+            {!isLoading && error && (
+                <div className="stl-empty" role="row">
+                    <p className="stl-empty-text" style={{ color: 'var(--danger)' }}>
+                        Failed to load settlements: {error}
+                    </p>
+                </div>
+            )}
+
+            {/* Empty */}
+            {!isLoading && !error && settlements.length === 0 && (
+                <div className="stl-empty" role="row">
+                    <p className="stl-empty-text">No settlements yet.</p>
+                </div>
+            )}
+
+            {/* Rows */}
+            {!isLoading && !error && settlements.map((s, i) => {
+                const isNew     = newTxHashes?.has(s.txHash) ?? false
+                const timeLabel = isNew ? 'just now' : (chargeTime(s, planMap) ?? '—')
+                const amount    = fromUsdcUnits(s.amount)
+                    .toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 6 })
+
+                return (
+                    <div
+                        key={`${s.txHash}-${i}`}
+                        className={`stl-row${isNew ? ' stl-row--new' : ''}`}
+                        style={{ gridTemplateColumns: GRID }}
+                        role="row"
+                    >
+                        {/* Time */}
+                        <div className="stl-cell" role="cell">
+                            <span className="stl-time">{timeLabel}</span>
+                        </div>
+
+                        {/* Subscriber */}
+                        <div className="stl-cell" role="cell">
+                            <span className="stl-addr">
+                                {s.subscriber.slice(0, 6)}…{s.subscriber.slice(-4)}
+                            </span>
+                        </div>
+
+                        {/* Plan */}
+                        <div className="stl-cell stl-cell--mono" role="cell">
+                            Plan {s.planId.toString()}
+                        </div>
+
+                        {/* Amount */}
+                        <div className="stl-cell stl-cell--right" role="cell">
+                            <span className="stl-amount">{amount}</span>
+                        </div>
+
+                        {/* Fee */}
+                        <div className="stl-cell stl-cell--right" role="cell">
+                            <span className="stl-fee">{feeDisplay(s.amount)}</span>
+                        </div>
+
+                        {/* Tx hash */}
+                        <div className="stl-cell" role="cell">
+                            <span className="stl-tx-cell">
+                                <a
+                                    href={`https://testnet.arcscan.app/tx/${s.txHash}`}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    className="stl-tx-link"
+                                    title={s.txHash}
+                                >
+                                    {shortHash(s.txHash)}
+                                </a>
+                                <span className="stl-tx-icon">
+                                    <IconExternalLink size={12} aria-hidden="true" />
+                                </span>
+                            </span>
+                        </div>
+                    </div>
+                )
+            })}
+        </div>
+    )
 }
