@@ -55,9 +55,9 @@ export function CtaFooter() {
                                 Start accepting subscriptions
                             </a>
                         </Link>
-                        <a href="/docs" className="cf-btn-secondary">
+                        <Link href="/docs" className="cf-btn-secondary">
                             Read the docs
-                        </a>
+                        </Link>
                     </div>
 
                     {/* ── Stat row ───────────────────────────────────────── */}

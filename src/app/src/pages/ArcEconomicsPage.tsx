@@ -1013,11 +1013,9 @@ export function ArcEconomicsPage() {
                 <div className="border-t pt-6 flex items-center justify-between text-xs text-gray-400">
                     <span>Cyclo · Arc Testnet · Chain ID 5042002</span>
                     <div className="flex items-center gap-4">
-                        <a href="/stats" className="hover:text-gray-600 transition-colors">Protocol stats</a>
-                        <a href="/docs"  className="hover:text-gray-600 transition-colors">Docs</a>
-                        <Link href="/dashboard">
-                            <a className="hover:text-gray-600 transition-colors">Dashboard</a>
-                        </Link>
+                        <Link href="/stats" className="hover:text-gray-600 transition-colors">Protocol stats</Link>
+                        <Link href="/docs"  className="hover:text-gray-600 transition-colors">Docs</Link>
+                        <Link href="/dashboard" className="hover:text-gray-600 transition-colors">Dashboard</Link>
                     </div>
                 </div>
 

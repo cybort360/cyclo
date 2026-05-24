@@ -48,13 +48,13 @@ export function LandingNav() {
             <div className="ln-inner">
 
                 {/* ── Logo (left) ──────────────────────────────────────── */}
-                <a href="/" className="ln-logo" aria-label="Cyclo home">
+                <Link href="/" className="ln-logo" aria-label="Cyclo home">
                     <Logo
                         size={28}
                         wordmarkSize={15}
                         wordmarkColor="#0A0A14"
                     />
-                </a>
+                </Link>
 
                 {/* ── Section links (center, desktop only) ─────────────── */}
                 <nav className="ln-links" aria-label="Page sections">

@@ -1,6 +1,5 @@
 import { Link } from 'wouter'
 import { useProtocolStats } from '../hooks/useProtocolStats'
-import type { ProtocolStats } from '../hooks/useProtocolStats'
 
 const REFRESH_INTERVAL_MS = 30_000
 
@@ -121,9 +120,9 @@ export function StatsPage() {
                 <div className="border-t pt-6 flex items-center justify-between text-xs text-gray-400">
                     <span>Refreshes every 30 seconds</span>
                     <div className="flex items-center gap-4">
-                        <a href="/arc-economics" className="hover:text-gray-600 transition-colors">
+                        <Link href="/arc-economics" className="hover:text-gray-600 transition-colors">
                             Why Arc?
-                        </a>
+                        </Link>
                         <span>Arc Testnet · Chain ID 5042002</span>
                     </div>
                 </div>

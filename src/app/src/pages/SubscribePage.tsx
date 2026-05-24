@@ -18,6 +18,7 @@ import { CheckoutLogoArea } from '../components/CheckoutLogoArea'
 import { CheckoutPreFlight } from '../components/CheckoutPreFlight'
 import { CheckoutSuccess } from '../components/CheckoutSuccess'
 import Logo from '../components/Logo'
+import { Link } from 'wouter'
 import { usePreFlight } from '../hooks/usePreFlight'
 import { useIsSubscribed } from '@cyclo/react'
 import { parseSubscribeError, type ParsedSubscribeError } from '../utils/parseSubscribeError'
@@ -117,8 +118,8 @@ export function SubscribePage({ planId }: SubscribePageProps) {
 
                 {/* ── Nav ─────────────────────────────────────────────── */}
                 <div className="co-nav">
-                    <a href="/" className="co-wordmark">CYCLO</a>
-                    <a href="/dashboard" className="co-back-link">← Back to app</a>
+                    <Link href="/" className="co-wordmark">CYCLO</Link>
+                    <Link href="/dashboard" className="co-back-link">← Back to app</Link>
                 </div>
 
                 {planLoading && <p className="co-loading">Loading plan…</p>}
@@ -279,9 +280,9 @@ export function SubscribePage({ planId }: SubscribePageProps) {
                     <p className="co-footer-text">
                         Powered by Cyclo — on-chain recurring billing on Arc testnet
                     </p>
-                    <a href="/portal" className="co-footer-link">
+                    <Link href="/portal" className="co-footer-link">
                         Already subscribed? Manage your subscriptions
-                    </a>
+                    </Link>
                 </div>
 
             </div>
