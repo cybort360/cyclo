@@ -2,18 +2,7 @@ import { useState } from 'react'
 import { useAccount } from 'wagmi'
 import { useWebhooks } from '../hooks/useWebhooks'
 import { EmptyState } from './EmptyState'
-
-const WEBHOOKS_EMPTY_ICON = (
-    <div className="w-11 h-11 rounded-full bg-gray-100 flex items-center justify-center">
-        <svg className="w-5 h-5 text-gray-400" fill="none" viewBox="0 0 24 24"
-             stroke="currentColor" strokeWidth={1.75}>
-            <path strokeLinecap="round" strokeLinejoin="round"
-                d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
-            <path strokeLinecap="round" strokeLinejoin="round"
-                d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
-        </svg>
-    </div>
-)
+import { IconWebhook } from '@tabler/icons-react'
 
 const EVENT_TYPES = [
   'payment.charged',
@@ -171,7 +160,7 @@ export function WebhooksTab({ actions }: WebhooksTabProps) {
       {/* Empty state — shown when no webhooks exist and the form is not yet open */}
       {webhooks.length === 0 && !showForm && (
         <EmptyState
-          icon={WEBHOOKS_EMPTY_ICON}
+          icon={IconWebhook}
           heading="No webhooks registered"
           subtext="Register an endpoint to receive real-time notifications when subscriptions are created, cancelled, or payments are settled."
           action={{ label: 'Register a webhook', onClick: () => setShowForm(true) }}

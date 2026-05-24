@@ -1,0 +1,154 @@
+/*
+ * ProfileSetupModal — merchant onboarding overlay.
+ * Class prefix: psm-
+ * Tokens: tokens.css (Ivory & Indigo)
+ *
+ * No borders anywhere — depth from shadows only.
+ */
+
+/* ── Overlay ──────────────────────────────────────────────────────────────────── */
+
+.psm-overlay {
+    position:        fixed;
+    inset:           0;
+    background:      rgba(10, 10, 20, 0.35);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    display:         flex;
+    align-items:     center;
+    justify-content: center;
+    z-index:         1000;
+}
+
+/* ── Card ─────────────────────────────────────────────────────────────────────── */
+
+.psm-card {
+    background:    var(--bg-surface);
+    box-shadow:    var(--shadow-float);
+    border-radius: var(--radius-xl);
+    padding:       32px;
+    width:         100%;
+    max-width:     440px;
+}
+
+/* ── Header ───────────────────────────────────────────────────────────────────── */
+
+.psm-title {
+    font-size:      20px;
+    font-weight:    700;
+    color:          var(--text-primary);
+    letter-spacing: -0.02em;
+    margin:         0 0 6px;
+}
+
+.psm-subtitle {
+    font-size:   13px;
+    color:       var(--text-secondary);
+    margin:      0 0 24px;
+    line-height: 1.5;
+}
+
+/* ── Form fields ──────────────────────────────────────────────────────────────── */
+
+.psm-field {
+    margin-bottom: 16px;
+}
+
+.psm-label {
+    display:     block;
+    font-size:   12px;
+    font-weight: 600;
+    color:       var(--text-secondary);
+    margin-bottom: 6px;
+    user-select: none;
+}
+
+.psm-input {
+    width:         100%;
+    background:    var(--bg-surface-2);
+    border:        none;
+    border-radius: var(--radius-md);
+    padding:       11px 14px;
+    font-size:     13px;
+    color:         var(--text-primary);
+    outline:       none;
+    box-sizing:    border-box;
+    box-shadow:    var(--shadow-card);
+    font-family:   inherit;
+    transition:    box-shadow var(--transition-fast);
+}
+
+.psm-input::placeholder { color: var(--text-muted); }
+
+.psm-input:focus {
+    box-shadow: var(--shadow-card), 0 0 0 3px rgba(79, 70, 229, 0.12);
+}
+
+.psm-input:disabled { opacity: 0.6; cursor: not-allowed; }
+
+/* ── Error ────────────────────────────────────────────────────────────────────── */
+
+.psm-error {
+    margin-top:    12px;
+    padding:       10px 14px;
+    background:    #FEF2F2;
+    border-radius: var(--radius-md);
+    color:         var(--danger);
+    font-size:     13px;
+    line-height:   1.5;
+}
+
+/* ── Actions ──────────────────────────────────────────────────────────────────── */
+
+.psm-actions {
+    display:    flex;
+    gap:        12px;
+    margin-top: 24px;
+}
+
+/* Primary: accent, pill, shadow-btn-accent */
+.psm-btn-primary {
+    flex:          1;
+    padding:       11px 0;
+    font-size:     13px;
+    font-weight:   600;
+    color:         #fff;
+    background:    var(--accent);
+    border:        none;
+    border-radius: var(--radius-pill);
+    box-shadow:    var(--shadow-btn-accent);
+    cursor:        pointer;
+    transition:    background var(--transition-fast), box-shadow var(--transition-fast),
+                   transform 80ms ease;
+}
+
+.psm-btn-primary:hover {
+    background: var(--accent-hover);
+    box-shadow: var(--shadow-btn-accent), 0 6px 20px rgba(79, 70, 229, 0.30);
+}
+
+.psm-btn-primary:active   { transform: scale(0.97); }
+.psm-btn-primary:disabled { opacity: 0.5; cursor: wait; }
+
+/* Secondary: surface bg, shadow-card, no border */
+.psm-btn-secondary {
+    padding:       11px 20px;
+    font-size:     13px;
+    font-weight:   500;
+    color:         var(--text-secondary);
+    background:    var(--bg-surface);
+    border:        none;
+    border-radius: var(--radius-pill);
+    box-shadow:    var(--shadow-card);
+    cursor:        pointer;
+    transition:    box-shadow var(--transition-fast), color var(--transition-fast),
+                   transform 80ms ease;
+}
+
+.psm-btn-secondary:hover {
+    box-shadow: var(--shadow-card-hover);
+    color:      var(--text-primary);
+}
+
+.psm-btn-secondary:active   { transform: scale(0.97); }
+.psm-btn-secondary:disabled { opacity: 0.5; cursor: not-allowed; }

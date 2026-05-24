@@ -1,0 +1,86 @@
+/*
+ * EmptyState — reusable empty-state block for pages and table panels.
+ * Class prefix: es-
+ * Tokens: tokens.css (Ivory & Indigo)
+ *
+ * No borders anywhere — depth from shadows only.
+ */
+
+/* ── Shell ─────────────────────────────────────────────────────────────────────── */
+
+.es-root {
+    background:      var(--bg-surface);
+    box-shadow:      var(--shadow-card);
+    border-radius:   var(--radius-xl);
+    padding:         64px 32px;
+    display:         flex;
+    flex-direction:  column;
+    align-items:     center;
+    text-align:      center;
+}
+
+/* ── Icon circle ───────────────────────────────────────────────────────────────── */
+
+.es-icon-wrap {
+    width:           64px;
+    height:          64px;
+    border-radius:   50%;
+    background:      var(--accent-light);
+    box-shadow:      0 0 0 8px var(--accent-light), 0 4px 16px rgba(79, 70, 229, 0.14);
+    display:         flex;
+    align-items:     center;
+    justify-content: center;
+    color:           var(--accent);
+    flex-shrink:     0;
+    margin-bottom:   20px;
+}
+
+/* ── Text ──────────────────────────────────────────────────────────────────────── */
+
+.es-heading {
+    font-size:      16px;
+    font-weight:    600;
+    color:          var(--text-primary);
+    letter-spacing: -0.01em;
+    margin:         0 0 8px;
+}
+
+.es-subtext {
+    font-size:   13px;
+    color:       var(--text-secondary);
+    line-height: 1.7;
+    margin:      0;
+    max-width:   300px;
+}
+
+/* ── CTA ───────────────────────────────────────────────────────────────────────── */
+
+.es-action {
+    margin-top:      20px;
+}
+
+/* Primary action button — accent, pill, shadow-btn-accent */
+.es-btn {
+    display:         inline-flex;
+    align-items:     center;
+    gap:             6px;
+    padding:         11px 22px;
+    font-size:       13px;
+    font-weight:     600;
+    color:           #fff;
+    background:      var(--accent);
+    border:          none;
+    border-radius:   var(--radius-pill);
+    box-shadow:      var(--shadow-btn-accent);
+    text-decoration: none;
+    cursor:          pointer;
+    transition:      background var(--transition-fast), box-shadow var(--transition-fast),
+                     transform 80ms ease;
+}
+
+.es-btn:hover {
+    background: var(--accent-hover);
+    box-shadow: var(--shadow-btn-accent), 0 6px 20px rgba(79, 70, 229, 0.30);
+}
+
+.es-btn:active { transform: scale(0.97); }

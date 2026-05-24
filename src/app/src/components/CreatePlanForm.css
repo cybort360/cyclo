@@ -1,0 +1,182 @@
+/*
+ * CreatePlanForm — dark-token plan creation form used inside the Plans modal.
+ * Class prefix: cpf-
+ *
+ * Structure:
+ *   .cpf-form         — flex column
+ *     .cpf-field      — label + input wrapper
+ *     .cpf-toggle     — three-pill interval selector
+ *     .cpf-ai-strip   — AI natural-language input bar
+ *     .cpf-error      — validation / tx error text
+ *     .cpf-submit     — primary action button
+ */
+
+/* ── Form ────────────────────────────────────────────────────────────────────── */
+
+.cpf-form {
+    display:        flex;
+    flex-direction: column;
+    gap:            18px;
+}
+
+/* ── Field (label + input) ───────────────────────────────────────────────────── */
+
+.cpf-field {
+    display:        flex;
+    flex-direction: column;
+    gap:            6px;
+}
+
+.cpf-label {
+    font-size:  12px;
+    color:      var(--text-secondary);
+    user-select: none;
+}
+
+.cpf-label-opt {
+    color:     var(--text-tertiary);
+    font-size: 11px;
+}
+
+.cpf-input {
+    width:         100%;
+    background:    var(--bg-surface-2);
+    border:        none;
+    border-radius: var(--radius-md);
+    padding:       11px 14px;
+    font-size:     13px;
+    color:         var(--text-primary);
+    outline:       none;
+    box-sizing:    border-box;
+    box-shadow:    var(--shadow-card);
+    transition:    box-shadow 150ms ease;
+    font-family:   inherit;
+}
+
+.cpf-input::placeholder { color: var(--text-muted); }
+
+.cpf-input:focus {
+    box-shadow: var(--shadow-card), 0 0 0 3px rgba(79, 70, 229, 0.12);
+}
+
+/* ── Interval toggle ─────────────────────────────────────────────────────────── */
+
+.cpf-toggle {
+    display:       flex;
+    gap:           4px;
+    background:    var(--bg-surface-2);
+    box-shadow:    var(--shadow-card);
+    border-radius: var(--radius-pill);
+    padding:       3px;
+}
+
+.cpf-toggle-btn {
+    flex:          1;
+    padding:       7px 0;
+    font-size:     12px;
+    border:        none;
+    border-radius: var(--radius-pill);
+    cursor:        pointer;
+    background:    transparent;
+    color:         var(--text-secondary);
+    transition:    background 150ms ease, color 150ms ease;
+    line-height:   1;
+}
+
+.cpf-toggle-btn:hover { color: var(--text-primary); }
+
+.cpf-toggle-btn--active {
+    background:  var(--accent);
+    color:       #fff;
+    font-weight: 600;
+}
+
+/* ── AI strip ────────────────────────────────────────────────────────────────── */
+
+.cpf-ai-strip {
+    display:       flex;
+    gap:           8px;
+    align-items:   center;
+    padding:       12px 14px;
+    background:    rgba(124, 58, 237, 0.06);
+    border-radius: 8px;
+}
+
+.cpf-ai-label {
+    font-size:  11px;
+    color:      #9F67FF;
+    white-space: nowrap;
+    user-select: none;
+}
+
+.cpf-ai-input {
+    flex:          1;
+    background:    transparent;
+    border:        none;
+    font-size:     13px;
+    color:         var(--text-primary);
+    outline:       none;
+    min-width:     0;
+    font-family:   inherit;
+}
+
+.cpf-ai-input::placeholder { color: var(--text-tertiary); }
+
+.cpf-ai-btn {
+    font-size:     11px;
+    font-weight:   500;
+    color:         #06101A;
+    background:    #9F67FF;
+    border:        none;
+    border-radius: 5px;
+    padding:       6px 12px;
+    cursor:        pointer;
+    white-space:   nowrap;
+    flex-shrink:   0;
+    transition:    opacity 150ms ease;
+}
+
+.cpf-ai-btn:hover    { opacity: 0.9; }
+.cpf-ai-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+/* ── Trial hint ──────────────────────────────────────────────────────────────── */
+
+.cpf-trial-hint {
+    font-size:  12px;
+    color:      var(--text-tertiary);
+    margin:     -10px 0 0;
+}
+
+/* ── Error ───────────────────────────────────────────────────────────────────── */
+
+.cpf-error {
+    font-size:   12px;
+    color:       var(--danger);
+    margin:      -10px 0 0;
+    font-family: ui-monospace, 'Cascadia Code', Consolas, monospace;
+}
+
+/* ── Submit button ───────────────────────────────────────────────────────────── */
+
+.cpf-submit {
+    width:         100%;
+    padding:       11px 0;
+    font-size:     13px;
+    font-weight:   600;
+    color:         #fff;
+    background:    var(--accent);
+    border:        none;
+    border-radius: var(--radius-pill);
+    box-shadow:    var(--shadow-btn-accent);
+    cursor:        pointer;
+    transition:    background var(--transition-fast), box-shadow var(--transition-fast),
+                   transform 80ms ease;
+}
+
+.cpf-submit:hover {
+    background: var(--accent-hover);
+    box-shadow: var(--shadow-btn-accent), 0 6px 20px rgba(79, 70, 229, 0.30);
+}
+
+.cpf-submit:active   { transform: scale(0.97); }
+.cpf-submit:disabled { opacity: 0.5; cursor: wait; }

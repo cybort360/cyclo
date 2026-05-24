@@ -5,18 +5,7 @@
 import type { PlanEvent } from '../hooks/useSubscriptionManager';
 import { fromUsdcUnits, intervalToLabel } from '../utils/formatting';
 import { EmptyState } from './EmptyState';
-
-const PLANS_EMPTY_ICON = (
-    <div className="w-11 h-11 rounded-full bg-gray-100 flex items-center justify-center">
-        <svg className="w-5 h-5 text-gray-400" fill="none" viewBox="0 0 24 24"
-             stroke="currentColor" strokeWidth={1.75}>
-            <rect x="3" y="3" width="7" height="7" rx="1" />
-            <rect x="14" y="3" width="7" height="7" rx="1" />
-            <rect x="3" y="14" width="7" height="7" rx="1" />
-            <rect x="14" y="14" width="7" height="7" rx="1" />
-        </svg>
-    </div>
-);
+import { IconLayoutGrid } from '@tabler/icons-react';
 
 interface PlanTableProps {
     plans:         PlanEvent[];
@@ -45,7 +34,7 @@ export function PlanTable({ plans, isLoading, isPending, pendingPlanId, planStat
     if (error)     return <p style={{ color: '#dc2626' }}>Failed to load plans: {error}</p>;
     if (plans.length === 0) return (
         <EmptyState
-            icon={PLANS_EMPTY_ICON}
+            icon={IconLayoutGrid}
             heading="No plans yet"
             subtext="Create your first subscription plan to start accepting recurring payments."
             action={onCreatePlan ? { label: 'Create a plan', onClick: onCreatePlan } : undefined}

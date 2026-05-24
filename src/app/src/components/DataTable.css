@@ -1,0 +1,205 @@
+/*
+ * DataTable — reusable dark table shell.
+ * Class prefix: dt-
+ *
+ * Both .dt-header and .dt-row use CSS Grid with gridTemplateColumns
+ * set inline from the columns prop so widths stay in sync without
+ * requiring a shared DOM ancestor.
+ */
+
+/* ── Outer wrapper ───────────────────────────────────────────────────────────── */
+
+.dt-wrap {
+    background:    var(--bg-surface);
+    box-shadow:    var(--shadow-card);
+    border-radius: var(--radius-lg);
+    overflow:      hidden;
+}
+
+/* ── Header row ──────────────────────────────────────────────────────────────── */
+
+.dt-header {
+    display:       grid;
+    padding:       10px 20px;
+    border-bottom: 0.5px solid var(--bg-border);
+    /* Background intentionally same as surface — no contrast strip */
+    background:    var(--bg-surface);
+}
+
+.dt-th {
+    font-size:      9px;
+    font-family:    ui-monospace, 'Cascadia Code', Consolas, monospace;
+    color:          var(--text-tertiary);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    user-select:    none;
+    white-space:    nowrap;
+}
+
+/* ── Data rows ───────────────────────────────────────────────────────────────── */
+
+.dt-row {
+    display:       grid;
+    padding:       12px 20px;
+    border-bottom: 0.5px solid var(--bg-border);
+    align-items:   center;
+    transition:    background 120ms ease;
+}
+
+/* Remove bottom border from the last non-skeleton, non-empty row */
+.dt-row:last-child {
+    border-bottom: none;
+}
+
+.dt-row--clickable {
+    cursor: pointer;
+}
+
+.dt-row--clickable:hover {
+    background: var(--bg-surface-2);
+}
+
+/* Reveal the copy button on row hover — targets any .dt-copy-btn inside */
+.dt-row--clickable:hover .dt-copy-btn,
+.dt-row:hover .dt-copy-btn {
+    visibility: visible;
+}
+
+/* ── Cells ───────────────────────────────────────────────────────────────────── */
+
+.dt-cell {
+    display:     flex;
+    align-items: center;
+    font-size:   13px;
+    color:       var(--text-primary);
+    min-width:   0;           /* prevent grid blow-out on long text */
+    overflow:    hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.dt-cell--mono {
+    font-size:   12px;
+    font-family: ui-monospace, 'Cascadia Code', Consolas, monospace;
+}
+
+/* ── Status badges ───────────────────────────────────────────────────────────── */
+
+.dt-badge {
+    display:       inline-block;
+    font-size:     9px;
+    font-family:   ui-monospace, 'Cascadia Code', Consolas, monospace;
+    padding:       3px 7px;
+    border-radius: 4px;
+    white-space:   nowrap;
+    letter-spacing: 0.02em;
+}
+
+.dt-badge--active {
+    background: var(--success-light);
+    color:      var(--success);
+}
+
+.dt-badge--past-due {
+    background: var(--warning-light);
+    color:      var(--warning);
+}
+
+.dt-badge--cancelled,
+.dt-badge--inactive {
+    background: var(--bg-surface-2);
+    color:      var(--text-muted);
+}
+
+/* ── Address cell ────────────────────────────────────────────────────────────── */
+
+.dt-addr-cell {
+    display:     flex;
+    align-items: center;
+    gap:         6px;
+    min-width:   0;
+}
+
+.dt-addr-text {
+    font-size:   12px;
+    font-family: ui-monospace, 'Cascadia Code', Consolas, monospace;
+    color:       var(--text-primary);
+    white-space: nowrap;
+}
+
+/* ── Copy button ─────────────────────────────────────────────────────────────── */
+
+/*
+ * Hidden by default; revealed on .dt-row:hover via the selector above.
+ * Using visibility (not display:none) keeps layout stable — the 20px
+ * column space is always reserved.
+ */
+.dt-copy-btn {
+    background:  transparent;
+    border:      none;
+    padding:     0;
+    cursor:      pointer;
+    color:       var(--text-tertiary);
+    display:     flex;
+    align-items: center;
+    visibility:  hidden;
+    flex-shrink: 0;
+    transition:  color 150ms ease;
+}
+
+.dt-copy-btn:hover {
+    color: var(--text-secondary);
+}
+
+.dt-copy-btn--success {
+    color: var(--accent);
+}
+
+/* ── Empty state ─────────────────────────────────────────────────────────────── */
+
+.dt-empty {
+    padding:    48px 24px;
+    text-align: center;
+}
+
+.dt-empty-text {
+    font-size: 13px;
+    color:     var(--text-tertiary);
+    margin:    0;
+}
+
+/* ── Loading skeleton ────────────────────────────────────────────────────────── */
+
+.dt-row--skeleton {
+    pointer-events: none;
+}
+
+.dt-skeleton-bar {
+    display:             block;
+    height:              12px;
+    background:          linear-gradient(
+                           90deg,
+                           var(--bg-surface-2) 0%,
+                           var(--bg-base)      50%,
+                           var(--bg-surface-2) 100%
+                         );
+    background-size:     200% 100%;
+    border-radius:       4px;
+    animation:           dt-shimmer 1.5s ease-in-out infinite;
+}
+
+/*
+ * Stagger the shimmer on alternating skeleton rows for a more natural feel.
+ */
+.dt-row--skeleton:nth-child(even) .dt-skeleton-bar {
+    animation-delay: 0.25s;
+}
+
+.dt-row--skeleton:nth-child(odd) .dt-skeleton-bar {
+    animation-delay: 0s;
+}
+
+@keyframes dt-shimmer {
+    from { background-position:  200% 0; }
+    to   { background-position: -200% 0; }
+}

@@ -5,6 +5,7 @@ import { Router, Route, Switch } from 'wouter'
 import { CycloProvider } from '@cyclo/react'
 import { CONTRACT_ADDRESS, USDC_ADDRESS } from './constants/addresses'
 import { MerchantProfileProvider } from './context/MerchantProfileContext'
+import { ToastProvider } from './components/Toast'
 import { Layout } from './components/Layout'
 import { OverviewPage } from './pages/OverviewPage'
 import { ConnectPage } from './pages/ConnectPage'
@@ -36,6 +37,7 @@ export default function App() {
             usdcAddress={USDC_ADDRESS as `0x${string}`}
         >
             <MerchantProfileProvider>
+                <ToastProvider>
                 <Router>
                     <Switch>
                         {/* Public routes — no sidebar, no wallet required */}
@@ -66,6 +68,7 @@ export default function App() {
                         </Route>
                     </Switch>
                 </Router>
+                </ToastProvider>
             </MerchantProfileProvider>
         </CycloProvider>
     )

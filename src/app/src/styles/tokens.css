@@ -1,0 +1,141 @@
+/*
+ * Design tokens — Ivory & Indigo light token system.
+ * Single source of truth for all colours, shadows, transitions, and radii.
+ * Import this file first (before index.css and any component stylesheets).
+ *
+ * Naming convention:
+ *   --bg-*         backgrounds (page, surface, overlay)
+ *   --accent-*     primary indigo accent
+ *   --violet-*     secondary violet accent
+ *   --text-*       foreground text
+ *   --shadow-*     layered box-shadows — NO BORDERS, depth from shadow only
+ *   --transition-* easing presets
+ *   --radius-*     border-radius scale
+ *   success / warning / danger / info  semantic state colours
+ */
+
+:root {
+    /* ── Backgrounds ──────────────────────────────────────────────────────────── */
+    --bg-base:      #F2F1EC;              /* warm off-white page                    */
+    --bg-surface:   #FFFFFF;              /* cards, panels                          */
+    --bg-surface-2: #F7F6F2;              /* subtle raised surface                  */
+    --bg-surface-3: #EEECEA;              /* hover states                           */
+    --bg-overlay:   rgba(10, 10, 20, 0.4); /* modal overlays                        */
+
+    /* ── Accent — Indigo ─────────────────────────────────────────────────────── */
+    --accent:        #4F46E5;
+    --accent-hover:  #4338CA;
+    --accent-light:  #EEF2FF;
+    --accent-mid:    #818CF8;
+    --accent-dim:    rgba(79, 70, 229, 0.10);
+    --accent-glow:   rgba(79, 70, 229, 0.06);
+    --accent-shadow: rgba(79, 70, 229, 0.18);
+
+    /* ── Violet secondary ────────────────────────────────────────────────────── */
+    --violet:       #7C3AED;
+    --violet-light: #F5F3FF;
+    --violet-dim:   rgba(124, 58, 237, 0.10);
+
+    /* ── Text ────────────────────────────────────────────────────────────────── */
+    --text-primary:   #0A0A14;
+    --text-secondary: #6B7280;
+    --text-muted:     #9CA3AF;
+
+    /* ── Semantic colours ────────────────────────────────────────────────────── */
+    --success:       #059669;
+    --success-light: #ECFDF5;
+    --warning:       #D97706;
+    --warning-light: #FFFBEB;
+    --danger:        #DC2626;
+    --danger-light:  #FEF2F2;
+    --info:          #0284C7;
+    --info-light:    #F0F9FF;
+
+    /* ── Shadows — NO BORDERS, depth from shadow only ────────────────────────── */
+
+    --shadow-card:
+        0 1px 0   rgba(255, 255, 255, 0.9) inset,
+        0 1px 3px rgba(0, 0, 0, 0.06),
+        0 4px 16px rgba(0, 0, 0, 0.05);
+
+    --shadow-card-hover:
+        0 1px 0   rgba(255, 255, 255, 0.9) inset,
+        0 4px 20px rgba(0, 0, 0, 0.08),
+        0 1px 6px rgba(0, 0, 0, 0.05);
+
+    --shadow-card-accent:
+        0 1px 0   rgba(255, 255, 255, 0.9) inset,
+        0 4px 16px rgba(0, 0, 0, 0.05),
+        0 0 0 1px rgba(79, 70, 229, 0.08),
+        0 8px 24px rgba(79, 70, 229, 0.08);
+
+    --shadow-card-success:
+        0 1px 0   rgba(255, 255, 255, 0.9) inset,
+        0 4px 16px rgba(0, 0, 0, 0.05),
+        0 0 0 1px rgba(5, 150, 105, 0.08),
+        0 8px 24px rgba(5, 150, 105, 0.08);
+
+    --shadow-panel:
+        0 1px 0   rgba(255, 255, 255, 0.9) inset,
+        2px 0 24px rgba(0, 0, 0, 0.06);
+
+    --shadow-float:
+        0 1px 0   rgba(255, 255, 255, 0.9) inset,
+        0 16px 48px rgba(0, 0, 0, 0.12),
+        0 4px 14px rgba(0, 0, 0, 0.07);
+
+    --shadow-btn-accent:
+        0 1px 0   rgba(255, 255, 255, 0.2) inset,
+        0 4px 14px rgba(79, 70, 229, 0.30),
+        0 1px 4px rgba(79, 70, 229, 0.20);
+
+    /* ── Transitions ─────────────────────────────────────────────────────────── */
+    --transition-fast: all 150ms cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-base: all 220ms cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-slow: all 350ms cubic-bezier(0.4, 0, 0.2, 1);
+
+    /* ── Radii ───────────────────────────────────────────────────────────────── */
+    --radius-sm:   8px;
+    --radius-md:   12px;
+    --radius-lg:   16px;
+    --radius-xl:   20px;
+    --radius-pill: 999px;
+
+    /* ── Backwards-compat aliases (components pending light-system migration) ── */
+    --bg-border:        rgba(0, 0, 0, 0.06);
+    --bg-border-bright: rgba(0, 0, 0, 0.10);
+    --text-tertiary:    var(--text-muted);     /* #9CA3AF */
+    --accent-subtle:    var(--accent-light);   /* #EEF2FF */
+}
+
+/* ── Global base ──────────────────────────────────────────────────────────────── */
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    background:              var(--bg-base);
+    color:                   var(--text-primary);
+    font-family:             system-ui, 'Segoe UI', Roboto, sans-serif;
+    -webkit-font-smoothing:  antialiased;
+}
+
+/* ── Text selection ───────────────────────────────────────────────────────────── */
+
+::selection {
+    background: var(--accent-light);
+    color:      var(--accent);
+}
+
+/* ── Custom scrollbar (Webkit) ────────────────────────────────────────────────── */
+
+::-webkit-scrollbar       { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+
+::-webkit-scrollbar-thumb {
+    background:    #D1D5DB;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover { background: #9CA3AF; }

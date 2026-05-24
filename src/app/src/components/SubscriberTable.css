@@ -1,0 +1,132 @@
+/*
+ * Subscriber table — tab row + DataTable wrapper.
+ * Class prefix: sbt-
+ *
+ * Structure:
+ *   .sbt-tabs          — flex tab row
+ *     .sbt-tab         — individual tab button
+ *     .sbt-tab--active — accent underline state
+ *     .sbt-tab-badge   — count pill next to tab label
+ *   .sbt-avatar        — 28px subscriber avatar circle
+ *   .sbt-sub-cell      — flex row: avatar + label
+ *   .sbt-amount        — accent-coloured amount text
+ */
+
+/* ── Tab row ────────────────────────────────────────────────────────────────── */
+
+.sbt-tabs {
+    display:       flex;
+    gap:           20px;
+    margin-bottom: 16px;
+    border-bottom: 0.5px solid var(--bg-border);
+}
+
+.sbt-tab {
+    display:     flex;
+    align-items: center;
+    gap:         7px;
+    font-size:   13px;
+    color:       var(--text-secondary);
+    background:  transparent;
+    border:      none;
+    border-bottom: 2px solid transparent;
+    padding:     8px 0;
+    margin-bottom: -0.5px; /* sit on top of tabs border-bottom */
+    cursor:      pointer;
+    white-space: nowrap;
+    transition:  color 150ms ease;
+}
+
+.sbt-tab:hover { color: var(--text-primary); }
+
+.sbt-tab--active {
+    color:        var(--accent);
+    border-bottom-color: var(--accent);
+}
+
+.sbt-tab-badge {
+    font-size:     10px;
+    font-family:   ui-monospace, 'Cascadia Code', Consolas, monospace;
+    color:         var(--text-muted);
+    background:    var(--bg-surface-2);
+    border-radius: var(--radius-pill);
+    padding:       1px 7px;
+    line-height:   1.6;
+}
+
+.sbt-tab--active .sbt-tab-badge {
+    color:      var(--accent);
+    background: var(--accent-light);
+}
+
+/* ── Subscriber avatar ──────────────────────────────────────────────────────── */
+
+.sbt-avatar {
+    width:          28px;
+    height:         28px;
+    border-radius:  50%;
+    display:        flex;
+    align-items:    center;
+    justify-content: center;
+    font-size:      10px;
+    font-family:    ui-monospace, 'Cascadia Code', Consolas, monospace;
+    font-weight:    600;
+    flex-shrink:    0;
+    user-select:    none;
+}
+
+/* ── Subscriber cell ────────────────────────────────────────────────────────── */
+
+.sbt-sub-cell {
+    display:     flex;
+    align-items: center;
+    gap:         9px;
+    min-width:   0;
+}
+
+.sbt-sub-label {
+    font-size:   12px;
+    font-family: ui-monospace, 'Cascadia Code', Consolas, monospace;
+    color:       var(--text-primary);
+    white-space: nowrap;
+    overflow:    hidden;
+    text-overflow: ellipsis;
+}
+
+/* ── Amount cell ────────────────────────────────────────────────────────────── */
+
+.sbt-amount {
+    color: var(--accent);
+}
+
+/* ── Chevron cell ───────────────────────────────────────────────────────────── */
+
+.sbt-chevron {
+    color:       var(--text-tertiary);
+    line-height: 0;
+    flex-shrink: 0;
+}
+
+/* ── Empty state (per-tab) ──────────────────────────────────────────────────── */
+
+.sbt-empty {
+    padding:    48px 24px;
+    text-align: center;
+}
+
+.sbt-empty-heading {
+    font-size:   13px;
+    font-weight: 500;
+    color:       var(--text-secondary);
+    margin:      0 0 6px;
+}
+
+.sbt-empty-sub {
+    font-size:  12px;
+    color:      var(--text-tertiary);
+    margin:     0;
+    max-width:  280px;
+    margin-left:  auto;
+    margin-right: auto;
+    line-height: 1.5;
+}
