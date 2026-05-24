@@ -1,0 +1,172 @@
+/*
+ * Revenue area-chart card.
+ * Class prefix: rv-
+ * Tokens: tokens.css (Ivory & Indigo)
+ *
+ * Structure:
+ *   .rv-card
+ *     .rv-header
+ *       .rv-meta          — label, value row, pills (left)
+ *       .rv-period-selector — pill tabs (right)
+ *     .rv-chart-wrap      — Recharts ResponsiveContainer (height 220px)
+ */
+
+/* ── Card shell ─────────────────────────────────────────────────────────────── */
+
+.rv-card {
+    background:    var(--bg-surface);
+    box-shadow:    var(--shadow-card);
+    border-radius: var(--radius-lg);
+    padding:       24px;
+    margin-bottom: 16px;
+}
+
+/* ── Header ─────────────────────────────────────────────────────────────────── */
+
+.rv-header {
+    display:         flex;
+    align-items:     flex-start;
+    justify-content: space-between;
+    gap:             16px;
+    margin-bottom:   20px;
+}
+
+/* ── Left meta block ─────────────────────────────────────────────────────────── */
+
+.rv-meta {
+    display:        flex;
+    flex-direction: column;
+    gap:            0;
+}
+
+.rv-label {
+    font-size:      11px;
+    font-weight:    600;
+    color:          var(--text-muted);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    line-height:    1;
+}
+
+/* Value + " USDC" suffix */
+
+.rv-value-row {
+    display:     flex;
+    align-items: baseline;
+    gap:         2px;
+    margin-top:  6px;
+    line-height: 1;
+}
+
+.rv-value {
+    font-size:      36px;
+    font-weight:    700;
+    color:          var(--text-primary);
+    letter-spacing: -0.03em;
+    line-height:    1;
+    font-variant-numeric: tabular-nums;
+}
+
+.rv-suffix {
+    font-size:   16px;
+    font-weight: 500;
+    color:       var(--text-secondary);
+}
+
+/* ── Delta pills ────────────────────────────────────────────────────────────── */
+
+.rv-pills {
+    display:   flex;
+    gap:       8px;
+    margin-top: 8px;
+    flex-wrap: wrap;
+}
+
+.rv-pill {
+    font-size:     10px;
+    font-weight:   600;
+    border-radius: var(--radius-pill);
+    padding:       3px 9px;
+    white-space:   nowrap;
+    line-height:   1.4;
+}
+
+.rv-pill--income {
+    background: var(--success-light);
+    color:      var(--success);
+}
+
+.rv-pill--fee {
+    background: var(--info-light);
+    color:      var(--info);
+}
+
+/* ── Period selector ────────────────────────────────────────────────────────── */
+
+.rv-period-selector {
+    display:       flex;
+    gap:           2px;
+    background:    var(--bg-surface-2);
+    box-shadow:    var(--shadow-card);
+    border-radius: var(--radius-pill);
+    padding:       3px;
+    flex-shrink:   0;
+    align-self:    flex-start;
+}
+
+.rv-period-btn {
+    padding:       5px 12px;
+    font-size:     12px;
+    font-weight:   500;
+    color:         var(--text-secondary);
+    background:    transparent;
+    border:        none;
+    border-radius: var(--radius-pill);
+    cursor:        pointer;
+    transition:    var(--transition-fast);
+    line-height:   1;
+    white-space:   nowrap;
+}
+
+.rv-period-btn:hover {
+    color: var(--text-primary);
+}
+
+.rv-period-btn--active {
+    background: var(--bg-surface);
+    box-shadow: var(--shadow-card);
+    color:      var(--text-primary);
+    font-weight: 600;
+}
+
+/* ── Chart viewport ─────────────────────────────────────────────────────────── */
+
+.rv-chart-wrap {
+    height:  220px;
+    /* Pull left edge flush — the YAxis adds its own left offset */
+    margin:  0 -4px 0 0;
+}
+
+/* ── Custom tooltip ─────────────────────────────────────────────────────────── */
+
+.rv-tooltip {
+    background:    var(--bg-surface);
+    box-shadow:    var(--shadow-float);
+    border-radius: var(--radius-md);
+    padding:       12px 16px;
+}
+
+.rv-tooltip-date {
+    font-size:      11px;
+    font-family:    ui-monospace, 'Cascadia Code', Consolas, monospace;
+    color:          var(--text-muted);
+    letter-spacing: 0.04em;
+    margin:         0 0 4px;
+}
+
+.rv-tooltip-value {
+    font-size:   15px;
+    font-weight: 700;
+    color:       var(--accent);
+    margin:      0;
+}

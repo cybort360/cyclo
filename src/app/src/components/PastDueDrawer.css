@@ -1,0 +1,241 @@
+/*
+ * PastDueDrawer — slide-in detail panel for a single past-due subscription.
+ * Class prefix: pdd-
+ *
+ * Structure:
+ *   .pdd-backdrop    — full-screen dimmer
+ *   .pdd-panel       — 380px right-pinned drawer
+ *     .pdd-header    — title + close button
+ *     .pdd-body      — scrollable content
+ *       .pdd-section — repeating content block
+ */
+
+/* ── Backdrop ────────────────────────────────────────────────────────────────── */
+
+.pdd-backdrop {
+    position:   fixed;
+    inset:      0;
+    z-index:    40;
+    background: rgba(0, 0, 0, 0.55);
+}
+
+/* ── Panel ───────────────────────────────────────────────────────────────────── */
+
+.pdd-panel {
+    position:        fixed;
+    right:           0;
+    top:             0;
+    height:          100%;
+    z-index:         50;
+    width:           380px;
+    background:      var(--bg-surface);
+    border-left:     2px solid var(--warning);
+    border-top:      0.5px solid var(--bg-border);
+    display:         flex;
+    flex-direction:  column;
+    overflow:        hidden;
+}
+
+/* ── Header ──────────────────────────────────────────────────────────────────── */
+
+.pdd-header {
+    display:         flex;
+    align-items:     center;
+    justify-content: space-between;
+    padding:         16px 20px;
+    border-bottom:   0.5px solid var(--bg-border);
+    flex-shrink:     0;
+}
+
+.pdd-title {
+    font-size:   13px;
+    font-weight: 500;
+    color:       var(--text-primary);
+    margin:      0;
+}
+
+.pdd-close {
+    background:  transparent;
+    border:      none;
+    color:       var(--text-secondary);
+    cursor:      pointer;
+    padding:     4px;
+    display:     flex;
+    align-items: center;
+    line-height: 0;
+    transition:  color 150ms ease;
+}
+
+.pdd-close:hover { color: var(--text-primary); }
+
+/* ── Scrollable body ─────────────────────────────────────────────────────────── */
+
+.pdd-body {
+    flex:           1;
+    overflow-y:     auto;
+    padding:        20px;
+    display:        flex;
+    flex-direction: column;
+    gap:            24px;
+}
+
+.pdd-body::-webkit-scrollbar       { width: 3px; }
+.pdd-body::-webkit-scrollbar-track { background: transparent; }
+.pdd-body::-webkit-scrollbar-thumb { background: var(--bg-border-bright); border-radius: 2px; }
+
+/* ── Section ─────────────────────────────────────────────────────────────────── */
+
+.pdd-section-label {
+    font-size:      9px;
+    font-family:    ui-monospace, 'Cascadia Code', Consolas, monospace;
+    color:          var(--text-tertiary);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin:         0 0 10px;
+}
+
+/* ── Key-value grid ──────────────────────────────────────────────────────────── */
+
+.pdd-kv {
+    display:               grid;
+    grid-template-columns: 1fr 1fr;
+    row-gap:               8px;
+}
+
+.pdd-kv-key {
+    font-size: 12px;
+    color:     var(--text-secondary);
+}
+
+.pdd-kv-val {
+    font-size:   12px;
+    font-family: ui-monospace, 'Cascadia Code', Consolas, monospace;
+    color:       var(--text-primary);
+    word-break:  break-all;
+}
+
+/* ── Attempt history ─────────────────────────────────────────────────────────── */
+
+.pdd-attempts {
+    display:        flex;
+    flex-direction: column;
+    gap:            12px;
+}
+
+.pdd-attempt {
+    display:     flex;
+    gap:         12px;
+    align-items: flex-start;
+}
+
+.pdd-attempt-num {
+    width:           20px;
+    height:          20px;
+    border-radius:   50%;
+    background:      rgba(245, 158, 11, 0.12);
+    color:           var(--warning);
+    font-size:       10px;
+    font-family:     ui-monospace, 'Cascadia Code', Consolas, monospace;
+    font-weight:     600;
+    display:         flex;
+    align-items:     center;
+    justify-content: center;
+    flex-shrink:     0;
+}
+
+.pdd-attempt-time {
+    font-size:   12px;
+    font-family: ui-monospace, 'Cascadia Code', Consolas, monospace;
+    color:       var(--text-primary);
+    margin:      0;
+}
+
+.pdd-attempt-note {
+    font-size: 11px;
+    color:     var(--text-secondary);
+    margin:    2px 0 0;
+}
+
+/* ── Wallet status bars ──────────────────────────────────────────────────────── */
+
+.pdd-wallet-row {
+    margin-bottom: 10px;
+}
+
+.pdd-wallet-label-row {
+    display:         flex;
+    justify-content: space-between;
+    align-items:     baseline;
+    margin-bottom:   5px;
+}
+
+.pdd-wallet-key {
+    font-size: 12px;
+    color:     var(--text-secondary);
+}
+
+.pdd-wallet-val {
+    font-size:   12px;
+    font-family: ui-monospace, 'Cascadia Code', Consolas, monospace;
+}
+
+.pdd-wallet-val--ok      { color: var(--text-primary); }
+.pdd-wallet-val--warning { color: var(--warning); }
+
+.pdd-bar-track {
+    height:        4px;
+    background:    var(--bg-border);
+    border-radius: 2px;
+    overflow:      hidden;
+}
+
+.pdd-bar-fill {
+    height:        100%;
+    border-radius: 2px;
+    transition:    width 300ms ease;
+}
+
+.pdd-bar-fill--ok      { background: var(--accent); }
+.pdd-bar-fill--warning { background: var(--warning); }
+
+/* ── Skeleton ────────────────────────────────────────────────────────────────── */
+
+.pdd-skeleton {
+    height:        10px;
+    background:    var(--bg-surface-2);
+    border-radius: 3px;
+    margin-bottom: 6px;
+    animation:     pdd-pulse 1.4s ease-in-out infinite;
+}
+
+@keyframes pdd-pulse {
+    0%, 100% { opacity: 0.4; }
+    50%       { opacity: 0.8; }
+}
+
+/* ── Diagnosis ────────────────────────────────────────────────────────────────── */
+
+.pdd-diagnosis {
+    font-size:   12px;
+    font-family: ui-monospace, 'Cascadia Code', Consolas, monospace;
+    line-height: 1.6;
+}
+
+.pdd-diagnosis--ok      { color: var(--accent); }
+.pdd-diagnosis--warning { color: var(--warning); }
+.pdd-diagnosis--muted   { color: var(--text-secondary); }
+
+/* ── Explorer link ────────────────────────────────────────────────────────────── */
+
+.pdd-explorer-link {
+    font-size:       12px;
+    font-family:     ui-monospace, 'Cascadia Code', Consolas, monospace;
+    color:           var(--accent);
+    text-decoration: none;
+    display:         inline-flex;
+    align-items:     center;
+    gap:             4px;
+    transition:      opacity 150ms ease;
+}
+
+.pdd-explorer-link:hover { opacity: 0.75; }

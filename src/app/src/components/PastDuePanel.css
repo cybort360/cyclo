@@ -1,0 +1,105 @@
+/*
+ * PastDuePanel — /past-due right-panel styles.
+ * Class prefix: pdp-
+ */
+
+/* ── At-risk total ───────────────────────────────────────────────────────────── */
+
+.pdp-total {
+    font-size:      28px;
+    font-weight:    500;
+    font-family:    ui-monospace, 'Cascadia Code', Consolas, monospace;
+    color:          var(--warning);
+    letter-spacing: -0.02em;
+    margin:         0 0 4px;
+    line-height:    1;
+}
+
+.pdp-sub {
+    font-size:   11px;
+    color:       var(--text-secondary);
+    margin:      0 0 12px;
+}
+
+/* ── Reason breakdown ────────────────────────────────────────────────────────── */
+
+.pdp-reason-rows {
+    display:        flex;
+    flex-direction: column;
+    gap:            6px;
+}
+
+.pdp-reason-row {
+    display:     flex;
+    align-items: center;
+    gap:         8px;
+}
+
+.pdp-reason-label {
+    flex:        1;
+    font-size:   11px;
+    font-family: ui-monospace, 'Cascadia Code', Consolas, monospace;
+    color:       var(--text-secondary);
+}
+
+.pdp-reason-count {
+    font-size:   11px;
+    font-family: ui-monospace, 'Cascadia Code', Consolas, monospace;
+    color:       var(--warning);
+    min-width:   16px;
+    text-align:  right;
+}
+
+/* ── Retry timeline ──────────────────────────────────────────────────────────── */
+
+.pdp-timeline {
+    display:        flex;
+    flex-direction: column;
+    gap:            8px;
+}
+
+.pdp-timeline-row {
+    display:     flex;
+    align-items: center;
+    gap:         8px;
+}
+
+.pdp-retry-time {
+    font-size:   10px;
+    font-family: ui-monospace, 'Cascadia Code', Consolas, monospace;
+    color:       var(--text-secondary);
+    min-width:   58px;
+    flex-shrink: 0;
+}
+
+.pdp-timeline-addr {
+    flex:        1;
+    font-size:   10px;
+    font-family: ui-monospace, 'Cascadia Code', Consolas, monospace;
+    color:       var(--text-primary);
+    min-width:   0;
+    overflow:    hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* ── Attempt dots ────────────────────────────────────────────────────────────── */
+
+.pdp-dots {
+    display:     flex;
+    align-items: center;
+    gap:         3px;
+    flex-shrink: 0;
+}
+
+.pdp-dot {
+    width:         7px;
+    height:        7px;
+    border-radius: 50%;
+    background:    var(--bg-border-bright);
+    flex-shrink:   0;
+}
+
+.pdp-dot--filled {
+    background: var(--warning);
+}

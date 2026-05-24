@@ -1,0 +1,452 @@
+/*
+ * OverviewPanel — right column content for the /dashboard Overview page.
+ * Class prefix: op-
+ * Tokens: tokens.css (Ivory & Indigo)
+ *
+ * No borders anywhere — depth from shadows only.
+ * The panel shell (width, background, scroll, padding) is owned by
+ * .sl-rightpanel in Layout.css. This file styles internal components only.
+ */
+
+/* ── Panel root ─────────────────────────────────────────────────────────────── */
+
+.op-panel {
+    display:        flex;
+    flex-direction: column;
+    gap:            0;
+}
+
+/* ── Section header ─────────────────────────────────────────────────────────── */
+
+.op-section-header {
+    display:         flex;
+    align-items:     center;
+    justify-content: space-between;
+    margin-bottom:   12px;
+}
+
+/* Gap variant adds top spacing to separate sections */
+.op-section-header--gap {
+    margin-top: 24px;
+}
+
+.op-section-title {
+    font-size:      12px;
+    font-weight:    600;
+    color:          var(--text-primary);
+    letter-spacing: -0.01em;
+}
+
+/* ── Utility links ──────────────────────────────────────────────────────────── */
+
+.op-add-btn {
+    display:         inline-flex;
+    align-items:     center;
+    gap:             4px;
+    padding:         4px 10px;
+    background:      var(--bg-surface-2);
+    box-shadow:      var(--shadow-card);
+    border-radius:   var(--radius-sm);
+    font-size:       10px;
+    font-weight:     500;
+    color:           var(--text-secondary);
+    text-decoration: none;
+    transition:      var(--transition-fast);
+    white-space:     nowrap;
+}
+
+.op-add-btn:hover {
+    color:      var(--accent);
+    background: var(--accent-light);
+}
+
+.op-see-all {
+    font-size:       10px;
+    font-weight:     500;
+    color:           var(--text-muted);
+    text-decoration: none;
+    transition:      var(--transition-fast);
+}
+
+.op-see-all:hover { color: var(--accent); }
+
+/* ── Empty state ────────────────────────────────────────────────────────────── */
+
+.op-empty {
+    font-size:   11px;
+    color:       var(--text-muted);
+    margin:      0 0 4px;
+    line-height: 1.5;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════════
+   PLAN CARD — gradient hero
+   ═══════════════════════════════════════════════════════════════════════════════ */
+
+.op-plan-card {
+    background:    linear-gradient(
+                     135deg,
+                     #312E81 0%,
+                     #4F46E5 50%,
+                     #6D28D9 100%
+                   );
+    border-radius: var(--radius-lg);
+    padding:       18px 16px;
+    margin-bottom: 8px;
+    box-shadow:
+        0 1px 0   rgba(255, 255, 255, 0.15) inset,
+        0 8px 28px rgba(79, 70, 229, 0.30),
+        0 2px 8px  rgba(0, 0, 0, 0.15);
+}
+
+/* "SUBSCRIPTION PLAN" eyebrow */
+.op-plan-card-eyebrow {
+    font-size:      8px;
+    font-family:    ui-monospace, 'Cascadia Code', Consolas, monospace;
+    color:          rgba(255, 255, 255, 0.5);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin:         0;
+    user-select:    none;
+}
+
+/* Plan name */
+.op-plan-card-name {
+    font-size:     15px;
+    font-weight:   700;
+    color:         #fff;
+    margin:        18px 0 0;
+    white-space:   nowrap;
+    overflow:      hidden;
+    text-overflow: ellipsis;
+}
+
+/* Price row: large number + "/ mo" dimmed */
+.op-plan-card-price-row {
+    display:     flex;
+    align-items: baseline;
+    gap:         5px;
+    margin-top:  4px;
+}
+
+.op-plan-card-price {
+    font-size:            22px;
+    font-weight:          700;
+    color:                #fff;
+    line-height:          1;
+    font-variant-numeric: tabular-nums;
+}
+
+.op-plan-card-period {
+    font-size: 12px;
+    color:     rgba(255, 255, 255, 0.5);
+}
+
+/* Footer: subscriber pill */
+.op-plan-card-footer {
+    margin-top: 16px;
+}
+
+.op-plan-card-pill {
+    display:       inline-block;
+    font-size:     9px;
+    font-family:   ui-monospace, 'Cascadia Code', Consolas, monospace;
+    font-weight:   500;
+    background:    rgba(255, 255, 255, 0.15);
+    color:         #fff;
+    border-radius: var(--radius-pill);
+    padding:       3px 9px;
+    white-space:   nowrap;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════════
+   SECONDARY PLAN LIST
+   ═══════════════════════════════════════════════════════════════════════════════ */
+
+.op-plan-list {
+    display:        flex;
+    flex-direction: column;
+    gap:            2px;
+}
+
+.op-plan-item {
+    display:         flex;
+    align-items:     center;
+    justify-content: space-between;
+    padding:         8px;
+    border-radius:   var(--radius-sm);
+    transition:      var(--transition-fast);
+    cursor:          default;
+}
+
+.op-plan-item:hover { background: var(--bg-surface-2); }
+
+.op-plan-item-name {
+    font-size: 12px;
+    color:     var(--text-primary);
+}
+
+.op-plan-item-right {
+    display:     flex;
+    align-items: center;
+    gap:         8px;
+}
+
+.op-plan-item-price {
+    font-size:   11px;
+    font-family: ui-monospace, 'Cascadia Code', Consolas, monospace;
+    font-weight: 600;
+    color:       var(--accent);
+}
+
+.op-plan-item-subs {
+    font-size: 10px;
+    color:     var(--text-muted);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════════
+   SUBSCRIBER LIST
+   ═══════════════════════════════════════════════════════════════════════════════ */
+
+.op-sub-list {
+    display:        flex;
+    flex-direction: column;
+    gap:            2px;
+}
+
+.op-sub-row {
+    display:         flex;
+    align-items:     center;
+    gap:             10px;
+    padding:         7px 8px;
+    border-radius:   var(--radius-sm);
+    text-decoration: none;
+    cursor:          pointer;
+    transition:      var(--transition-fast);
+}
+
+.op-sub-row:hover { background: var(--bg-surface-2); }
+
+/* Avatar circle */
+.op-sub-avatar {
+    display:         inline-flex;
+    align-items:     center;
+    justify-content: center;
+    width:           28px;
+    height:          28px;
+    border-radius:   50%;
+    font-size:       9px;
+    font-family:     ui-monospace, 'Cascadia Code', Consolas, monospace;
+    font-weight:     700;
+    flex-shrink:     0;
+    user-select:     none;
+}
+
+/* Address + plan label */
+.op-sub-info {
+    flex:           1;
+    min-width:      0;
+    display:        flex;
+    flex-direction: column;
+    gap:            1px;
+}
+
+.op-sub-addr {
+    font-size:     11px;
+    font-family:   ui-monospace, 'Cascadia Code', Consolas, monospace;
+    color:         var(--text-primary);
+    white-space:   nowrap;
+    overflow:      hidden;
+    text-overflow: ellipsis;
+}
+
+.op-sub-plan {
+    font-size: 10px;
+    color:     var(--text-muted);
+}
+
+/* Amount — right-aligned mono accent */
+.op-sub-amount {
+    font-size:   11px;
+    font-family: ui-monospace, 'Cascadia Code', Consolas, monospace;
+    font-weight: 600;
+    color:       var(--accent);
+    flex-shrink: 0;
+    white-space: nowrap;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════════
+   KEEPER STATUS CARD
+   ═══════════════════════════════════════════════════════════════════════════════ */
+
+.op-keeper-card {
+    background:    var(--bg-base);
+    box-shadow:    var(--shadow-card);
+    border-radius: var(--radius-md);
+    padding:       14px;
+}
+
+.op-keeper-top {
+    display:         flex;
+    align-items:     center;
+    justify-content: space-between;
+}
+
+.op-keeper-status {
+    display:     flex;
+    align-items: center;
+    gap:         6px;
+}
+
+/* ── Status dot ─────────────────────────────────────────────────────────────── */
+
+.op-dot {
+    width:         8px;
+    height:        8px;
+    border-radius: 50%;
+    flex-shrink:   0;
+}
+
+/* Live — success green with pulsing halo */
+.op-dot--live {
+    background: #059669;
+    box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.15);
+    animation:  pulse-dot 2s ease-in-out infinite;
+}
+
+/* Connecting — warning amber */
+.op-dot--warn { background: var(--warning); }
+
+/* Offline — danger red */
+.op-dot--off  { background: var(--danger);  }
+
+@keyframes pulse-dot {
+    0%, 100% { box-shadow: 0 0 0 0px rgba(5, 150, 105, 0.15); }
+    50%      { box-shadow: 0 0 0 5px rgba(5, 150, 105, 0);    }
+}
+
+/* ── Keeper labels ───────────────────────────────────────────────────────────── */
+
+.op-keeper-live {
+    font-size:      10px;
+    font-family:    ui-monospace, 'Cascadia Code', Consolas, monospace;
+    font-weight:    700;
+    color:          var(--success);
+    letter-spacing: 0.06em;
+}
+
+.op-keeper-live--dim { color: var(--text-muted); }
+
+.op-keeper-network {
+    font-size: 10px;
+    color:     var(--text-muted);
+}
+
+/* ── Keeper stats ────────────────────────────────────────────────────────────── */
+
+.op-keeper-stats {
+    display:    flex;
+    gap:        16px;
+    margin-top: 10px;
+}
+
+.op-keeper-stat {
+    display:        flex;
+    flex-direction: column;
+    gap:            2px;
+}
+
+.op-keeper-stat-label {
+    font-size:      9px;
+    font-family:    ui-monospace, 'Cascadia Code', Consolas, monospace;
+    color:          var(--text-muted);
+    letter-spacing: 0.04em;
+}
+
+.op-keeper-stat-value {
+    font-size:   10px;
+    font-family: ui-monospace, 'Cascadia Code', Consolas, monospace;
+    color:       var(--text-secondary);
+}
+
+.op-keeper-stat-value--accent { color: var(--accent); }
+
+/* ── Keeper log block ────────────────────────────────────────────────────────── */
+
+.op-keeper-log {
+    background:    var(--bg-surface-2);
+    border-radius: var(--radius-sm);
+    padding:       10px 12px;
+    margin-top:    10px;
+}
+
+.op-log-line {
+    font-size:     9px;
+    font-family:   ui-monospace, 'Cascadia Code', Consolas, monospace;
+    color:         var(--text-muted);
+    line-height:   1.9;
+    margin:        0;
+    white-space:   nowrap;
+    overflow:      hidden;
+    text-overflow: ellipsis;
+}
+
+.op-log-ok   { color: var(--success); }
+.op-log-warn { color: var(--warning); }
+
+/* ═══════════════════════════════════════════════════════════════════════════════
+   AT-RISK CARD
+   ═══════════════════════════════════════════════════════════════════════════════ */
+
+.op-atrisk-wrap {
+    margin-top: 20px;
+}
+
+.op-atrisk {
+    background:    var(--warning-light);
+    box-shadow:
+        0 0 0 1px rgba(217, 119, 6, 0.12),
+        0 4px 14px rgba(217, 119, 6, 0.08);
+    border-radius: var(--radius-md);
+    padding:       14px;
+}
+
+.op-atrisk-head {
+    display:         flex;
+    align-items:     center;
+    justify-content: space-between;
+    margin-bottom:   8px;
+}
+
+.op-atrisk-label {
+    font-size:      9px;
+    font-family:    ui-monospace, 'Cascadia Code', Consolas, monospace;
+    font-weight:    700;
+    color:          var(--warning);
+    letter-spacing: 0.1em;
+}
+
+.op-atrisk-link {
+    font-size:       10px;
+    font-weight:     500;
+    color:           var(--warning);
+    text-decoration: none;
+    transition:      var(--transition-fast);
+}
+
+.op-atrisk-link:hover { opacity: 0.75; }
+
+.op-atrisk-amount {
+    font-size:   18px;
+    font-weight: 700;
+    color:       var(--text-primary);
+    margin:      0 0 4px;
+    line-height: 1;
+}
+
+.op-atrisk-sub {
+    font-size: 10px;
+    color:     var(--warning);
+    margin:    0;
+    opacity:   0.8;
+}

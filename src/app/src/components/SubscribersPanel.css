@@ -1,0 +1,95 @@
+/*
+ * SubscribersPanel — /subscribers right-panel styles.
+ * Class prefix: sp-
+ */
+
+/* ── Total count ─────────────────────────────────────────────────────────────── */
+
+.sp-total {
+    font-size:      36px;
+    font-weight:    500;
+    font-family:    ui-monospace, 'Cascadia Code', Consolas, monospace;
+    color:          var(--accent);
+    letter-spacing: -0.02em;
+    margin:         0 0 12px;
+    line-height:    1;
+}
+
+/* ── Status rows ─────────────────────────────────────────────────────────────── */
+
+.sp-status-rows {
+    display:        flex;
+    flex-direction: column;
+    gap:            6px;
+}
+
+.sp-status-row {
+    display:     flex;
+    align-items: center;
+    gap:         8px;
+}
+
+.sp-dot {
+    width:         7px;
+    height:        7px;
+    border-radius: 50%;
+    flex-shrink:   0;
+}
+
+.sp-status-label {
+    flex:      1;
+    font-size: 11px;
+    font-family: ui-monospace, 'Cascadia Code', Consolas, monospace;
+    color:     var(--text-secondary);
+}
+
+.sp-status-count {
+    font-size:   11px;
+    font-family: ui-monospace, 'Cascadia Code', Consolas, monospace;
+    color:       var(--text-primary);
+    min-width:   20px;
+    text-align:  right;
+}
+
+/* ── Top plans bars ──────────────────────────────────────────────────────────── */
+
+.sp-plan-bar-row {
+    display:     flex;
+    align-items: center;
+    gap:         8px;
+    margin-bottom: 8px;
+}
+
+.sp-plan-bar-row:last-child {
+    margin-bottom: 0;
+}
+
+.sp-plan-name {
+    font-size:   11px;
+    font-family: ui-monospace, 'Cascadia Code', Consolas, monospace;
+    color:       var(--text-secondary);
+    min-width:   52px;
+    flex-shrink: 0;
+}
+
+.sp-plan-count {
+    font-size:   10px;
+    font-family: ui-monospace, 'Cascadia Code', Consolas, monospace;
+    color:       var(--text-tertiary);
+    min-width:   16px;
+    text-align:  right;
+    flex-shrink: 0;
+}
+
+/* ── Churn risk arc meter ────────────────────────────────────────────────────── */
+
+.sp-meter-wrap {
+    display:         flex;
+    justify-content: center;
+}
+
+.sp-meter-svg {
+    width:   120px;
+    height:  auto;
+    display: block;
+}

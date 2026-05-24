@@ -1,0 +1,129 @@
+/*
+ * Stats bar styles — full-width strip below the hero section.
+ * Class prefix: sb-  (stats-bar)
+ */
+
+/* ── Section shell ───────────────────────────────────────────────────────────── */
+
+.sb-section {
+    width: 100%;
+    background: var(--bg-surface);
+    border-top:    0.5px solid var(--bg-border);
+    border-bottom: 0.5px solid var(--bg-border);
+    padding: 28px 0;
+}
+
+/* ── Inner container ─────────────────────────────────────────────────────────── */
+
+.sb-inner {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 0 24px;
+}
+
+/* ── Eyebrow label ───────────────────────────────────────────────────────────── */
+
+.sb-eyebrow {
+    margin: 0 0 16px;
+    text-align: center;
+    font-size: 10px;
+    font-family: ui-monospace, 'Cascadia Code', Consolas, monospace;
+    color: var(--accent);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    user-select: none;
+}
+
+/* ── Stat row ────────────────────────────────────────────────────────────────── */
+
+.sb-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* ── Individual stat cell ────────────────────────────────────────────────────── */
+
+.sb-stat {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    text-align: center;
+}
+
+/* ── Value ───────────────────────────────────────────────────────────────────── */
+
+.sb-value {
+    font-size: 28px;
+    font-weight: 500;
+    color: var(--text-primary);
+    line-height: 1;
+    /* Tabular numbers prevent layout shift between polled refreshes. */
+    font-variant-numeric: tabular-nums;
+}
+
+/* ── Label ───────────────────────────────────────────────────────────────────── */
+
+.sb-label {
+    font-size: 11px;
+    font-family: ui-monospace, 'Cascadia Code', Consolas, monospace;
+    color: var(--text-tertiary);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+/* ── Vertical divider ────────────────────────────────────────────────────────── */
+
+.sb-divider {
+    width: 1px;
+    height: 44px;
+    background: var(--bg-border);
+    flex-shrink: 0;
+    margin: 0 8px;
+}
+
+/* ── Loading skeleton ────────────────────────────────────────────────────────── */
+
+@keyframes sb-pulse {
+    0%, 100% { background: var(--bg-surface);   }
+    50%       { background: var(--bg-surface-2); }
+}
+
+.sb-skel-value,
+.sb-skel-label {
+    border-radius: 4px;
+    animation: sb-pulse 1.5s ease-in-out infinite;
+}
+
+.sb-skel-value {
+    width: 80px;
+    height: 22px;
+}
+
+.sb-skel-label {
+    width: 96px;
+    height: 9px;
+    margin-top: 5px;
+}
+
+/* ── Responsive ──────────────────────────────────────────────────────────────── */
+
+@media (max-width: 640px) {
+    /* Stack into 2×2 grid on narrow screens; dividers become hidden. */
+    .sb-row {
+        flex-wrap: wrap;
+        gap: 24px 0;
+    }
+
+    .sb-stat {
+        flex: 0 0 50%;
+    }
+
+    .sb-divider {
+        display: none;
+    }
+
+    .sb-value { font-size: 24px; }
+}

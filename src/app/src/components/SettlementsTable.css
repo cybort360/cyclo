@@ -1,0 +1,174 @@
+/*
+ * SettlementsTable — custom dark-token table for PaymentCharged events.
+ * Class prefix: stl-
+ *
+ * Visually matches DataTable's design language (same surface, border, padding)
+ * but renders its own rows to support per-row slide-in animation for live events.
+ *
+ * New rows (stl-row--new) play a 400ms slide-down, no border colour.
+ */
+
+/* ── Outer wrapper ───────────────────────────────────────────────────────────── */
+
+.stl-wrap {
+    background:    var(--bg-surface);
+    border:        0.5px solid var(--bg-border);
+    border-radius: 10px;
+    overflow:      hidden;
+}
+
+/* ── Header row ──────────────────────────────────────────────────────────────── */
+
+.stl-header {
+    display:               grid;
+    padding:               10px 20px;
+    border-bottom:         0.5px solid var(--bg-border);
+    background:            var(--bg-surface);
+}
+
+.stl-th {
+    font-size:      9px;
+    font-family:    ui-monospace, 'Cascadia Code', Consolas, monospace;
+    color:          var(--text-tertiary);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    user-select:    none;
+    white-space:    nowrap;
+}
+
+/* ── Data rows ───────────────────────────────────────────────────────────────── */
+
+.stl-row {
+    display:       grid;
+    padding:       12px 20px;
+    border-bottom: 0.5px solid var(--bg-border);
+    align-items:   center;
+    transition:    background 120ms ease;
+}
+
+.stl-row:last-child  { border-bottom: none; }
+.stl-row:hover       { background: var(--bg-surface-2); }
+
+/* New-row slide-in (border-colour intentionally omitted per design direction) */
+@keyframes stl-slide-down {
+    from { transform: translateY(-10px); opacity: 0; }
+    to   { transform: translateY(0);     opacity: 1; }
+}
+
+.stl-row--new { animation: stl-slide-down 400ms ease; }
+
+/* ── Cells ───────────────────────────────────────────────────────────────────── */
+
+.stl-cell {
+    display:       flex;
+    align-items:   center;
+    font-size:     13px;
+    color:         var(--text-primary);
+    min-width:     0;
+    overflow:      hidden;
+    white-space:   nowrap;
+    text-overflow: ellipsis;
+}
+
+.stl-cell--mono {
+    font-family: ui-monospace, 'Cascadia Code', Consolas, monospace;
+    font-size:   12px;
+}
+
+.stl-cell--right { justify-content: flex-end; }
+
+/* ── Time cell ───────────────────────────────────────────────────────────────── */
+
+.stl-time {
+    font-family: ui-monospace, 'Cascadia Code', Consolas, monospace;
+    font-size:   12px;
+    color:       var(--text-tertiary);
+}
+
+/* ── Amount cell ─────────────────────────────────────────────────────────────── */
+
+.stl-amount {
+    font-family:  ui-monospace, 'Cascadia Code', Consolas, monospace;
+    font-size:    12px;
+    color:        var(--accent);
+}
+
+/* ── Fee cell ────────────────────────────────────────────────────────────────── */
+
+.stl-fee {
+    font-family: ui-monospace, 'Cascadia Code', Consolas, monospace;
+    font-size:   11px;
+    color:       var(--text-secondary);
+}
+
+/* ── Tx hash cell ────────────────────────────────────────────────────────────── */
+
+.stl-tx-cell {
+    display:     flex;
+    align-items: center;
+    gap:         5px;
+    min-width:   0;
+}
+
+.stl-tx-link {
+    font-family:     ui-monospace, 'Cascadia Code', Consolas, monospace;
+    font-size:       12px;
+    color:           var(--text-secondary);
+    text-decoration: none;
+    white-space:     nowrap;
+    overflow:        hidden;
+    text-overflow:   ellipsis;
+    transition:      color 150ms ease;
+}
+
+.stl-tx-link:hover { color: var(--text-primary); }
+
+.stl-tx-icon {
+    color:       var(--text-tertiary);
+    line-height: 0;
+    flex-shrink: 0;
+    opacity:     0;
+    transition:  opacity 150ms ease;
+}
+
+.stl-tx-cell:hover .stl-tx-icon { opacity: 1; }
+
+/* ── Subscriber cell ─────────────────────────────────────────────────────────── */
+
+.stl-addr {
+    font-family: ui-monospace, 'Cascadia Code', Consolas, monospace;
+    font-size:   12px;
+    color:       var(--text-primary);
+}
+
+/* ── Empty state ─────────────────────────────────────────────────────────────── */
+
+.stl-empty {
+    padding:    48px 24px;
+    text-align: center;
+}
+
+.stl-empty-text {
+    font-size: 13px;
+    color:     var(--text-tertiary);
+    margin:    0;
+}
+
+/* ── Loading skeleton ────────────────────────────────────────────────────────── */
+
+.stl-skeleton-bar {
+    display:       block;
+    height:        12px;
+    background:    var(--bg-surface-2);
+    border-radius: 4px;
+    animation:     stl-pulse 1.4s ease-in-out infinite;
+    width:         60%;
+}
+
+.stl-row--skeleton:nth-child(even) .stl-skeleton-bar { animation-delay: 0.2s; }
+.stl-row--skeleton:nth-child(odd)  .stl-skeleton-bar { animation-delay: 0s; }
+
+@keyframes stl-pulse {
+    0%, 100% { opacity: 0.4; }
+    50%       { opacity: 0.8; }
+}

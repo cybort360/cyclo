@@ -1,0 +1,70 @@
+/*
+ * Shared structural styles for all contextual right-panel components.
+ * Class prefix: pn-
+ *
+ * Import this file alongside the panel's own CSS file.
+ * The panel inherits its 280px width and outer padding from .sl-rightpanel.
+ */
+
+/* ── Panel root ──────────────────────────────────────────────────────────────── */
+
+.pn-panel {
+    display:        flex;
+    flex-direction: column;
+    gap:            0;
+}
+
+/* ── Divider ─────────────────────────────────────────────────────────────────── */
+
+.pn-divider {
+    border:     none;
+    border-top: 0.5px solid var(--bg-border);
+    margin:     16px 0;
+}
+
+/* ── Section label (9px mono uppercase group header) ─────────────────────────── */
+
+.pn-section-label {
+    font-size:      9px;
+    font-family:    ui-monospace, 'Cascadia Code', Consolas, monospace;
+    color:          var(--text-tertiary);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin:         0 0 10px;
+    user-select:    none;
+}
+
+/* ── Section title (12–13px, weight 500, text-primary) ───────────────────────── */
+
+.pn-section-title {
+    font-size:     12px;
+    font-weight:   500;
+    color:         var(--text-primary);
+    margin-bottom: 10px;
+}
+
+/* ── Empty state ─────────────────────────────────────────────────────────────── */
+
+.pn-empty {
+    font-size:   11px;
+    color:       var(--text-tertiary);
+    margin:      0;
+    line-height: 1.5;
+}
+
+/* ── Generic bar track + fill (used across multiple panels) ──────────────────── */
+
+.pn-bar-track {
+    height:        4px;
+    background:    var(--bg-border);
+    border-radius: 2px;
+    overflow:      hidden;
+    flex:          1;
+}
+
+.pn-bar-fill {
+    height:        100%;
+    border-radius: 2px;
+    background:    var(--accent);
+    transition:    width 400ms ease;
+}
