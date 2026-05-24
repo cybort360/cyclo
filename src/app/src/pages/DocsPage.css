@@ -336,4 +336,15 @@
     .dp-code-pre        { font-size: 12px; padding: 16px; }
     .dp-step            { gap: 12px; }
     .dp-section         { margin-bottom: 48px; }
+
+    /*
+     * Pull code blocks back to the full width of dp-main, cancelling the
+     * step indent (28px badge + 12px gap = 40px).
+     * Without this the block is 40px narrower on the left than the right —
+     * visually off-centre and cramped.
+     */
+    .dp-step .dp-code-wrap {
+        margin-left: -40px;
+        width:       calc(100% + 40px);
+    }
 }
