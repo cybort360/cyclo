@@ -295,34 +295,6 @@ export function Layout({ children }: { children: ReactNode }) {
                         ))}
                     </nav>
 
-                    {/* ── Bottom: wallet row ────────────────────────────── */}
-                    <div className="sl-bottom">
-                        {shortAddr ? (
-                            /* Connected — gradient avatar + address + balance */
-                            <div className="sl-wallet-row">
-                                <div
-                                    className="sl-wallet-avatar"
-                                    title={address}
-                                    aria-label={`Wallet ${shortAddr}`}
-                                >
-                                    {avatarInitials}
-                                </div>
-                                <div className="sl-wallet-info">
-                                    <p className="sl-wallet-addr">{shortAddr}</p>
-                                    {usdcBalance !== undefined && (
-                                        <p className="sl-wallet-balance">
-                                            {fromUsdcUnits(usdcBalance).toFixed(2)} USDC
-                                        </p>
-                                    )}
-                                </div>
-                            </div>
-                        ) : (
-                            /* Not connected */
-                            <Link href="/connect">
-                                <a className="sl-connect-link">Connect wallet →</a>
-                            </Link>
-                        )}
-                    </div>
 
                 </aside>
 
