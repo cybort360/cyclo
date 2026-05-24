@@ -1,0 +1,141 @@
+/*
+ * AnalyticsTab — charts, KPI cards, and plan breakdown table.
+ * Class prefix: alt-
+ *
+ * Layout: KPI cards (4-col grid) → chart row (2 cards side by side) → plan DataTable.
+ */
+
+/* ── Root ────────────────────────────────────────────────────────────────────── */
+
+.alt-root {
+    display:        flex;
+    flex-direction: column;
+    gap:            12px;
+}
+
+/* ── KPI card grid ───────────────────────────────────────────────────────────── */
+
+.alt-kpi-grid {
+    display:               grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap:                   8px;
+}
+
+.alt-kpi-card {
+    background:    var(--bg-surface);
+    border:        0.5px solid var(--bg-border);
+    border-radius: 10px;
+    padding:       16px 18px;
+}
+
+.alt-kpi-label {
+    font-size:   11px;
+    color:       var(--text-tertiary);
+    margin:      0 0 6px;
+    font-family: ui-monospace, 'Cascadia Code', Consolas, monospace;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.alt-kpi-value {
+    font-size:   22px;
+    font-weight: 500;
+    color:       var(--text-primary);
+    margin:      0;
+    font-family: ui-monospace, 'Cascadia Code', Consolas, monospace;
+}
+
+/* Live card: accent tint for the socket-powered "Charges Today" counter */
+.alt-kpi-card--live .alt-kpi-label { color: var(--accent-dim); }
+.alt-kpi-card--live .alt-kpi-value { color: var(--accent);     }
+
+/* ── Chart row ───────────────────────────────────────────────────────────────── */
+
+.alt-chart-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap:     8px;
+}
+
+.alt-chart-card {
+    background:    var(--bg-surface);
+    border:        0.5px solid var(--bg-border);
+    border-radius: 10px;
+    padding:       16px 20px 12px;
+}
+
+.alt-chart-title {
+    font-size:   11px;
+    font-family: ui-monospace, 'Cascadia Code', Consolas, monospace;
+    color:       var(--text-secondary);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    margin:      0 0 14px;
+}
+
+/* ── Recharts overrides ──────────────────────────────────────────────────────── */
+
+/* Tooltip bubble */
+.alt-tooltip {
+    background:    var(--bg-surface-2);
+    border:        0.5px solid var(--bg-border-bright);
+    border-radius: 6px;
+    padding:       8px 12px;
+    font-size:     12px;
+    color:         var(--text-primary);
+    font-family:   ui-monospace, 'Cascadia Code', Consolas, monospace;
+}
+
+.alt-tooltip-label {
+    font-size: 10px;
+    color:     var(--text-tertiary);
+    margin:    0 0 4px;
+}
+
+.alt-tooltip-value {
+    font-size:   13px;
+    font-weight: 500;
+    color:       var(--accent);
+    margin:      0;
+}
+
+/* ── Plan breakdown section ──────────────────────────────────────────────────── */
+
+.alt-breakdown-label {
+    font-size:   11px;
+    font-family: ui-monospace, 'Cascadia Code', Consolas, monospace;
+    color:       var(--text-tertiary);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    margin:      0 0 8px;
+}
+
+/* ── Mobile breakpoints ──────────────────────────────────────────────────────── */
+
+@media (max-width: 767px) {
+    /* KPI grid: 4-col → 2-col on mobile so cards remain readable */
+    .alt-kpi-grid { grid-template-columns: repeat(2, 1fr); }
+
+    /* Chart row: side-by-side → stacked on mobile */
+    .alt-chart-row { grid-template-columns: 1fr; }
+}
+
+/* ── Empty / loading state ───────────────────────────────────────────────────── */
+
+.alt-empty {
+    padding:    60px 24px;
+    text-align: center;
+}
+
+.alt-empty-text {
+    font-size: 13px;
+    color:     var(--text-tertiary);
+    margin:    0;
+}
+
+.alt-loading {
+    padding:    40px 24px;
+    text-align: center;
+    font-size:  13px;
+    color:      var(--text-tertiary);
+}

@@ -1,0 +1,160 @@
+/*
+ * Overview stat cards — four themed cards at the top of the Dashboard.
+ * Class prefix: oc-  (overview-cards)
+ * Tokens: tokens.css (Ivory & Indigo)
+ *
+ * No borders anywhere — depth from shadows only.
+ */
+
+/* ── Grid ─────────────────────────────────────────────────────────────────────── */
+
+.oc-grid {
+    display:               grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap:                   16px;
+    margin-bottom:         24px;
+}
+
+/* ── Mobile breakpoints ──────────────────────────────────────────────────────── */
+
+@media (max-width: 767px) {
+    /* 4-col KPI grid → 2-col on mobile so each card has breathing room */
+    .oc-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+}
+
+/* ── Card base ───────────────────────────────────────────────────────────────── */
+
+.oc-card {
+    background:    var(--bg-surface);
+    box-shadow:    var(--shadow-card);
+    border-radius: var(--radius-lg);
+    padding:       24px;
+    transition:    var(--transition-base);
+    display:       flex;
+    flex-direction: column;
+    gap:            12px;
+    overflow:       hidden; /* clip sparkline to card bounds */
+    position:       relative;
+}
+
+.oc-card:hover {
+    box-shadow: var(--shadow-card-hover);
+    transform:  translateY(-2px);
+}
+
+/* ── Theme: shadow overrides ─────────────────────────────────────────────────── */
+
+.oc-card--accent  { box-shadow: var(--shadow-card-accent);  }
+.oc-card--success { box-shadow: var(--shadow-card-success); }
+
+.oc-card--accent:hover  { box-shadow: var(--shadow-card-accent),  0 8px 32px rgba(79, 70, 229, 0.12); }
+.oc-card--success:hover { box-shadow: var(--shadow-card-success), 0 8px 32px rgba(5, 150, 105, 0.12); }
+.oc-card--info:hover    { box-shadow: var(--shadow-card-hover),   0 8px 32px rgba(2, 132, 199, 0.08); }
+.oc-card--warning:hover { box-shadow: var(--shadow-card-hover),   0 8px 32px rgba(217, 119, 6, 0.08); }
+
+/* ── Top row: label + icon ───────────────────────────────────────────────────── */
+
+.oc-top {
+    display:         flex;
+    align-items:     center;
+    justify-content: space-between;
+    gap:             8px;
+}
+
+.oc-label {
+    font-size:      10px;
+    font-weight:    600;
+    color:          var(--text-muted);
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    line-height:    1;
+}
+
+/* Icon container — themed 32×32 square */
+
+.oc-icon-wrap {
+    width:           32px;
+    height:          32px;
+    border-radius:   var(--radius-sm);
+    display:         flex;
+    align-items:     center;
+    justify-content: center;
+    flex-shrink:     0;
+}
+
+.oc-icon-wrap--accent  { background: var(--accent-light);   color: var(--accent);   }
+.oc-icon-wrap--success { background: var(--success-light);  color: var(--success);  }
+.oc-icon-wrap--info    { background: var(--info-light);     color: var(--info);     }
+.oc-icon-wrap--warning { background: var(--warning-light);  color: var(--warning);  }
+
+/* ── Value row: animated number + optional suffix ────────────────────────────── */
+
+.oc-value-row {
+    display:     flex;
+    align-items: baseline;
+    gap:         4px;
+    line-height: 1;
+}
+
+.oc-value {
+    font-size:    32px;
+    font-weight:  700;
+    color:        var(--text-primary);
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.02em;
+    line-height:  1;
+}
+
+/* Scale pulse triggered on live socket updates */
+.oc-value--pulse {
+    animation: oc-pulse 200ms cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+@keyframes oc-pulse {
+    0%   { transform: scale(1);    }
+    50%  { transform: scale(1.04); }
+    100% { transform: scale(1);    }
+}
+
+.oc-suffix {
+    font-size:   14px;
+    font-weight: 500;
+    color:       var(--text-secondary);
+}
+
+/* ── Delta row: trend pill + period label ────────────────────────────────────── */
+
+.oc-delta-row {
+    display:     flex;
+    align-items: center;
+    gap:         8px;
+    line-height: 1;
+}
+
+.oc-delta {
+    font-size:     11px;
+    font-weight:   600;
+    border-radius: var(--radius-pill);
+    padding:       3px 8px;
+    flex-shrink:   0;
+}
+
+.oc-delta--accent  { background: var(--accent-light);   color: var(--accent);   }
+.oc-delta--success { background: var(--success-light);  color: var(--success);  }
+.oc-delta--info    { background: var(--info-light);     color: var(--info);     }
+.oc-delta--warning { background: var(--warning-light);  color: var(--warning);  }
+
+.oc-period {
+    font-size: 11px;
+    color:     var(--text-muted);
+}
+
+/* ── Sparkline SVG ───────────────────────────────────────────────────────────── */
+
+.oc-spark {
+    display: block;
+    width:   calc(100% + 48px); /* bleed past card padding on both sides */
+    height:  40px;
+    margin:  0 -24px -24px;    /* pull flush to card edges and bottom */
+    flex-shrink: 0;
+}

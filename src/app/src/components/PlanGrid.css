@@ -1,0 +1,259 @@
+/*
+ * PlanGrid — 3-column card grid for merchant subscription plans.
+ * Class prefix: plg-
+ *
+ * Structure:
+ *   .plg-grid           — 3-col CSS grid, gap 8px
+ *     .plg-card         — individual plan card
+ *       .plg-card-top   — name + status badge
+ *       .plg-price-row  — large accent price + interval label
+ *       .plg-stats-row  — subscriber count + settled USDC
+ *       .plg-footer     — view-subscribers link + kebab menu
+ */
+
+/* ── Grid ────────────────────────────────────────────────────────────────────── */
+
+.plg-grid {
+    display:               grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap:                   8px;
+}
+
+/* ── Mobile breakpoints ──────────────────────────────────────────────────────── */
+
+@media (max-width: 767px) {
+    /* 3-col plan grid → 1-col on mobile; plan cards are content-rich and need full width */
+    .plg-grid { grid-template-columns: 1fr; }
+}
+
+@media (min-width: 480px) and (max-width: 767px) {
+    /* Tablets in portrait: show 2 cards side by side if wide enough */
+    .plg-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+/* ── Card ────────────────────────────────────────────────────────────────────── */
+
+.plg-card {
+    background:     var(--bg-surface);
+    border:         0.5px solid var(--bg-border);
+    border-radius:  10px;
+    padding:        20px;
+    position:       relative;
+    display:        flex;
+    flex-direction: column;
+    gap:            0;
+    transition:     border-color 150ms ease;
+}
+
+.plg-card:hover              { border-color: var(--bg-border-bright); }
+.plg-card--inactive          { opacity: 0.55; }
+
+/* ── Card top: name + status ─────────────────────────────────────────────────── */
+
+.plg-card-top {
+    display:         flex;
+    align-items:     center;
+    justify-content: space-between;
+    gap:             8px;
+    margin-bottom:   14px;
+}
+
+.plg-plan-name {
+    font-size:     14px;
+    font-weight:   500;
+    color:         var(--text-primary);
+    margin:        0;
+    white-space:   nowrap;
+    overflow:      hidden;
+    text-overflow: ellipsis;
+}
+
+.plg-badge {
+    font-size:      9px;
+    font-family:    ui-monospace, 'Cascadia Code', Consolas, monospace;
+    padding:        3px 7px;
+    border-radius:  4px;
+    white-space:    nowrap;
+    letter-spacing: 0.02em;
+    flex-shrink:    0;
+}
+
+.plg-badge--active   { background: var(--accent-subtle); color: var(--accent); }
+.plg-badge--inactive { background: rgba(255,255,255,0.04); color: var(--text-secondary); }
+
+/* ── Price row ───────────────────────────────────────────────────────────────── */
+
+.plg-price-row {
+    display:     flex;
+    align-items: baseline;
+    gap:         6px;
+    margin-bottom: 14px;
+}
+
+.plg-price {
+    font-size:      24px;
+    font-family:    ui-monospace, 'Cascadia Code', Consolas, monospace;
+    color:          var(--accent);
+    line-height:    1;
+    letter-spacing: -0.02em;
+}
+
+.plg-price-sep {
+    font-size: 14px;
+    color:     var(--text-tertiary);
+}
+
+.plg-interval {
+    font-size: 14px;
+    color:     var(--text-secondary);
+}
+
+/* ── Stats row ───────────────────────────────────────────────────────────────── */
+
+.plg-stats-row {
+    display:       flex;
+    gap:           20px;
+    margin-bottom: 14px;
+    padding-top:   14px;
+    border-top:    0.5px solid var(--bg-border);
+}
+
+.plg-stat {
+    display:        flex;
+    flex-direction: column;
+    gap:            3px;
+}
+
+.plg-stat-label {
+    font-size:   10px;
+    font-family: ui-monospace, 'Cascadia Code', Consolas, monospace;
+    color:       var(--text-tertiary);
+    letter-spacing: 0.04em;
+}
+
+.plg-stat-value {
+    font-size:   13px;
+    color:       var(--text-primary);
+}
+
+/* ── Footer: view link + kebab ───────────────────────────────────────────────── */
+
+.plg-footer {
+    display:         flex;
+    align-items:     center;
+    justify-content: space-between;
+    margin-top:      auto;
+}
+
+.plg-view-link {
+    font-size:       11px;
+    color:           var(--accent);
+    text-decoration: none;
+    transition:      opacity 150ms ease;
+}
+
+.plg-view-link:hover { opacity: 0.75; }
+
+/* ── Kebab menu ──────────────────────────────────────────────────────────────── */
+
+.plg-kebab-wrap {
+    position: relative;
+}
+
+.plg-kebab-btn {
+    width:        28px;
+    height:       28px;
+    background:   transparent;
+    border:       none;
+    border-radius: 4px;
+    color:        var(--text-secondary);
+    cursor:       pointer;
+    display:      flex;
+    align-items:  center;
+    justify-content: center;
+    font-size:    16px;
+    line-height:  1;
+    transition:   background 150ms ease, color 150ms ease;
+}
+
+.plg-kebab-btn:hover { background: var(--bg-surface-2); color: var(--text-primary); }
+
+.plg-kebab-menu {
+    position:      absolute;
+    right:         0;
+    top:           calc(100% + 4px);
+    background:    var(--bg-surface-2);
+    border:        0.5px solid var(--bg-border);
+    border-radius: 8px;
+    overflow:      hidden;
+    z-index:       100;
+    min-width:     140px;
+    box-shadow:    0 8px 24px rgba(0, 0, 0, 0.3);
+}
+
+.plg-kebab-item {
+    display:    block;
+    width:      100%;
+    padding:    10px 14px;
+    font-size:  13px;
+    color:      var(--text-secondary);
+    background: transparent;
+    border:     none;
+    text-align: left;
+    cursor:     pointer;
+    transition: background 120ms ease, color 120ms ease;
+}
+
+.plg-kebab-item:hover { background: var(--bg-border); color: var(--text-primary); }
+
+.plg-kebab-item--danger       { color: var(--danger); }
+.plg-kebab-item--danger:hover { color: var(--danger); background: rgba(255,68,68,0.08); }
+
+.plg-kebab-item:disabled      { opacity: 0.5; cursor: not-allowed; }
+
+/* ── Loading / empty ─────────────────────────────────────────────────────────── */
+
+.plg-empty {
+    background:    var(--bg-surface);
+    border:        0.5px solid var(--bg-border);
+    border-radius: 12px;
+    padding:       60px 24px;
+    text-align:    center;
+    grid-column:   1 / -1;
+}
+
+.plg-empty-heading {
+    font-size:   14px;
+    font-weight: 500;
+    color:       var(--text-primary);
+    margin:      0 0 8px;
+}
+
+.plg-empty-sub {
+    font-size:  12px;
+    color:      var(--text-tertiary);
+    margin:     0 0 20px;
+    line-height: 1.5;
+}
+
+.plg-skeleton-card {
+    background:    var(--bg-surface);
+    border:        0.5px solid var(--bg-border);
+    border-radius: 10px;
+    padding:       20px;
+    display:       flex;
+    flex-direction: column;
+    gap:           10px;
+}
+
+.plg-skel {
+    height:        10px;
+    background:    var(--bg-surface-2);
+    border-radius: 3px;
+    animation:     plg-pulse 1.4s ease-in-out infinite;
+}
+
+@keyframes plg-pulse {
+    0%, 100% { opacity: 0.4; }
+    50%       { opacity: 0.8; }
+}

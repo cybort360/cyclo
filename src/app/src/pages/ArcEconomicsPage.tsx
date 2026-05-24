@@ -144,9 +144,9 @@ function LiveStatsBar() {
     if (stats.status === 'loading') {
         return (
             <div className="bg-white border border-gray-100 rounded-2xl p-6 animate-pulse">
-                <div className="grid grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
                     {[0, 1, 2].map(i => (
-                        <div key={i} className={`space-y-2 ${i > 0 ? 'pl-6 border-l border-gray-100' : ''}`}>
+                        <div key={i} className={`space-y-2 ${i > 0 ? 'sm:pl-6 sm:border-l border-gray-100' : ''}`}>
                             <div className="h-3 w-28 bg-gray-200 rounded" />
                             <div className="h-7 w-20 bg-gray-200 rounded-lg" />
                             <div className="h-3 w-32 bg-gray-100 rounded" />
@@ -179,9 +179,9 @@ function LiveStatsBar() {
 
     return (
         <div className="bg-white border border-indigo-100 rounded-2xl p-6">
-            <div className="grid grid-cols-3 gap-0 divide-x divide-gray-100">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-0 divide-y sm:divide-y-0 sm:divide-x divide-gray-100">
                 {items.map(({ label, value, sub }, i) => (
-                    <div key={label} className={i > 0 ? 'pl-6' : 'pr-6'}>
+                    <div key={label} className={i > 0 ? 'sm:pl-6 py-3 sm:py-0' : 'sm:pr-6 pb-3 sm:pb-0'}>
                         <p className="text-xs font-medium text-gray-400 uppercase tracking-wide leading-none">
                             {label}
                         </p>
@@ -389,7 +389,7 @@ function FeeMarginSection({ subscribers }: FeeMarginSectionProps) {
             </div>
 
             {/* Stat cards — 2 × 2 grid */}
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <StatCard
                     label="Gross protocol revenue"
                     value={fmtCost(grossRevenue)}
@@ -819,7 +819,9 @@ export function ArcEconomicsPage() {
 
                 {/* Section 4: Comparison table */}
                 <Section title="Side-by-side comparison">
-                    <div className="bg-white border border-gray-100 rounded-xl overflow-hidden">
+                    {/* overflow-x-auto keeps the 3-col comparison readable on small screens */}
+                    <div className="overflow-x-auto -mx-4 sm:mx-0">
+                    <div className="min-w-[480px] sm:min-w-0 bg-white border border-gray-100 rounded-xl overflow-hidden mx-4 sm:mx-0">
                         {/* Header row */}
                         <div className="grid grid-cols-3 gap-4 px-4 py-3 bg-gray-50 border-b border-gray-100">
                             <span className="text-xs font-semibold text-gray-400 uppercase tracking-wide">
@@ -875,6 +877,7 @@ export function ArcEconomicsPage() {
                                 arc="No — gas priced in same asset"
                             />
                         </div>
+                    </div>
                     </div>
                 </Section>
 
@@ -987,7 +990,7 @@ export function ArcEconomicsPage() {
 
                     <SolidityCodeBlock code={SOLIDITY_CODE} />
 
-                    <div className="grid grid-cols-3 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                         <UseCaseCard
                             icon="📈"
                             title="DeFi Protocol"

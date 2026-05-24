@@ -105,6 +105,13 @@
     gap:                   8px;
 }
 
+/* ── Mobile breakpoints ──────────────────────────────────────────────────────── */
+
+@media (max-width: 599px) {
+    /* 2-col subscription card grid → 1-col on small mobile */
+    .prt-grid { grid-template-columns: 1fr; }
+}
+
 /* ── Subscription card ───────────────────────────────────────────────────────── */
 
 .prt-card {
