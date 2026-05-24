@@ -366,38 +366,128 @@
     gap:             12px;
 }
 
-/* Vertical divider */
-.sl-topbar-divider {
+/* ── Topbar wallet chip ───────────────────────────────────────────────────────── */
+
+/* Wrapper — positions the dropdown relative to the chip */
+.sl-wallet-wrap {
+    position: relative;
+}
+
+/*
+ * The chip itself.
+ * Connected state: balance | divider | address, click → dropdown.
+ * Disconnected state: link pill to /connect.
+ */
+.sl-wallet-chip {
+    display:       flex;
+    align-items:   center;
+    gap:           0;
+    height:        34px;
+    background:    var(--bg-surface);
+    border:        0.5px solid var(--bg-border-bright);
+    border-radius: var(--radius-pill);
+    box-shadow:    var(--shadow-card);
+    font-size:     12px;
+    font-family:   ui-monospace, 'Cascadia Code', Consolas, monospace;
+    color:         var(--text-secondary);
+    cursor:        pointer;
+    transition:    border-color var(--transition-fast), box-shadow var(--transition-fast), background var(--transition-fast);
+    padding:       0 12px;
+    white-space:   nowrap;
+    text-decoration: none;
+    flex-shrink:   0;
+}
+
+.sl-wallet-chip:hover,
+.sl-wallet-chip--open {
+    border-color: var(--accent-dim);
+    box-shadow:   var(--shadow-card), 0 0 0 2px rgba(79,70,229,0.10);
+    background:   var(--bg-surface-2);
+}
+
+/* Disconnected pill — slightly different colour to signal action */
+.sl-wallet-chip--disconnected {
+    gap:    6px;
+    color:  var(--text-muted);
+}
+.sl-wallet-chip--disconnected:hover {
+    color:        var(--accent);
+    border-color: var(--accent-dim);
+}
+
+/* Balance segment */
+.sl-wallet-balance {
+    color:       var(--accent);
+    font-weight: 600;
+    font-size:   11px;
+}
+
+/* Thin pipe divider between balance and address */
+.sl-wallet-divider {
+    display:    inline-block;
     width:      1px;
-    height:     18px;
-    background: rgba(0, 0, 0, 0.07);
+    height:     14px;
+    background: var(--bg-border-bright);
+    margin:     0 9px;
     flex-shrink: 0;
 }
 
-/* Gradient merchant avatar */
-.sl-avatar {
-    width:           32px;
-    height:          32px;
-    border-radius:   50%;
-    background:      linear-gradient(135deg, var(--accent) 0%, var(--violet) 100%);
-    box-shadow:      0 2px 8px var(--accent-shadow);
-    display:         flex;
-    align-items:     center;
-    justify-content: center;
-    font-size:       11px;
-    font-weight:     600;
-    font-family:     ui-monospace, 'Cascadia Code', Consolas, monospace;
-    color:           #fff;
-    flex-shrink:     0;
-    cursor:          default;
-    user-select:     none;
-    transition:      var(--transition-fast);
+/* Address segment */
+.sl-wallet-addr {
+    font-size:   11px;
+    color:       var(--text-secondary);
 }
 
-.sl-avatar:hover {
+/* ── Dropdown ─────────────────────────────────────────────────────────────────── */
+
+.sl-wallet-dropdown {
+    position:      absolute;
+    top:           calc(100% + 6px);
+    right:         0;
+    min-width:     220px;
+    background:    var(--bg-surface);
+    border:        0.5px solid var(--bg-border-bright);
+    border-radius: var(--radius-lg);
     box-shadow:
-        0 0 0 3px var(--accent-dim),
-        0 2px 8px var(--accent-shadow);
+        0 0 0 1px rgba(0,0,0,0.04),
+        0 8px 24px rgba(0,0,0,0.12),
+        0 2px 8px  rgba(0,0,0,0.06);
+    z-index:       200;
+    overflow:      hidden;
+}
+
+/* Full address row — monospace, truncated */
+.sl-wallet-dropdown-addr {
+    font-size:     10px;
+    font-family:   ui-monospace, 'Cascadia Code', Consolas, monospace;
+    color:         var(--text-muted);
+    padding:       10px 14px 8px;
+    margin:        0;
+    border-bottom: 0.5px solid var(--bg-border);
+    overflow:      hidden;
+    text-overflow: ellipsis;
+    white-space:   nowrap;
+}
+
+/* Disconnect button */
+.sl-wallet-disconnect {
+    display:     flex;
+    align-items: center;
+    gap:         7px;
+    width:       100%;
+    padding:     9px 14px;
+    background:  transparent;
+    border:      none;
+    font-size:   12px;
+    color:       var(--text-secondary);
+    cursor:      pointer;
+    text-align:  left;
+    transition:  background var(--transition-fast), color var(--transition-fast);
+}
+
+.sl-wallet-disconnect:hover {
+    background: var(--bg-surface-2);
+    color:      var(--text-primary);
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════════

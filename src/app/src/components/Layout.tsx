@@ -8,19 +8,20 @@
  * Class prefix: sl-  (sidebar layout)
  */
 import { Link, useRoute, useLocation } from 'wouter'
-import { useAccount, useChainId, useSwitchChain } from 'wagmi'
-import { useState, useEffect, type ReactNode, type ComponentType } from 'react'
+import { useAccount, useChainId, useSwitchChain, useDisconnect } from 'wagmi'
+import { useState, useEffect, useRef, type ReactNode, type ComponentType } from 'react'
 import {
     IconLayoutDashboard, IconUsers, IconAlertTriangle, IconStack2,
     IconReceipt, IconBuildingBank, IconChartBar, IconWebhook,
     IconCode, IconBook, IconPlayerPlay, IconSearch, IconLayoutSidebarRight,
+    IconPlugConnected, IconPlugConnectedX,
 } from '@tabler/icons-react'
 import { useMerchantProfile } from '../context/MerchantProfileContext'
 import { useSubscriptionManager } from '../hooks/useSubscriptionManager'
+import { useSocket } from '../hooks/useSocket'
 import { RightPanelCtx } from '../context/RightPanelContext'
 import { ProfileSetupModal } from './ProfileSetupModal'
 import { AIChatPanel } from './AIChatPanel'
-import { SocketStatusIndicator } from './SocketStatusIndicator'
 import Logo from './Logo'
 import { fromUsdcUnits } from '../utils/formatting'
 import { usePastDueCount } from '../hooks/usePastDueCount'
@@ -136,6 +137,75 @@ function WrongNetworkBanner() {
     )
 }
 
+// ── TopbarWallet ──────────────────────────────────────────────────────────────
+
+/**
+ * Wallet chip shown in the topbar right area.
+ * Connected: USDC balance + abbreviated address, click → dropdown to disconnect.
+ * Disconnected: pill link that navigates to /connect.
+ */
+function TopbarWallet({ usdcBalance }: { usdcBalance: bigint | undefined }) {
+    const { address, isConnected } = useAccount()
+    const { disconnect }           = useDisconnect()
+    const [open, setOpen]          = useState(false)
+    const wrapRef                  = useRef<HTMLDivElement>(null)
+
+    // Close the dropdown when clicking outside.
+    useEffect(() => {
+        if (!open) return
+        function handleClick(e: MouseEvent) {
+            if (wrapRef.current && !wrapRef.current.contains(e.target as Node)) {
+                setOpen(false)
+            }
+        }
+        document.addEventListener('mousedown', handleClick)
+        return () => document.removeEventListener('mousedown', handleClick)
+    }, [open])
+
+    if (!isConnected || !address) {
+        return (
+            <Link href="/connect" className="sl-wallet-chip sl-wallet-chip--disconnected">
+                <IconPlugConnected size={13} aria-hidden="true" />
+                Connect wallet
+            </Link>
+        )
+    }
+
+    const shortAddr   = `${address.slice(0, 6)}…${address.slice(-4)}`
+    const usdcDisplay = usdcBalance !== undefined
+        ? `${fromUsdcUnits(usdcBalance).toFixed(2)} USDC`
+        : '— USDC'
+
+    return (
+        <div className="sl-wallet-wrap" ref={wrapRef}>
+            <button
+                className={`sl-wallet-chip${open ? ' sl-wallet-chip--open' : ''}`}
+                onClick={() => setOpen(v => !v)}
+                aria-expanded={open}
+                aria-haspopup="menu"
+            >
+                <span className="sl-wallet-balance">{usdcDisplay}</span>
+                <span className="sl-wallet-divider" aria-hidden="true" />
+                <span className="sl-wallet-addr">{shortAddr}</span>
+            </button>
+
+            {open && (
+                <div className="sl-wallet-dropdown" role="menu">
+                    <p className="sl-wallet-dropdown-addr" title={address}>{address}</p>
+                    <button
+                        className="sl-wallet-disconnect"
+                        role="menuitem"
+                        onClick={() => { disconnect(); setOpen(false) }}
+                    >
+                        <IconPlugConnectedX size={13} aria-hidden="true" />
+                        Disconnect
+                    </button>
+                </div>
+            )}
+        </div>
+    )
+}
+
 // ── Layout ────────────────────────────────────────────────────────────────────
 
 export function Layout({ children }: { children: ReactNode }) {
@@ -146,6 +216,11 @@ export function Layout({ children }: { children: ReactNode }) {
     const { usdcBalance }          = useSubscriptionManager()
     const pastDueCount             = usePastDueCount()
     const [location]               = useLocation()
+
+    // Acquire the socket here so it stays alive for the full Layout lifetime,
+    // feeding real-time events to every dashboard page without each page
+    // needing to manage its own connection.
+    useSocket()
 
     const [showProfileSetup, setShowProfileSetup] = useState(false)
     const [showAI, setShowAI]                     = useState(false)
@@ -278,7 +353,7 @@ export function Layout({ children }: { children: ReactNode }) {
                             />
                         </div>
 
-                        {/* Right: panel toggle (mobile) + socket indicator + divider + avatar */}
+                        {/* Right: panel toggle (mobile) + wallet chip */}
                         <div className="sl-topbar-right">
                             <button
                                 onClick={() => setIsPanelOpen(v => !v)}
@@ -288,13 +363,7 @@ export function Layout({ children }: { children: ReactNode }) {
                             >
                                 <IconLayoutSidebarRight size={18} aria-hidden="true" />
                             </button>
-                            <SocketStatusIndicator />
-                            <div className="sl-topbar-divider" aria-hidden="true" />
-                            {avatarInitials && (
-                                <div className="sl-avatar" title={address}>
-                                    {avatarInitials}
-                                </div>
-                            )}
+                            <TopbarWallet usdcBalance={usdcBalance} />
                         </div>
 
                     </header>
