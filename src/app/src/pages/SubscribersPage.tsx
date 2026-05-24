@@ -1,79 +1,103 @@
 /**
- * Merchant view of all wallets subscribed to their plans.
+ * /subscribers — merchant view of all wallets subscribed to their plans.
  *
- * Data comes from useSubscriberList — on-chain SubscriptionCreated /
- * SubscriptionCancelled events cross-referenced with the keeper's past-due
- * API. The tabbed SubscriberTable handles per-status filtering.
+ * Owns the page header (title, count pill, Export CSV, Invite subscriber)
+ * and the full-width search bar. SubscriberTable handles tabs + DataTable.
  *
- * Shows a full-page EmptyState while the subscriber list is zero; once
- * any subscriptions exist the tabbed table is shown instead.
+ * Export CSV: serialises currently-visible rows to a browser download.
+ * Invite subscriber: copies the checkout URL of the first active plan.
  */
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
+import { IconSearch } from '@tabler/icons-react'
 import { useSubscriptionManager } from '../hooks/useSubscriptionManager'
 import { useSubscriberList } from '../hooks/useSubscriberList'
-import { EmptyState } from '../components/EmptyState'
 import { SubscriberTable } from '../components/SubscriberTable'
+import { useRightPanel } from '../context/RightPanelContext'
+import { SubscribersPanel } from '../components/SubscribersPanel'
+import type { SubscriberRow } from '../hooks/useSubscriberList'
+import './SubscribersPage.css'
 
-const EMPTY_ICON = (
-    <div className="w-11 h-11 rounded-full bg-gray-100 flex items-center justify-center">
-        <svg className="w-5 h-5 text-gray-400" fill="none" viewBox="0 0 24 24"
-             stroke="currentColor" strokeWidth={1.75}>
-            <path strokeLinecap="round" strokeLinejoin="round"
-                d="M17 20v-1a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v1" />
-            <circle cx="9" cy="7" r="4" />
-            <path strokeLinecap="round" strokeLinejoin="round"
-                d="M23 20v-1a4 4 0 0 0-3-3.87" />
-            <path strokeLinecap="round" strokeLinejoin="round"
-                d="M16 3.13a4 4 0 0 1 0 7.75" />
-        </svg>
-    </div>
-)
+// ── CSV export ────────────────────────────────────────────────────────────────
+
+/** Builds and triggers a browser CSV download for the supplied subscriber rows. */
+function exportCsv(rows: SubscriberRow[]): void {
+    const header = ['Subscriber', 'Plan ID', 'Status']
+    const lines  = rows.map(r => [r.subscriber, r.planId, r.status].join(','))
+    const csv    = [header.join(','), ...lines].join('\n')
+    const blob   = new Blob([csv], { type: 'text/csv' })
+    const url    = URL.createObjectURL(blob)
+    const anchor = document.createElement('a')
+    anchor.href     = url
+    anchor.download = 'subscribers.csv'
+    anchor.click()
+    URL.revokeObjectURL(url)
+}
+
+// ── Page ──────────────────────────────────────────────────────────────────────
 
 export function SubscribersPage() {
     const { plans, planStatuses } = useSubscriptionManager()
     const { data: rows = [], isLoading } = useSubscriberList()
-    const [copied, setCopied] = useState(false)
+    const [search,  setSearch]  = useState('')
+    const [invited, setInvited] = useState(false)
 
-    // First plan not explicitly deactivated — used to build the checkout link.
-    const firstActivePlan = plans.find(p => planStatuses.get(p.planId.toString()) !== false)
-    const hasActivePlan   = firstActivePlan !== undefined
+    const panel = useMemo(() => <SubscribersPanel />, [])
+    useRightPanel(panel, [])
 
-    function copyCheckoutLink(): void {
+    const firstActivePlan = plans.find(
+        p => planStatuses.get(p.planId.toString()) !== false
+    )
+
+    /** Copies the checkout URL of the first active plan. */
+    function handleInvite(): void {
         if (!firstActivePlan) return
         const url = `${window.location.origin}/subscribe/${firstActivePlan.planId}`
-        void navigator.clipboard.writeText(url)
-        setCopied(true)
-        setTimeout(() => setCopied(false), 2_000)
+        void navigator.clipboard.writeText(url).then(() => {
+            setInvited(true)
+            setTimeout(() => setInvited(false), 2_000)
+        })
     }
 
-    const emptyAction = hasActivePlan
-        ? { label: copied ? 'Copied!' : 'Copy checkout link', onClick: copyCheckoutLink }
-        : { label: 'Create a plan first', href: '/plans' }
-
     return (
-        <div className="max-w-4xl space-y-6">
-            <div>
-                <h1 className="text-2xl font-bold text-gray-900">Subscribers</h1>
-                <p className="text-sm text-gray-500 mt-1">
-                    All wallets subscribed to your plans, with live status from the keeper.
-                </p>
+        <div>
+            {/* ── Header ────────────────────────────────────────── */}
+            <div className="sbp-header">
+                <div className="sbp-header-left">
+                    <h1 className="sbp-title">Subscribers</h1>
+                    <span className="sbp-count-pill">{rows.length.toLocaleString()}</span>
+                </div>
+                <div className="sbp-header-right">
+                    <button
+                        className="sbp-btn-secondary"
+                        onClick={() => exportCsv(rows)}
+                        disabled={rows.length === 0}
+                    >
+                        Export CSV
+                    </button>
+                    <button
+                        className="sbp-btn-primary"
+                        onClick={handleInvite}
+                        disabled={!firstActivePlan}
+                    >
+                        {invited ? 'Link copied!' : 'Invite subscriber'}
+                    </button>
+                </div>
             </div>
 
-            {isLoading ? (
-                <div className="bg-white rounded-xl border border-gray-100 px-8 py-12
-                                text-sm text-gray-400 text-center">
-                    Loading subscribers…
-                </div>
-            ) : rows.length === 0 ? (
-                <EmptyState
-                    icon={EMPTY_ICON}
-                    heading="No subscribers yet"
-                    subtext="Share your checkout link to start onboarding subscribers. Once someone subscribes, they'll appear here."
-                    action={emptyAction}
+            {/* ── Search ────────────────────────────────────────── */}
+            <div className="sbp-search-wrap">
+                <IconSearch size={16} className="sbp-search-icon" aria-hidden="true" />
+                <input
+                    className="sbp-search-input"
+                    placeholder="Search wallet, plan, ENS…"
+                    value={search}
+                    onChange={e => setSearch(e.target.value)}
+                    aria-label="Search subscribers"
                 />
-            ) : (
-                <SubscriberTable rows={rows} />
-            )}
+            </div>
+
+            {/* ── Table ─────────────────────────────────────────── */}
+            <SubscriberTable rows={rows} isLoading={isLoading} search={search} />
         </div>
     )
 }

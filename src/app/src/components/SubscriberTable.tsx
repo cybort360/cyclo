@@ -1,17 +1,36 @@
 /**
- * Tabbed subscriber table for the merchant dashboard.
+ * SubscriberTable — tabbed table of all subscribers using the DataTable shell.
  *
- * Tabs: All | Active | Past due | Cancelled
- * When a filtered tab returns no rows but others have data, an inline
- * contextual empty state replaces the table body — tabs stay visible.
+ * Tabs filter rows by status (All / Active / Past due / Cancelled).
+ * Search (passed from SubscribersPage) filters by address or planId.
+ *
+ * Amount is derived from merchant's PlanEvent price (USDC, 6 decimals).
+ * Next Charge is derived from the latest PaymentCharged event for each pair.
+ * ENS names are resolved per-row via wagmi; on Arc testnet this returns undefined.
+ *
+ * Class prefix: sbt-
  */
-import { useState } from 'react'
-import { TabBar } from './TabBar'
+import { useState, useMemo, type ReactNode } from 'react'
+import { useEnsName } from 'wagmi'
+import { IconChevronRight } from '@tabler/icons-react'
+import { DataTable, StatusBadge, type DataTableColumn } from './DataTable'
+import { useSubscriptionManager } from '../hooks/useSubscriptionManager'
+import { avatarPalette } from '../utils/avatar'
+import { fromUsdcUnits } from '../utils/formatting'
 import type { SubscriberRow, SubscriberStatus } from '../hooks/useSubscriberList'
+import './SubscriberTable.css'
 
-// ── Tab config ─────────────────────────────────────────────────────────────────
+// ── Types ─────────────────────────────────────────────────────────────────────
 
 type Tab = 'all' | SubscriberStatus
+
+interface Props {
+    rows:      SubscriberRow[]
+    isLoading: boolean
+    search:    string
+}
+
+// ── Constants ─────────────────────────────────────────────────────────────────
 
 const TABS: Array<{ id: Tab; label: string }> = [
     { id: 'all',       label: 'All' },
@@ -20,120 +39,166 @@ const TABS: Array<{ id: Tab; label: string }> = [
     { id: 'cancelled', label: 'Cancelled' },
 ]
 
-// ── Inline empty state copy ────────────────────────────────────────────────────
+const COLUMNS: DataTableColumn[] = [
+    { key: 'subscriber', label: 'Subscriber',   width: '220px' },
+    { key: 'plan',       label: 'Plan',          width: '1fr' },
+    { key: 'amount',     label: 'Amount',        width: '110px', align: 'right', mono: true },
+    { key: 'nextCharge', label: 'Next Charge',   width: '130px', mono: true },
+    { key: 'status',     label: 'Status',        width: '100px' },
+    { key: '_chevron',   label: '',              width: '32px' },
+]
 
-const TAB_EMPTY: Record<Tab, { heading: string; subtext: string }> = {
-    all:       { heading: '', subtext: '' },   // never shown — page-level EmptyState handles total=0
-    active:    {
-        heading: 'No active subscribers',
-        subtext: 'All current subscribers have cancelled or are past due.',
-    },
-    past_due:  {
-        heading: 'No past due subscribers',
-        subtext: 'All subscriptions are current. The keeper has no pending retries.',
-    },
-    cancelled: {
-        heading: 'No cancelled subscribers',
-        subtext: 'No one has cancelled their subscription yet.',
-    },
+const TAB_EMPTY: Record<Tab, { heading: string; sub: string }> = {
+    all:       { heading: '', sub: '' },
+    active:    { heading: 'No active subscribers',   sub: 'All current subscribers have cancelled or are past due.' },
+    past_due:  { heading: 'No past due subscribers', sub: 'All subscriptions are current.' },
+    cancelled: { heading: 'No cancelled subscribers', sub: 'Nobody has cancelled yet.' },
 }
 
-// ── Status badge config ────────────────────────────────────────────────────────
+// ── Sub-components ────────────────────────────────────────────────────────────
 
-const STATUS_BADGE: Record<SubscriberStatus, { label: string; cls: string }> = {
-    active:    { label: 'Active',    cls: 'bg-green-50  text-green-700  border-green-100'  },
-    past_due:  { label: 'Past due',  cls: 'bg-amber-50  text-amber-700  border-amber-100'  },
-    cancelled: { label: 'Cancelled', cls: 'bg-gray-100  text-gray-500   border-gray-200'   },
-}
-
-// ── Shared class strings ───────────────────────────────────────────────────────
-
-const TH   = 'px-4 py-3 text-left text-[11px] font-semibold text-gray-400 uppercase tracking-wide whitespace-nowrap'
-const TD   = 'px-4 py-3.5 text-[13px] align-middle border-b border-gray-50 last:border-0'
-const PILL = 'inline-flex items-center text-[11px] font-semibold px-2 py-0.5 rounded-full border whitespace-nowrap'
-
-// ── Inline empty state ─────────────────────────────────────────────────────────
-
-/** Lightweight empty state without an icon — used when a specific tab has no rows. */
-function InlineEmpty({ heading, subtext }: { heading: string; subtext: string }): JSX.Element {
+/** 28px avatar circle with deterministic 5-colour palette. */
+function SubscriberAvatar({ addr }: { addr: string }) {
+    const { bg, text } = avatarPalette(addr)
+    // Use hex digits 2-3 of the address as initials (address is always "0x…")
+    const initials = addr.slice(2, 4).toUpperCase()
     return (
-        <div className="bg-white rounded-xl border border-gray-100 px-8 py-12
-                        flex flex-col items-center text-center">
-            <p className="text-sm font-semibold text-gray-900">{heading}</p>
-            <p className="text-sm text-gray-400 mt-1 max-w-xs leading-relaxed">{subtext}</p>
-        </div>
+        <span className="sbt-avatar" style={{ background: bg, color: text }}>
+            {initials}
+        </span>
     )
 }
 
-// ── Component ──────────────────────────────────────────────────────────────────
-
-export interface SubscriberTableProps {
-    rows: SubscriberRow[]
+/**
+ * Subscriber cell: avatar circle + truncated address or resolved ENS name.
+ * Calls useEnsName — must be rendered as a React element (not called in map).
+ */
+function SubscriberCell({ address }: { address: string }) {
+    const { data: ens } = useEnsName({ address: address as `0x${string}` })
+    const display = ens ?? `${address.slice(0, 6)}…${address.slice(-4)}`
+    return (
+        <span className="sbt-sub-cell">
+            <SubscriberAvatar addr={address} />
+            <span className="sbt-sub-label">{display}</span>
+        </span>
+    )
 }
 
-export function SubscriberTable({ rows }: SubscriberTableProps): JSX.Element {
-    const [activeTab, setActiveTab] = useState<Tab>('all')
+// ── Main component ────────────────────────────────────────────────────────────
 
-    const counts: Record<Tab, number> = {
+/**
+ * Tabbed subscriber table. Receives pre-fetched rows and a search query;
+ * all filtering is done client-side.
+ */
+export function SubscriberTable({ rows, isLoading, search }: Props) {
+    const [activeTab, setActiveTab] = useState<Tab>('all')
+    const { plans, settlements } = useSubscriptionManager()
+
+    // Build planId → price lookup from merchant's on-chain PlanCreated events.
+    const planPriceMap = useMemo(() => {
+        const map = new Map<string, bigint>()
+        for (const p of plans) {
+            map.set(p.planId.toString(), p.price)
+        }
+        return map
+    }, [plans])
+
+    // Build (planId:subscriber) → latestNextCharge from PaymentCharged events.
+    const nextChargeMap = useMemo(() => {
+        const map = new Map<string, bigint>()
+        for (const s of settlements) {
+            const key      = `${s.planId.toString()}:${s.subscriber.toLowerCase()}`
+            const existing = map.get(key)
+            if (!existing || s.nextChargeTimestamp > existing) {
+                map.set(key, s.nextChargeTimestamp)
+            }
+        }
+        return map
+    }, [settlements])
+
+    // Tab counts.
+    const counts: Record<Tab, number> = useMemo(() => ({
         all:       rows.length,
         active:    rows.filter(r => r.status === 'active').length,
         past_due:  rows.filter(r => r.status === 'past_due').length,
         cancelled: rows.filter(r => r.status === 'cancelled').length,
-    }
+    }), [rows])
 
-    const tabs = TABS.map(t => ({
-        id:    t.id,
-        label: counts[t.id] > 0 ? `${t.label} (${counts[t.id]})` : t.label,
-    }))
+    // Filter by tab + search query.
+    const filtered: SubscriberRow[] = useMemo(() => {
+        let result = activeTab === 'all' ? rows : rows.filter(r => r.status === activeTab)
+        const q = search.trim().toLowerCase()
+        if (q) {
+            result = result.filter(r =>
+                r.subscriber.toLowerCase().includes(q) ||
+                r.planId.includes(q)
+            )
+        }
+        return result
+    }, [rows, activeTab, search])
 
-    const filtered        = activeTab === 'all' ? rows : rows.filter(r => r.status === activeTab)
-    const showInlineEmpty = filtered.length === 0 && rows.length > 0
+    // Build DataTable row records.
+    const tableRows: Record<string, ReactNode>[] = useMemo(() =>
+        filtered.map(row => {
+            const price     = planPriceMap.get(row.planId)
+            const tsRaw     = nextChargeMap.get(row.key)
+            const nextCharge = tsRaw !== undefined
+                ? new Date(Number(tsRaw) * 1_000).toLocaleDateString('en-US', {
+                    month: 'short', day: 'numeric',
+                })
+                : '—'
+            const amountStr = price !== undefined
+                ? `${fromUsdcUnits(price).toFixed(2)} USDC`
+                : '—'
+
+            return {
+                subscriber: <SubscriberCell address={row.subscriber} />,
+                plan:       `Plan ${row.planId}`,
+                amount:     <span className="sbt-amount">{amountStr}</span>,
+                nextCharge,
+                status:     <StatusBadge status={row.status} />,
+                _chevron:   <span className="sbt-chevron"><IconChevronRight size={16} /></span>,
+            }
+        }),
+        [filtered, planPriceMap, nextChargeMap]
+    )
+
+    // Per-tab inline empty state (only shown when a tab filter yields 0 rows).
+    const showTabEmpty = filtered.length === 0 && rows.length > 0 && activeTab !== 'all'
 
     return (
         <div>
-            <TabBar tabs={tabs} active={activeTab} onChange={setActiveTab} />
+            {/* ── Tab row ───────────────────────────────────────── */}
+            <div className="sbt-tabs" role="tablist">
+                {TABS.map(tab => (
+                    <button
+                        key={tab.id}
+                        role="tab"
+                        aria-selected={activeTab === tab.id}
+                        className={`sbt-tab${activeTab === tab.id ? ' sbt-tab--active' : ''}`}
+                        onClick={() => setActiveTab(tab.id)}
+                    >
+                        {tab.label}
+                        {counts[tab.id] > 0 && (
+                            <span className="sbt-tab-badge">{counts[tab.id]}</span>
+                        )}
+                    </button>
+                ))}
+            </div>
 
-            {showInlineEmpty ? (
-                <InlineEmpty {...TAB_EMPTY[activeTab]} />
-            ) : (
-                <div className="bg-white rounded-xl border border-gray-100 overflow-hidden">
-                    <div className="overflow-x-auto">
-                        <table className="w-full border-collapse">
-                            <thead>
-                                <tr className="border-b border-gray-100 bg-gray-50/80">
-                                    <th className={TH}>Subscriber</th>
-                                    <th className={TH}>Plan</th>
-                                    <th className={TH}>Status</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {filtered.map(row => {
-                                    const badge = STATUS_BADGE[row.status]
-                                    return (
-                                        <tr key={row.key}
-                                            className="hover:bg-gray-50/60 transition-colors">
-                                            <td className={TD}>
-                                                <code className="text-[13px] font-mono text-gray-700">
-                                                    {row.subscriber.slice(0, 8)}…{row.subscriber.slice(-4)}
-                                                </code>
-                                            </td>
-                                            <td className={TD}>
-                                                <span className="text-gray-900">
-                                                    Plan {row.planId}
-                                                </span>
-                                            </td>
-                                            <td className={TD}>
-                                                <span className={`${PILL} ${badge.cls}`}>
-                                                    {badge.label}
-                                                </span>
-                                            </td>
-                                        </tr>
-                                    )
-                                })}
-                            </tbody>
-                        </table>
-                    </div>
+            {/* ── Table ─────────────────────────────────────────── */}
+            {showTabEmpty ? (
+                <div className="sbt-empty">
+                    <p className="sbt-empty-heading">{TAB_EMPTY[activeTab].heading}</p>
+                    <p className="sbt-empty-sub">{TAB_EMPTY[activeTab].sub}</p>
                 </div>
+            ) : (
+                <DataTable
+                    columns={COLUMNS}
+                    rows={tableRows}
+                    isLoading={isLoading}
+                    skeletonRows={6}
+                />
             )}
         </div>
     )
