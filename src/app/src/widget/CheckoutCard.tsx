@@ -2,6 +2,32 @@
  * Self-contained checkout card component for the embeddable widget.
  * Must be rendered inside a WagmiProvider + QueryClientProvider (supplied by Widget.tsx).
  */
+
+// ── Inlined SVG constants ─────────────────────────────────────────────────────
+//
+// Both SVG strings are compile-time constants defined in this source file.
+// They contain no user-supplied data and no interpolated runtime values —
+// XSS is not possible. dangerouslySetInnerHTML is used only to inject these
+// two known-safe strings so the widget remains dependency-free (no SVG imports,
+// no React component references) when bundled as a self-contained IIFE.
+
+/**
+ * Cyclo arc logo — gradient variant, 18 × 18 px.
+ * Gradient id "cwg" (cyclo-widget-gradient) is stable per-page; the widget is
+ * expected to be embedded once per document so the id does not collide.
+ */
+// safe: compile-time constant, no runtime interpolation
+const LOGO_SVG = `<svg width="18" height="18" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="cwg" x1="80" y1="80" x2="432" y2="432" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#818CF8"/>
+      <stop offset="45%" stop-color="#4F46E5"/>
+      <stop offset="100%" stop-color="#3730A3"/>
+    </linearGradient>
+  </defs>
+  <path d="M394 122C355 84 307 64 256 64C149 64 64 149 64 256C64 363 149 448 256 448C307 448 355 428 394 390" stroke="url(#cwg)" stroke-width="48" stroke-linecap="round" fill="none"/>
+</svg>`
+
 import { useState } from 'react';
 import {
     useAccount,
@@ -190,9 +216,18 @@ export function CheckoutCard({ planId, contractAddress, usdcAddress }: CheckoutC
                 {successMsg && <p style={{ color: '#16a34a', margin: 0, fontSize: '14px' }}>{successMsg}</p>}
             </div>
 
-            <p style={{ textAlign: 'center', fontSize: '11px', color: '#6b6375', margin: '4px 0 0' }}>
-                Powered by Cyclo — on-chain recurring billing
-            </p>
+            {/* ── "Powered by Cyclo" attribution ── */}
+            {/* safe: LOGO_SVG is a compile-time constant with no runtime interpolation */}
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '5px', marginTop: '16px', paddingTop: '12px', borderTop: '1px solid #F3F4F6' }}>
+                <span style={{ fontSize: '10px', color: '#9CA3AF', fontFamily: 'sans-serif' }}>Powered by</span>
+                <span
+                    // safe: LOGO_SVG is a compile-time constant, not user input
+                    // eslint-disable-next-line react/no-danger
+                    dangerouslySetInnerHTML={{ __html: LOGO_SVG }}
+                    style={{ display: 'flex', lineHeight: 0 }}
+                />
+                <span style={{ fontSize: '10px', fontWeight: 700, color: '#0A0A14', fontFamily: 'sans-serif', letterSpacing: '0.06em' }}>CYCLO</span>
+            </div>
         </div>
     );
 }
