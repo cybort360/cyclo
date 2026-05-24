@@ -136,7 +136,16 @@ export class CycloClient {
     }
   }
 
-  async subscribe(planId: bigint): Promise<void> {
+  /**
+   * Subscribes the connected wallet to the given plan.
+   *
+   * @param planId      - Plan to subscribe to
+   * @param onBroadcast - Optional callback fired after the subscribe transaction
+   *                      is signed and broadcast but before on-chain confirmation.
+   *                      Use this to switch UI from "awaiting wallet" to
+   *                      "awaiting confirmation" without polling.
+   */
+  async subscribe(planId: bigint, onBroadcast?: () => void): Promise<void> {
     const wallet = this.requireWallet()
     const [account] = await wallet.getAddresses()
 
@@ -150,6 +159,8 @@ export class CycloClient {
       account,
       chain: wallet.chain,
     })
+
+    onBroadcast?.()
 
     await this.publicClient.waitForTransactionReceipt({ hash })
   }

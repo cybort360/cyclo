@@ -228,7 +228,16 @@ var CycloClient = class {
       active: result.active
     };
   }
-  async subscribe(planId) {
+  /**
+   * Subscribes the connected wallet to the given plan.
+   *
+   * @param planId      - Plan to subscribe to
+   * @param onBroadcast - Optional callback fired after the subscribe transaction
+   *                      is signed and broadcast but before on-chain confirmation.
+   *                      Use this to switch UI from "awaiting wallet" to
+   *                      "awaiting confirmation" without polling.
+   */
+  async subscribe(planId, onBroadcast) {
     const wallet = this.requireWallet();
     const [account] = await wallet.getAddresses();
     await this.ensureAllowance(account, planId);
@@ -240,6 +249,7 @@ var CycloClient = class {
       account,
       chain: wallet.chain
     });
+    onBroadcast?.();
     await this.publicClient.waitForTransactionReceipt({ hash });
   }
   async cancelSubscription(planId) {

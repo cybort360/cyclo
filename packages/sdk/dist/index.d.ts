@@ -60,7 +60,16 @@ declare class CycloClient {
     deactivatePlan(planId: bigint): Promise<void>;
     getSubscribeLink(planId: bigint, baseUrl: string): string;
     getSubscription(subscriber: `0x${string}`, planId: bigint): Promise<Subscription>;
-    subscribe(planId: bigint): Promise<void>;
+    /**
+     * Subscribes the connected wallet to the given plan.
+     *
+     * @param planId      - Plan to subscribe to
+     * @param onBroadcast - Optional callback fired after the subscribe transaction
+     *                      is signed and broadcast but before on-chain confirmation.
+     *                      Use this to switch UI from "awaiting wallet" to
+     *                      "awaiting confirmation" without polling.
+     */
+    subscribe(planId: bigint, onBroadcast?: () => void): Promise<void>;
     cancelSubscription(planId: bigint): Promise<void>;
     migratePlan(currentPlanId: bigint, newPlanId: bigint): Promise<void>;
     /**
