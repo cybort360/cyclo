@@ -1,0 +1,178 @@
+/*
+ * Arc economics callout section — large two-column card + bar-chart widget.
+ * Class prefix: ec-   Tokens: l- from landing-tokens.css   (no dark tokens)
+ * Imported by EconomicsSection.tsx.
+ */
+
+/* ── Section shell ────────────────────────────────────────────────────────────── */
+
+.ec-section {
+    background: var(--l-bg);
+    padding:    100px 0;
+}
+
+.ec-inner {
+    max-width: 1120px;
+    margin:    0 auto;
+    padding:   0 32px;
+}
+
+/* ── Card — two-column 55/45 split ────────────────────────────────────────────── */
+
+.ec-card {
+    background:            var(--l-surface);
+    box-shadow:            var(--l-shadow-xl);
+    border-radius:         24px;
+    padding:               56px;
+    display:               grid;
+    grid-template-columns: 55fr 45fr;
+    gap:                   48px;
+    align-items:           center;
+}
+
+/* ── Left column ──────────────────────────────────────────────────────────────── */
+
+/* Eyebrow pill — same treatment as ft-eyebrow / hiw-eyebrow */
+.ec-eyebrow {
+    display:        inline-block;
+    background:     var(--l-accent-light);
+    color:          var(--l-accent);
+    font-size:      12px;
+    font-weight:    500;
+    padding:        5px 14px;
+    border-radius:  20px;
+    margin-bottom:  20px;
+}
+
+.ec-h2 {
+    font-size:      36px;
+    font-weight:    500;
+    line-height:    1.2;
+    letter-spacing: -0.02em;
+    color:          var(--l-ink);
+    margin:         0;
+}
+
+.ec-h2-em {
+    font-style: italic;
+    color:      var(--l-accent);
+}
+
+.ec-body {
+    font-size:   15px;
+    color:       var(--l-ink-secondary);
+    line-height: 1.8;
+    margin-top:  20px;
+    max-width:   380px;
+}
+
+.ec-link {
+    display:         inline-block;
+    margin-top:      24px;
+    font-size:       15px;
+    font-weight:     500;
+    color:           var(--l-accent);
+    text-decoration: none;
+    transition:      color 150ms ease;
+}
+
+.ec-link:hover { color: var(--l-accent-hover); }
+
+/* ── Right column — comparison widget ─────────────────────────────────────────── */
+
+.ec-widget {
+    background:    var(--l-section-alt);
+    border-radius: 16px;
+    padding:       24px;
+    box-shadow:    var(--l-shadow-sm);
+}
+
+.ec-widget-title {
+    font-size:      11px;
+    color:          var(--l-ink-muted);
+    letter-spacing: 0.06em;
+    margin:         0 0 20px;
+}
+
+/* ── Network rows ─────────────────────────────────────────────────────────────── */
+
+.ec-rows {
+    display:        flex;
+    flex-direction: column;
+    gap:            16px;
+}
+
+.ec-row {
+    padding: 8px 0;
+}
+
+/* Arc row — indigo tint highlight */
+.ec-row--highlight {
+    background:    rgba(79, 70, 229, 0.04);
+    border-radius: 8px;
+    padding:       8px;
+}
+
+/* Row header line: name left, amount right */
+.ec-row-top {
+    display:         flex;
+    justify-content: space-between;
+    align-items:     center;
+    margin-bottom:   8px;
+}
+
+.ec-row-name {
+    font-size:   14px;
+    color:       var(--l-ink);
+    display:     flex;
+    align-items: center;
+    gap:         6px;
+}
+
+.ec-row-amount {
+    font-size:   13px;
+    font-weight: 500;
+    color:       var(--l-ink);
+}
+
+/* "Best" badge — Arc row only */
+.ec-badge {
+    background:    var(--l-accent);
+    color:         #fff;
+    font-size:     8px;
+    font-weight:   500;
+    padding:       2px 8px;
+    border-radius: 20px;
+    margin-left:   8px;
+    line-height:   1.6;
+}
+
+/* ── Bar chart ─────────────────────────────────────────────────────────────────── */
+
+.ec-bar-track {
+    width:         100%;
+    height:        8px;
+    border-radius: 4px;
+    background:    #F3F4F6;
+    overflow:      hidden;
+}
+
+.ec-bar-fill {
+    height:        100%;
+    border-radius: 4px;
+    /* width and background set via inline style per row */
+}
+
+/* ── Responsive ────────────────────────────────────────────────────────────────── */
+
+@media (max-width: 900px) {
+    .ec-card  { grid-template-columns: 1fr; padding: 40px 32px; }
+    .ec-inner { padding: 0 20px; }
+    .ec-h2    { font-size: 28px; }
+    .ec-body  { max-width: 100%; }
+}
+
+@media (max-width: 600px) {
+    .ec-section { padding: 80px 0; }
+    .ec-card    { padding: 32px 24px; }
+}

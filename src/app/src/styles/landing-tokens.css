@@ -1,0 +1,64 @@
+/*
+ * Landing page design tokens — applies to / only.
+ * Class prefix: l-
+ *
+ * Import ONLY in LandingPage.tsx — not globally — so these tokens
+ * never bleed into the dashboard dark-mode token set.
+ *
+ * NO border colours: depth comes from shadows only (--l-shadow-*).
+ */
+
+:root {
+    /* ── Typography ───────────────────────────────────────────────────────────── */
+    --font-sans: system-ui, 'Segoe UI', Roboto, sans-serif;
+
+    /* ── Backgrounds ──────────────────────────────────────────────────────────── */
+    --l-bg:          #FAFAF7;   /* warm white page base                           */
+    --l-surface:     #FFFFFF;   /* card surface                                   */
+    --l-surface-tint: #F4F3FF;  /* indigo-tinted surface                          */
+    --l-section-alt: #F7F7F4;   /* alternating section bg                         */
+
+    /* ── Typography ───────────────────────────────────────────────────────────── */
+    --l-ink:           #0A0A14; /* near-black headlines                            */
+    --l-ink-secondary: #4B5160; /* body text                                       */
+    --l-ink-muted:     #9CA3AF; /* captions, labels                                */
+
+    /* ── Accent — Indigo ──────────────────────────────────────────────────────── */
+    --l-accent:       #4F46E5;  /* primary indigo                                  */
+    --l-accent-hover: #4338CA;  /* hover                                           */
+    --l-accent-light: #EEF2FF;  /* tinted bg                                       */
+    --l-accent-mid:   #818CF8;  /* softer indigo                                   */
+
+    /* ── Shadows — NO BORDERS, depth from shadow only ─────────────────────────── */
+    --l-shadow-xs:
+        0 1px 3px  rgba(0, 0, 0, 0.05),
+        0 1px 2px  rgba(0, 0, 0, 0.04);
+    --l-shadow-sm:
+        0 2px 8px  rgba(0, 0, 0, 0.06),
+        0 1px 3px  rgba(0, 0, 0, 0.04);
+    --l-shadow-md:
+        0 4px 16px rgba(0, 0, 0, 0.07),
+        0 2px 6px  rgba(0, 0, 0, 0.04);
+    --l-shadow-lg:
+        0 8px 32px rgba(0, 0, 0, 0.08),
+        0 3px 10px rgba(0, 0, 0, 0.04);
+    --l-shadow-xl:
+        0 20px 60px rgba(0, 0, 0, 0.10),
+        0 8px  20px rgba(0, 0, 0, 0.05);
+    --l-shadow-indigo:
+        0 8px 24px rgba(79, 70, 229, 0.18),
+        0 2px 8px  rgba(79, 70, 229, 0.12);
+}
+
+/* ── Landing page root ────────────────────────────────────────────────────────
+   Applied to the outermost <div> in LandingPage.tsx.
+   Scopes the warm-white base and type settings to this subtree only.          */
+
+.lp-root {
+    min-height:              100vh;
+    scroll-behavior:         smooth;
+    font-family:             var(--font-sans);
+    background:              var(--l-bg);
+    color:                   var(--l-ink);
+    -webkit-font-smoothing:  antialiased;
+}

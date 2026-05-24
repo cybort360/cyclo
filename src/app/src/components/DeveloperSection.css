@@ -1,0 +1,144 @@
+/*
+ * Developer love section — two-column layout with dark code card + feature pills.
+ * Class prefix: dv-   Tokens: l- from landing-tokens.css   (no dark tokens)
+ * Code card uses hardcoded colours (#0A0A14 bg, token palette) — intentional.
+ * Imported by DeveloperSection.tsx.
+ */
+
+/* ── Section shell ────────────────────────────────────────────────────────────── */
+
+.dv-section {
+    background: var(--l-section-alt);
+    padding:    80px 0;
+}
+
+.dv-inner {
+    max-width: 1120px;
+    margin:    0 auto;
+    padding:   0 32px;
+}
+
+/* ── Two-column grid ──────────────────────────────────────────────────────────── */
+
+.dv-grid {
+    display:               grid;
+    grid-template-columns: 1fr 1fr;
+    gap:                   64px;
+    align-items:           center;
+}
+
+/* ── Left column ──────────────────────────────────────────────────────────────── */
+
+/* Eyebrow pill — consistent with all other sections */
+.dv-eyebrow {
+    display:        inline-block;
+    background:     var(--l-accent-light);
+    color:          var(--l-accent);
+    font-size:      12px;
+    font-weight:    500;
+    padding:        5px 14px;
+    border-radius:  20px;
+    margin-bottom:  16px;
+}
+
+.dv-h2 {
+    font-size:      36px;
+    font-weight:    500;
+    line-height:    1.2;
+    letter-spacing: -0.02em;
+    color:          var(--l-ink);
+    margin:         0;
+}
+
+.dv-h2-em {
+    font-style: italic;
+    color:      var(--l-accent);
+}
+
+.dv-body {
+    font-size:   15px;
+    color:       var(--l-ink-secondary);
+    line-height: 1.8;
+    margin-top:  16px;
+}
+
+/* ── Code card ────────────────────────────────────────────────────────────────── */
+
+.dv-code-card {
+    background:    #0A0A14;
+    border-radius: 16px;
+    padding:       28px;
+    box-shadow:    var(--l-shadow-lg);
+}
+
+/* Three macOS-style traffic light dots */
+.dv-dots {
+    display:       flex;
+    align-items:   center;
+    gap:           6px;
+    margin-bottom: 20px;
+}
+
+.dv-dot {
+    width:         8px;
+    height:        8px;
+    border-radius: 50%;
+    flex-shrink:   0;
+}
+
+/* Hardcoded macOS traffic light colours */
+.dv-dot--red   { background: #FF5F57; }
+.dv-dot--amber { background: #FEBC2E; }
+.dv-dot--green { background: #28C840; }
+
+/* Syntax-highlighted code pre */
+.dv-code {
+    font-family: ui-monospace, 'Cascadia Code', Consolas, monospace;
+    font-size:   13px;
+    line-height: 2;
+    margin:      0;
+    white-space: pre;
+    overflow-x:  auto;
+}
+
+/* Token colour palette — per spec */
+.dv-tok--kw      { color: #818CF8; } /* keywords: import from const await */
+.dv-tok--str     { color: #10B981; } /* string literals                   */
+.dv-tok--comment { color: #4a5568; } /* // comments                       */
+.dv-tok--text    { color: #E5E7EB; } /* identifiers, plain text           */
+.dv-tok--punc    { color: #9CA3AF; } /* brackets, punctuation             */
+
+/* ── Feature pills ────────────────────────────────────────────────────────────── */
+
+.dv-pills {
+    display:   flex;
+    flex-wrap: wrap;
+    gap:       8px;
+    margin-top: 16px;
+}
+
+.dv-pill {
+    display:       flex;
+    align-items:   center;
+    gap:           6px;
+    background:    var(--l-surface);
+    box-shadow:    var(--l-shadow-xs);
+    border-radius: 20px;
+    padding:       6px 14px;
+    font-size:     12px;
+    color:         var(--l-ink-secondary);
+}
+
+.dv-pill-icon { color: #10B981; }
+
+/* ── Responsive ────────────────────────────────────────────────────────────────── */
+
+@media (max-width: 900px) {
+    .dv-grid  { grid-template-columns: 1fr; gap: 40px; }
+    .dv-inner { padding: 0 20px; }
+    .dv-h2    { font-size: 28px; }
+}
+
+@media (max-width: 600px) {
+    .dv-section { padding: 64px 0; }
+}

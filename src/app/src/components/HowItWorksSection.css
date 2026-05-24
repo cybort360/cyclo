@@ -1,0 +1,255 @@
+/*
+ * "How it works" section — header, 3-column step cards, composability callout bar.
+ * Class prefix: hiw-   Tokens: l- from landing-tokens.css   (no dark tokens)
+ * Imported by HowItWorksSection.tsx.
+ */
+
+/* ── Section shell ────────────────────────────────────────────────────────────── */
+
+.hiw-section {
+    background:     var(--l-bg);
+    padding-top:    100px; /* 40px absorbed by hero stats overlap; 60px visible gap */
+    padding-bottom: 100px;
+}
+
+.hiw-inner {
+    max-width: 1120px;
+    margin:    0 auto;
+    padding:   0 32px;
+}
+
+/* ── Section header ───────────────────────────────────────────────────────────── */
+
+.hiw-header {
+    text-align:    center;
+    margin-bottom: 64px;
+}
+
+/* Eyebrow pill */
+.hiw-eyebrow {
+    display:        inline-block;
+    background:     var(--l-accent-light);
+    color:          var(--l-accent);
+    font-size:      12px;
+    font-weight:    500;
+    padding:        5px 14px;
+    border-radius:  20px;
+    margin-bottom:  16px;
+}
+
+/* Headline */
+.hiw-h2 {
+    font-size:      44px;
+    font-weight:    500;
+    letter-spacing: -0.025em;
+    color:          var(--l-ink);
+    line-height:    1.2;
+    margin:         0;
+}
+
+.hiw-h2-em {
+    font-style: italic;
+    color:      var(--l-accent);
+}
+
+/* Subtext */
+.hiw-sub {
+    font-size:   17px;
+    color:       var(--l-ink-secondary);
+    max-width:   520px;
+    margin:      16px auto 0;
+    line-height: 1.75;
+}
+
+/* ── Three-column step grid ───────────────────────────────────────────────────── */
+
+.hiw-grid {
+    display:               grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap:                   24px;
+}
+
+/* ── Step card ────────────────────────────────────────────────────────────────── */
+
+.hiw-card {
+    background:     var(--l-surface);
+    box-shadow:     var(--l-shadow-md);
+    border-radius:  20px;
+    padding:        32px;
+    transition:     transform 200ms ease, box-shadow 200ms ease;
+    display:        flex;
+    flex-direction: column;
+}
+
+.hiw-card:hover {
+    transform:  translateY(-4px);
+    box-shadow: var(--l-shadow-lg);
+}
+
+/* ── Step number badge ────────────────────────────────────────────────────────── */
+
+.hiw-step-num {
+    display:        inline-block;
+    font-size:      11px;
+    font-weight:    600;
+    color:          var(--l-accent);
+    letter-spacing: 0.08em;
+    background:     var(--l-accent-light);
+    padding:        3px 10px;
+    border-radius:  20px;
+    margin-bottom:  20px;
+    align-self:     flex-start;
+}
+
+/* ── Step title & description ─────────────────────────────────────────────────── */
+
+.hiw-title {
+    font-size:      20px;
+    font-weight:    500;
+    color:          var(--l-ink);
+    margin:         0 0 10px;
+    letter-spacing: -0.01em;
+}
+
+.hiw-desc {
+    font-size:   14px;
+    color:       var(--l-ink-secondary);
+    line-height: 1.75;
+    margin:      0;
+    flex:        1; /* pushes bottom widget to card floor */
+}
+
+/* ── Step 1: code snippet ─────────────────────────────────────────────────────── */
+
+.hiw-code-snip {
+    background:    var(--l-section-alt);
+    border-radius: 8px;
+    padding:       10px 14px;
+    margin-top:    20px;
+    font-size:     10px;
+    font-family:   ui-monospace, 'Cascadia Code', Consolas, monospace;
+    white-space:   nowrap;
+    overflow-x:    auto;
+}
+
+.hiw-code-fn   { color: var(--l-accent); }
+.hiw-code-args { color: var(--l-ink-secondary); }
+
+/* ── Step 2: approval mockup ──────────────────────────────────────────────────── */
+
+.hiw-approval {
+    display:     flex;
+    align-items: center;
+    gap:         8px;
+    margin-top:  20px;
+    font-size:   10px;
+}
+
+/* USDC circle logo */
+.hiw-usdc-logo {
+    width:           18px;
+    height:          18px;
+    border-radius:   50%;
+    background:      #2775CA; /* USDC brand blue — intentionally hardcoded */
+    color:           #fff;
+    font-size:       9px;
+    font-weight:     700;
+    display:         flex;
+    align-items:     center;
+    justify-content: center;
+    flex-shrink:     0;
+}
+
+.hiw-approval-label { color: var(--l-ink-secondary); }
+
+.hiw-approval-check {
+    color:       #10B981;
+    font-weight: 600;
+}
+
+/* ── Step 3: keeper log ───────────────────────────────────────────────────────── */
+
+.hiw-keeper-log {
+    background:    var(--l-section-alt);
+    border-radius: 8px;
+    padding:       10px 14px;
+    margin-top:    20px;
+}
+
+.hiw-log-line {
+    font-size:   9px;
+    font-family: ui-monospace, 'Cascadia Code', Consolas, monospace;
+    margin:      0;
+    line-height: 1.9;
+    white-space: nowrap;
+}
+
+.hiw-log-muted { color: var(--l-ink-muted); }
+.hiw-log-ok    { color: #10B981; }
+
+/* ── Composability callout bar ────────────────────────────────────────────────── */
+
+.hiw-callout {
+    display:         flex;
+    align-items:     center;
+    justify-content: space-between;
+    background:      var(--l-accent-light);
+    border-radius:   14px;
+    padding:         18px 24px;
+    margin-top:      32px;
+    gap:             16px;
+    flex-wrap:       wrap;
+}
+
+.hiw-callout-left {
+    display:     flex;
+    align-items: center;
+    gap:         12px;
+    flex:        1;
+    min-width:   0;
+}
+
+.hiw-callout-icon  { color: var(--l-accent); flex-shrink: 0; }
+
+.hiw-callout-text {
+    font-size:   14px;
+    color:       var(--l-ink-secondary);
+    margin:      0;
+    line-height: 1.5;
+}
+
+/* Inline code pill inside callout text */
+.hiw-callout-code {
+    font-family:   ui-monospace, 'Cascadia Code', Consolas, monospace;
+    background:    #FFFFFF;
+    box-shadow:    var(--l-shadow-xs);
+    border-radius: 4px;
+    padding:       2px 6px;
+    color:         var(--l-accent);
+}
+
+.hiw-callout-link {
+    font-size:       14px;
+    color:           var(--l-accent);
+    font-weight:     500;
+    text-decoration: none;
+    white-space:     nowrap;
+    flex-shrink:     0;
+    transition:      color 150ms ease;
+}
+
+.hiw-callout-link:hover { color: var(--l-accent-hover); }
+
+/* ── Responsive ───────────────────────────────────────────────────────────────── */
+
+@media (max-width: 900px) {
+    .hiw-grid    { grid-template-columns: 1fr; }
+    .hiw-inner   { padding: 0 20px; }
+    .hiw-h2      { font-size: 32px; }
+    .hiw-callout { flex-direction: column; align-items: flex-start; }
+}
+
+@media (max-width: 600px) {
+    .hiw-section { padding-top: 80px; padding-bottom: 80px; }
+    .hiw-sub     { font-size: 15px; }
+}

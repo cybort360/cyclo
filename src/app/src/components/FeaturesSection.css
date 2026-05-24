@@ -1,0 +1,147 @@
+/*
+ * Feature highlights section — header + 3-column tile grid + wide keeper tile.
+ * Class prefix: ft-   Tokens: l- from landing-tokens.css   (no dark tokens)
+ * Imported by FeaturesSection.tsx.
+ */
+
+/* ── Section shell ────────────────────────────────────────────────────────────── */
+
+.ft-section {
+    background: var(--l-section-alt);
+    padding:    100px 0;
+}
+
+.ft-inner {
+    max-width: 1120px;
+    margin:    0 auto;
+    padding:   0 32px;
+}
+
+/* ── Section header — left-aligned ────────────────────────────────────────────── */
+
+.ft-header {
+    margin-bottom: 48px;
+}
+
+/* Eyebrow pill — same treatment as hiw-eyebrow */
+.ft-eyebrow {
+    display:        inline-block;
+    background:     var(--l-accent-light);
+    color:          var(--l-accent);
+    font-size:      12px;
+    font-weight:    500;
+    padding:        5px 14px;
+    border-radius:  20px;
+    margin-bottom:  16px;
+}
+
+.ft-h2 {
+    font-size:      44px;
+    font-weight:    500;
+    letter-spacing: -0.025em;
+    line-height:    1.2;
+    color:          var(--l-ink);
+    margin:         0;
+}
+
+.ft-h2-em {
+    font-style: italic;
+    color:      var(--l-accent);
+}
+
+/* ── Tile grid ─────────────────────────────────────────────────────────────────── */
+
+.ft-grid {
+    display:               grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap:                   16px;
+}
+
+/* ── Feature tile ──────────────────────────────────────────────────────────────── */
+
+.ft-tile {
+    background:     var(--l-surface);
+    box-shadow:     var(--l-shadow-sm);
+    border-radius:  16px;
+    padding:        28px;
+    transition:     all 200ms ease;
+    display:        flex;
+    flex-direction: column;
+}
+
+.ft-tile:hover {
+    box-shadow: var(--l-shadow-md);
+    transform:  translateY(-2px);
+}
+
+/* Wide tile — spans first two columns in row 1 */
+.ft-tile--wide { grid-column: span 2; }
+
+/* ── Icon area ─────────────────────────────────────────────────────────────────── */
+
+.ft-icon-wrap {
+    width:           40px;
+    height:          40px;
+    background:      var(--l-accent-light);
+    border-radius:   10px;
+    display:         flex;
+    align-items:     center;
+    justify-content: center;
+    margin-bottom:   16px;
+    color:           var(--l-accent); /* Tabler icons use currentColor */
+    flex-shrink:     0;
+}
+
+/* ── Tile text ─────────────────────────────────────────────────────────────────── */
+
+.ft-title {
+    font-size:   16px;
+    font-weight: 500;
+    color:       var(--l-ink);
+    margin:      0 0 8px;
+}
+
+.ft-desc {
+    font-size:   13px;
+    color:       var(--l-ink-secondary);
+    line-height: 1.7;
+    margin:      0;
+}
+
+/* ── Keeper terminal widget (inside wide tile) ─────────────────────────────────── */
+
+.ft-terminal {
+    background:    #0A0A14;
+    border-radius: 10px;
+    padding:       12px 16px;
+    margin-top:    16px;
+    overflow-x:    auto;
+}
+
+.ft-term-line {
+    font-family: ui-monospace, 'Cascadia Code', Consolas, monospace;
+    font-size:   11px;
+    line-height: 1.9;
+    margin:      0;
+    white-space: nowrap;
+}
+
+/* Hardcoded colours — match keeper log spec exactly */
+.ft-term-line--muted { color: #4a5568; }
+.ft-term-line--ok    { color: #10B981; }
+.ft-term-line--warn  { color: #F59E0B; }
+
+/* ── Responsive ────────────────────────────────────────────────────────────────── */
+
+@media (max-width: 900px) {
+    .ft-grid       { grid-template-columns: 1fr 1fr; }
+    .ft-tile--wide { grid-column: span 2; }
+    .ft-inner      { padding: 0 20px; }
+    .ft-h2         { font-size: 32px; }
+}
+
+@media (max-width: 600px) {
+    .ft-section    { padding: 80px 0; }
+    .ft-grid       { grid-template-columns: 1fr; }
+    .ft-tile--wide { grid-column: span 1; }
+}

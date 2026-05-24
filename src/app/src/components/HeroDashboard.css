@@ -1,0 +1,242 @@
+/*
+ * Dashboard mockup + floating stat cards for the hero section.
+ * Class prefix: hs-   Tokens: l- from landing-tokens.css   (no dark tokens)
+ * Imported by HeroSection.tsx alongside HeroSection.css.
+ */
+
+/* ── Right column container ────────────────────────────────────────────────── */
+
+.hs-right {
+    position: relative;
+    height:   420px;
+}
+
+/* ── Dashboard window card ─────────────────────────────────────────────────── */
+
+.hs-dash-card {
+    position:      absolute;
+    right:         0;
+    top:           40px;
+    width:         340px;
+    background:    var(--l-surface);
+    box-shadow:    var(--l-shadow-xl);
+    border-radius: 16px;
+    padding:       20px;
+    transform:     rotate(2deg);
+}
+
+/* Top bar */
+.hs-dash-top {
+    display:         flex;
+    justify-content: space-between;
+    align-items:     center;
+    margin-bottom:   12px;
+}
+
+.hs-dash-overview {
+    font-size:   11px;
+    font-weight: 500;
+    color:       var(--l-ink);
+}
+
+.hs-dash-date {
+    font-size:   9px;
+    font-family: ui-monospace, monospace;
+    color:       var(--l-ink-muted);
+}
+
+/* Mini stat cards */
+.hs-dash-mini-grid {
+    display:               grid;
+    grid-template-columns: 1fr 1fr;
+    gap:                   8px;
+    margin-bottom:         12px;
+}
+
+.hs-dash-mini-card {
+    background:    var(--l-section-alt);
+    border-radius: 8px;
+    padding:       10px;
+    box-shadow:    var(--l-shadow-xs);
+}
+
+.hs-dash-mini-label {
+    font-size:   9px;
+    color:       var(--l-ink-muted);
+    font-weight: 500;
+    margin:      0 0 3px;
+}
+
+.hs-dash-mini-value {
+    font-size:   16px;
+    font-weight: 600;
+    color:       var(--l-ink);
+    margin:      0;
+    line-height: 1;
+}
+
+.hs-dash-mini-value--accent { color: var(--l-accent); }
+
+/* Sparkline SVG */
+.hs-spark {
+    display:       block;
+    width:         100%;
+    height:        60px;
+    margin-bottom: 12px;
+}
+
+/* Settlement rows */
+.hs-settle-row {
+    display:     flex;
+    align-items: center;
+    gap:         7px;
+    padding:     5px 0;
+}
+
+.hs-settle-avatar {
+    width:           20px;
+    height:          20px;
+    border-radius:   50%;
+    display:         flex;
+    align-items:     center;
+    justify-content: center;
+    font-size:       9px;
+    font-weight:     600;
+    flex-shrink:     0;
+}
+
+/* Avatar colour variants — hardcoded for mockup fidelity */
+.hs-settle-avatar--indigo { background: #EEF2FF; color: #4F46E5; }
+.hs-settle-avatar--green  { background: #F0FDF4; color: #16A34A; }
+.hs-settle-avatar--orange { background: #FFF7ED; color: #EA580C; }
+
+.hs-settle-name {
+    font-size: 10px;
+    color:     var(--l-ink-secondary);
+    flex:      1;
+}
+
+.hs-settle-amount {
+    font-size:   10px;
+    font-weight: 600;
+    color:       var(--l-accent);
+    font-family: ui-monospace, monospace;
+}
+
+/* ── Floating pills ────────────────────────────────────────────────────────── */
+
+.hs-pill {
+    position:      absolute;
+    background:    var(--l-surface);
+    border-radius: 12px;
+    box-shadow:    var(--l-shadow-md);
+    display:       flex;
+    align-items:   center;
+    gap:           8px;
+    z-index:       2;
+}
+
+/* Keeper active — top-left, slightly overlapping the dashboard card */
+.hs-pill-keeper {
+    top:       10px;
+    left:      0;
+    padding:   10px 14px;
+    transform: rotate(-3deg);
+}
+
+/* Subscriber notification — bottom-right, slight tilt */
+.hs-pill-sub {
+    bottom:         30px;
+    right:          20px;
+    padding:        10px 14px;
+    transform:      rotate(1deg);
+    flex-direction: column;
+    align-items:    flex-start;
+    gap:            3px;
+}
+
+/* Pulsing green dot */
+.hs-pill-dot {
+    width:         8px;
+    height:        8px;
+    border-radius: 50%;
+    flex-shrink:   0;
+}
+
+.hs-pill-dot--green {
+    background: #10B981;
+    animation:  hs-pulse-green 2s infinite;
+}
+
+@keyframes hs-pulse-green {
+    0%   { box-shadow: 0 0 0 0   rgba(16, 185, 129, 0.4); }
+    70%  { box-shadow: 0 0 0 6px rgba(16, 185, 129, 0);   }
+    100% { box-shadow: 0 0 0 0   rgba(16, 185, 129, 0);   }
+}
+
+.hs-pill-text   { font-size: 11px; color: var(--l-ink-secondary); white-space: nowrap; }
+.hs-pill-title  { font-size: 11px; color: var(--l-ink);           margin: 0; white-space: nowrap; }
+.hs-pill-detail { font-size: 10px; color: var(--l-ink-muted);     margin: 0; white-space: nowrap; }
+
+/* ── Floating stat cards ───────────────────────────────────────────────────── */
+/*
+ * Rendered as a sibling <div> after <section> in HeroSection.tsx.
+ * bottom:-40px shifts the row 40px into the next section, creating
+ * a visual overlap without fighting the section's overflow:hidden.
+ */
+
+.hs-stats-row {
+    display:   flex;
+    gap:       16px;
+    max-width: 860px;
+    margin:    0 auto;
+    padding:   0 32px;
+    position:  relative;
+    bottom:    -40px;
+    z-index:   10;
+}
+
+.hs-stat-card {
+    flex:          1;
+    background:    var(--l-surface);
+    box-shadow:    var(--l-shadow-lg);
+    border-radius: 16px;
+    padding:       20px 24px;
+}
+
+.hs-stat-label {
+    font-size:      11px;
+    color:          var(--l-ink-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin:         0 0 8px;
+}
+
+.hs-stat-value {
+    font-size:   28px;
+    font-weight: 600;
+    color:       var(--l-ink);
+    line-height: 1;
+    margin:      0 0 4px;
+}
+
+.hs-stat-value--accent { color: var(--l-accent); }
+
+.hs-stat-delta {
+    font-size: 12px;
+    color:     #10B981;
+    margin:    0;
+}
+
+.hs-stat-sub {
+    font-size:   11px;
+    font-family: ui-monospace, monospace;
+    color:       var(--l-ink-muted);
+    margin:      0;
+}
+
+/* ── Responsive ────────────────────────────────────────────────────────────── */
+
+@media (max-width: 900px) {
+    .hs-stats-row { flex-direction: column; bottom: 0; padding: 0 20px; }
+}

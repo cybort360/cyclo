@@ -1,0 +1,142 @@
+/*
+ * DocCodeBlock — shared UI primitives for developer documentation.
+ * Class prefix: dcb-
+ *
+ * CodeBlock:  dark code block with a top bar (language label + copy button).
+ * DocStep:    numbered step with an accent badge.
+ * CopyButton: compact inline clipboard button.
+ */
+
+/* ── CodeBlock ───────────────────────────────────────────────────────────────── */
+
+.dcb-block {
+    position:      relative;
+    border:        0.5px solid var(--bg-border-bright);
+    border-radius: 8px;
+    overflow:      hidden;
+    margin:        12px 0;
+}
+
+.dcb-topbar {
+    display:         flex;
+    align-items:     center;
+    justify-content: space-between;
+    padding:         6px 12px;
+    background:      var(--bg-surface-2);
+    border-bottom:   0.5px solid var(--bg-border);
+}
+
+.dcb-lang {
+    font-family:    ui-monospace, 'Cascadia Code', Consolas, monospace;
+    font-size:      10px;
+    color:          var(--text-tertiary);
+    letter-spacing: 0.04em;
+    text-transform: lowercase;
+}
+
+.dcb-copy-btn {
+    display:       flex;
+    align-items:   center;
+    gap:           4px;
+    padding:       3px 8px;
+    border:        0.5px solid var(--bg-border-bright);
+    border-radius: 4px;
+    background:    transparent;
+    color:         var(--text-tertiary);
+    font-size:     10px;
+    font-family:   ui-monospace, 'Cascadia Code', Consolas, monospace;
+    cursor:        pointer;
+    transition:    color 120ms ease, border-color 120ms ease;
+    line-height:   1;
+}
+
+.dcb-copy-btn:hover {
+    color:        var(--text-primary);
+    border-color: var(--text-secondary);
+}
+
+.dcb-copy-btn--copied {
+    color:        var(--accent);
+    border-color: var(--accent-dim);
+}
+
+.dcb-pre {
+    margin:     0;
+    padding:    16px;
+    overflow-x: auto;
+    background: #0d1117;
+    font-size:  13px;
+    line-height: 1.6;
+}
+
+/* ── DocStep ─────────────────────────────────────────────────────────────────── */
+
+.dcb-step {
+    display: flex;
+    gap:     16px;
+}
+
+.dcb-step-badge {
+    flex-shrink:     0;
+    width:           24px;
+    height:          24px;
+    border-radius:   50%;
+    background:      var(--accent);
+    display:         flex;
+    align-items:     center;
+    justify-content: center;
+    margin-top:      1px;
+}
+
+.dcb-step-num {
+    font-size:   11px;
+    font-weight: 700;
+    color:       #06101A;
+    font-family: ui-monospace, 'Cascadia Code', Consolas, monospace;
+    line-height: 1;
+}
+
+.dcb-step-body {
+    flex:      1;
+    min-width: 0;
+    padding-bottom: 24px;
+}
+
+.dcb-step-body:last-child { padding-bottom: 0; }
+
+.dcb-step-title {
+    font-size:   13px;
+    font-weight: 500;
+    color:       var(--text-primary);
+    margin:      0 0 4px;
+}
+
+/* ── CopyButton (inline table cell) ─────────────────────────────────────────── */
+
+.dcb-inline-copy {
+    display:       inline-flex;
+    align-items:   center;
+    gap:           3px;
+    margin-left:   8px;
+    padding:       2px 7px;
+    border:        0.5px solid var(--bg-border-bright);
+    border-radius: 4px;
+    background:    transparent;
+    color:         var(--text-tertiary);
+    font-size:     10px;
+    font-family:   ui-monospace, 'Cascadia Code', Consolas, monospace;
+    cursor:        pointer;
+    vertical-align: middle;
+    transition:    color 120ms ease, border-color 120ms ease;
+    flex-shrink:   0;
+}
+
+.dcb-inline-copy:hover {
+    color:        var(--text-primary);
+    border-color: var(--text-secondary);
+}
+
+.dcb-inline-copy--copied {
+    color:        var(--accent);
+    border-color: var(--accent-dim);
+}
