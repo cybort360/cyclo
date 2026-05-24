@@ -1,0 +1,458 @@
+/*
+ * DemoPage — fictional "Flowboard" SaaS site that embeds the Cyclo widget.
+ * Class prefix: dm-
+ *
+ * Colour theme unchanged (indigo #4f46e5, gray scale).
+ * Mobile-first responsive layout.
+ */
+
+/* ── Root ─────────────────────────────────────────────────────────────────── */
+
+.dm-root {
+    min-height:  100vh;
+    background:  #fff;
+    font-family: system-ui, -apple-system, sans-serif;
+    color:       #111827;
+}
+
+/* ── Nav ──────────────────────────────────────────────────────────────────── */
+
+.dm-nav {
+    border-bottom: 1px solid #e5e7eb;
+    position:      sticky;
+    top:           0;
+    background:    #fff;
+    z-index:       50;
+}
+
+.dm-nav-inner {
+    max-width:       1100px;
+    margin:          0 auto;
+    padding:         0 24px;
+    height:          60px;
+    display:         flex;
+    align-items:     center;
+    justify-content: space-between;
+    gap:             16px;
+}
+
+.dm-nav-brand {
+    display:         flex;
+    align-items:     center;
+    gap:             8px;
+    text-decoration: none;
+    flex-shrink:     0;
+}
+
+.dm-nav-logo {
+    width:         28px;
+    height:        28px;
+    background:    #4f46e5;
+    border-radius: 6px;
+    flex-shrink:   0;
+}
+
+.dm-nav-name {
+    font-weight: 600;
+    color:       #111827;
+    font-size:   18px;
+    white-space: nowrap;
+}
+
+.dm-nav-links {
+    display:     flex;
+    align-items: center;
+    gap:         28px;
+    flex:        1;
+    justify-content: center;
+}
+
+.dm-nav-link {
+    color:           #6b7280;
+    text-decoration: none;
+    font-size:       14px;
+    white-space:     nowrap;
+    transition:      color 150ms ease;
+}
+
+.dm-nav-link:hover { color: #111827; }
+
+.dm-nav-actions {
+    display:     flex;
+    align-items: center;
+    gap:         16px;
+    flex-shrink: 0;
+}
+
+.dm-nav-back {
+    font-size:       13px;
+    color:           #6b7280;
+    text-decoration: none;
+    white-space:     nowrap;
+    transition:      color 150ms ease;
+}
+
+.dm-nav-back:hover { color: #111827; }
+
+.dm-nav-signin {
+    background:    #4f46e5;
+    color:         #fff;
+    padding:       7px 16px;
+    border-radius: 8px;
+    border:        none;
+    cursor:        pointer;
+    font-size:     14px;
+    font-weight:   500;
+    white-space:   nowrap;
+    transition:    background 150ms ease;
+}
+
+.dm-nav-signin:hover { background: #4338ca; }
+
+/* ── Hero ─────────────────────────────────────────────────────────────────── */
+
+.dm-hero {
+    max-width:   720px;
+    margin:      0 auto;
+    text-align:  center;
+    padding:     80px 24px 64px;
+}
+
+.dm-hero-badge {
+    display:       inline-block;
+    background:    #eef2ff;
+    color:         #4f46e5;
+    font-size:     12px;
+    font-weight:   500;
+    padding:       4px 12px;
+    border-radius: 999px;
+    margin-bottom: 20px;
+}
+
+.dm-hero-h1 {
+    font-size:      48px;
+    font-weight:    700;
+    color:          #111827;
+    line-height:    1.15;
+    margin:         0 0 20px;
+    letter-spacing: -0.02em;
+}
+
+.dm-hero-sub {
+    font-size:   18px;
+    color:       #6b7280;
+    margin:      0 auto 36px;
+    max-width:   480px;
+    line-height: 1.65;
+}
+
+.dm-hero-btns {
+    display:         flex;
+    justify-content: center;
+    gap:             12px;
+    flex-wrap:       wrap;
+}
+
+.dm-hero-btn-primary {
+    background:    #4f46e5;
+    color:         #fff;
+    padding:       13px 28px;
+    border-radius: 12px;
+    border:        none;
+    font-weight:   500;
+    cursor:        pointer;
+    font-size:     15px;
+    transition:    background 150ms ease;
+}
+
+.dm-hero-btn-primary:hover { background: #4338ca; }
+
+.dm-hero-btn-secondary {
+    padding:       13px 24px;
+    border-radius: 12px;
+    border:        1px solid #e5e7eb;
+    background:    none;
+    font-weight:   500;
+    cursor:        pointer;
+    font-size:     15px;
+    color:         #374151;
+    transition:    border-color 150ms ease, color 150ms ease;
+}
+
+.dm-hero-btn-secondary:hover { border-color: #d1d5db; color: #111827; }
+
+/* ── Features ─────────────────────────────────────────────────────────────── */
+
+.dm-features {
+    max-width: 820px;
+    margin:    0 auto;
+    padding:   0 24px 96px;
+}
+
+.dm-features-grid {
+    display:               grid;
+    grid-template-columns: 1fr 1fr;
+    gap:                   20px;
+}
+
+.dm-feature-card {
+    border:        1px solid #e5e7eb;
+    border-radius: 16px;
+    padding:       24px;
+    transition:    box-shadow 180ms ease;
+}
+
+.dm-feature-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.06); }
+
+.dm-feature-icon {
+    display:       flex;
+    align-items:   center;
+    justify-content: center;
+    width:         40px;
+    height:        40px;
+    border-radius: 10px;
+    background:    #f3f4f6;
+    margin-bottom: 14px;
+    color:         #4f46e5;
+}
+
+.dm-feature-title {
+    font-size:   16px;
+    font-weight: 600;
+    color:       #111827;
+    margin:      0 0 6px;
+}
+
+.dm-feature-desc {
+    font-size:   14px;
+    color:       #6b7280;
+    margin:      0;
+    line-height: 1.6;
+}
+
+/* ── Pricing ──────────────────────────────────────────────────────────────── */
+
+.dm-pricing {
+    background: #f9fafb;
+    padding:    80px 24px;
+}
+
+.dm-pricing-inner {
+    max-width: 960px;
+    margin:    0 auto;
+}
+
+.dm-pricing-hd {
+    text-align:    center;
+    margin-bottom: 48px;
+}
+
+.dm-pricing-hd h2 {
+    font-size:   30px;
+    font-weight: 700;
+    color:       #111827;
+    margin:      0 0 12px;
+}
+
+.dm-pricing-hd p {
+    color:  #6b7280;
+    margin: 0;
+}
+
+.dm-pricing-grid {
+    display:               grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap:                   20px;
+    align-items:           start;
+}
+
+/* ── Plan card ────────────────────────────────────────────────────────────── */
+
+.dm-plan-card {
+    background:    #fff;
+    border:        1px solid #e5e7eb;
+    border-radius: 16px;
+    padding:       24px;
+    position:      relative;
+}
+
+.dm-plan-card--featured {
+    border:     2px solid #4f46e5;
+    box-shadow: 0 4px 24px rgba(79, 70, 229, 0.12);
+}
+
+.dm-plan-badge {
+    position:   absolute;
+    top:        -12px;
+    left:       50%;
+    transform:  translateX(-50%);
+    background: #4f46e5;
+    color:      #fff;
+    font-size:  11px;
+    font-weight: 600;
+    padding:    4px 14px;
+    border-radius: 999px;
+    white-space: nowrap;
+}
+
+.dm-plan-name {
+    font-size:   15px;
+    font-weight: 600;
+    color:       #111827;
+    margin:      0 0 8px;
+}
+
+.dm-plan-price {
+    font-size:   30px;
+    font-weight: 700;
+    color:       #111827;
+    margin:      0 0 4px;
+    line-height: 1;
+}
+
+.dm-plan-sub {
+    font-size:     13px;
+    color:         #9ca3af;
+    margin:        0 0 20px;
+    line-height:   1.5;
+}
+
+.dm-plan-features {
+    list-style:     none;
+    padding:        0;
+    margin:         0 0 24px;
+    display:        flex;
+    flex-direction: column;
+    gap:            8px;
+}
+
+.dm-plan-feature {
+    display:     flex;
+    align-items: flex-start;
+    gap:         8px;
+    font-size:   14px;
+    color:       #374151;
+    line-height: 1.5;
+}
+
+.dm-plan-feature-icon {
+    color:       #4f46e5;
+    flex-shrink: 0;
+    margin-top:  1px;
+}
+
+.dm-plan-btn {
+    width:         100%;
+    padding:       10px;
+    border-radius: 10px;
+    font-weight:   500;
+    font-size:     14px;
+    cursor:        pointer;
+    transition:    background 150ms ease, border-color 150ms ease;
+}
+
+.dm-plan-btn--primary {
+    border:     none;
+    background: #4f46e5;
+    color:      #fff;
+}
+
+.dm-plan-btn--primary:hover { background: #4338ca; }
+
+.dm-plan-btn--outline {
+    background: none;
+    border:     1px solid #e5e7eb;
+    color:      #374151;
+}
+
+.dm-plan-btn--outline:hover { border-color: #d1d5db; }
+
+/* ── Powered-by badge ─────────────────────────────────────────────────────── */
+
+.dm-powered {
+    text-align: center;
+    margin-top: 40px;
+}
+
+.dm-powered p {
+    font-size: 12px;
+    color:     #9ca3af;
+    margin:    0;
+}
+
+.dm-powered a {
+    font-weight:     500;
+    color:           #818cf8;
+    text-decoration: none;
+    transition:      color 150ms ease;
+}
+
+.dm-powered a:hover { color: #4f46e5; }
+
+/* ── Footer ───────────────────────────────────────────────────────────────── */
+
+.dm-footer {
+    border-top: 1px solid #e5e7eb;
+    padding:    24px;
+}
+
+.dm-footer-inner {
+    max-width:       1100px;
+    margin:          0 auto;
+    display:         flex;
+    align-items:     center;
+    justify-content: space-between;
+    font-size:       14px;
+    color:           #9ca3af;
+    gap:             16px;
+}
+
+.dm-footer-links {
+    display: flex;
+    gap:     24px;
+}
+
+.dm-footer-link {
+    color:           #9ca3af;
+    text-decoration: none;
+    transition:      color 150ms ease;
+}
+
+.dm-footer-link:hover { color: #6b7280; }
+
+/* ── Mobile ───────────────────────────────────────────────────────────────── */
+
+@media (max-width: 767px) {
+    /* Nav: hide center links, keep brand + sign-in */
+    .dm-nav-links { display: none; }
+    .dm-nav-back  { display: none; }
+
+    /* Hero: scale down typography */
+    .dm-hero          { padding: 72px 20px 48px; }
+    .dm-hero-h1       { font-size: 34px; }
+    .dm-hero-sub      { font-size: 16px; }
+
+    /* Features: single column */
+    .dm-features      { padding: 0 20px 64px; }
+    .dm-features-grid { grid-template-columns: 1fr; }
+
+    /* Pricing: single column, stacked */
+    .dm-pricing       { padding: 60px 20px; }
+    .dm-pricing-grid  { grid-template-columns: 1fr; }
+    .dm-pricing-hd h2 { font-size: 24px; }
+
+    /* Footer: stack */
+    .dm-footer-inner {
+        flex-direction: column;
+        align-items:    flex-start;
+        gap:            12px;
+    }
+}
+
+@media (max-width: 480px) {
+    .dm-hero-h1  { font-size: 28px; }
+    .dm-hero-sub { font-size: 15px; }
+    .dm-hero-btns { flex-direction: column; }
+    .dm-hero-btn-primary,
+    .dm-hero-btn-secondary { width: 100%; }
+}

@@ -1,221 +1,214 @@
 /**
- * /demo — fictional SaaS landing page that embeds the Cyclo widget inline in the
- * pricing section. "Start 7-day free trial" reveals the checkout card in place.
+ * /demo — fictional "Flowboard" SaaS landing page that embeds the Cyclo widget
+ * inline in the Pro pricing card. "Start 7-day free trial" reveals the
+ * CycloCheckout component in place.
+ *
+ * Class prefix: dm-   Styles: DemoPage.css   Icons: hugeicons-react
  */
 import { useState } from 'react'
+import {
+    FlashIcon,
+    AnalyticsUpIcon,
+    LockIcon,
+    GlobalIcon,
+    CheckmarkCircle01Icon,
+} from 'hugeicons-react'
 import { CycloCheckout } from '../widget/Widget'
 import { CONTRACT_ADDRESS, USDC_ADDRESS } from '../constants/addresses'
+import './DemoPage.css'
+
+// ── Data ──────────────────────────────────────────────────────────────────────
 
 const DEMO_PLAN_ID = 1n
 
-const features = [
-    { icon: '⚡', title: 'Instant deploys',       description: 'Push to main and your app is live in seconds. Zero config.' },
-    { icon: '📊', title: 'Real-time analytics',   description: 'See every request, error, and latency spike as it happens.' },
-    { icon: '🔒', title: 'Built-in security',     description: 'DDoS protection, WAF, and SSL certificates included.' },
-    { icon: '🌍', title: 'Global edge network',   description: 'Served from 47 regions. Sub-100ms response times worldwide.' },
-]
+type FeatureIcon = typeof FlashIcon
 
-const hobbyFeatures   = ['3 projects', '10k requests/month', 'Community support']
-const proFeatures     = ['Unlimited projects', '1M requests/month', 'Priority support', 'Custom domains']
-const enterpriseFeatures = ['Everything in Pro', 'SLA guarantee', 'Dedicated support', 'SSO + audit logs']
-
-function NavLink({ href, children }: { href: string; children: React.ReactNode }) {
-    return (
-        <a href={href} style={{ color: '#6b7280', textDecoration: 'none', fontSize: '14px' }}>
-            {children}
-        </a>
-    )
+interface Feature {
+    Icon:        FeatureIcon
+    title:       string
+    description: string
 }
 
-function PlanCard({
-    name, price, sub, features, highlight, cta, onCta,
-}: {
-    name: string; price: string; sub: string; features: string[];
-    highlight?: boolean; cta: string; onCta?: () => void;
-}) {
+const FEATURES: Feature[] = [
+    {
+        Icon:        FlashIcon,
+        title:       'Instant deploys',
+        description: 'Push to main and your app is live in seconds. Zero config.',
+    },
+    {
+        Icon:        AnalyticsUpIcon,
+        title:       'Real-time analytics',
+        description: 'See every request, error, and latency spike as it happens.',
+    },
+    {
+        Icon:        LockIcon,
+        title:       'Built-in security',
+        description: 'DDoS protection, WAF, and SSL certificates included.',
+    },
+    {
+        Icon:        GlobalIcon,
+        title:       'Global edge network',
+        description: 'Served from 47 regions. Sub-100ms response times worldwide.',
+    },
+]
+
+const HOBBY_FEATURES      = ['3 projects', '10k requests/month', 'Community support']
+const PRO_FEATURES        = ['Unlimited projects', '1M requests/month', 'Priority support', 'Custom domains']
+const ENTERPRISE_FEATURES = ['Everything in Pro', 'SLA guarantee', 'Dedicated support', 'SSO + audit logs']
+
+// ── Plan card ─────────────────────────────────────────────────────────────────
+
+interface PlanCardProps {
+    name:       string
+    price:      string
+    sub:        string
+    features:   string[]
+    featured?:  boolean
+    cta:        string
+    onCta?:     () => void
+    children?:  React.ReactNode
+}
+
+/**
+ * Generic pricing plan card.
+ * When `children` is provided it replaces the CTA button (used for the inline
+ * checkout widget).
+ */
+function PlanCard({ name, price, sub, features, featured, cta, onCta, children }: PlanCardProps) {
     return (
-        <div style={{
-            background: '#fff',
-            border:     highlight ? '2px solid #4f46e5' : '1px solid #e5e7eb',
-            borderRadius: '16px',
-            padding:    '24px',
-            boxShadow:  highlight ? '0 4px 24px rgba(79,70,229,0.12)' : 'none',
-            position:   'relative',
-        }}>
-            {highlight && (
-                <span style={{
-                    position: 'absolute', top: '-12px', left: '50%', transform: 'translateX(-50%)',
-                    background: '#4f46e5', color: '#fff', fontSize: '11px',
-                    padding: '3px 12px', borderRadius: '999px',
-                }}>
-                    Most popular
-                </span>
-            )}
-            <p style={{ fontWeight: 600, color: '#111827', margin: '0 0 8px' }}>{name}</p>
-            <p style={{ fontSize: '30px', fontWeight: 700, margin: '0 0 4px' }}>{price}</p>
-            <p style={{ fontSize: '13px', color: '#9ca3af', margin: '0 0 20px' }}>{sub}</p>
-            <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 24px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+        <div className={`dm-plan-card${featured ? ' dm-plan-card--featured' : ''}`}>
+            {featured && <span className="dm-plan-badge">Most popular</span>}
+            <p className="dm-plan-name">{name}</p>
+            <p className="dm-plan-price">{price}</p>
+            <p className="dm-plan-sub">{sub}</p>
+            <ul className="dm-plan-features">
                 {features.map(f => (
-                    <li key={f} style={{ fontSize: '14px', color: '#374151' }}>✓ {f}</li>
+                    <li key={f} className="dm-plan-feature">
+                        <CheckmarkCircle01Icon
+                            size={15}
+                            className="dm-plan-feature-icon"
+                            aria-hidden="true"
+                        />
+                        {f}
+                    </li>
                 ))}
             </ul>
-            {onCta ? (
-                <button
-                    onClick={onCta}
-                    style={{
-                        width: '100%', padding: '10px', borderRadius: '10px', fontWeight: 500,
-                        fontSize: '14px', cursor: 'pointer', border: 'none',
-                        background: '#4f46e5', color: '#fff',
-                    }}
-                >
-                    {cta}
-                </button>
-            ) : (
-                <button style={{
-                    width: '100%', padding: '10px', borderRadius: '10px', fontWeight: 500,
-                    fontSize: '14px', cursor: 'pointer', background: 'none',
-                    border: '1px solid #e5e7eb', color: '#374151',
-                }}>
-                    {cta}
-                </button>
+            {children ?? (
+                onCta ? (
+                    <button onClick={onCta} className="dm-plan-btn dm-plan-btn--primary">
+                        {cta}
+                    </button>
+                ) : (
+                    <button className="dm-plan-btn dm-plan-btn--outline">
+                        {cta}
+                    </button>
+                )
             )}
         </div>
     )
 }
 
+// ── Page ──────────────────────────────────────────────────────────────────────
+
 export function DemoPage() {
     const [billingOpen, setBillingOpen] = useState(false)
 
     return (
-        <div style={{ minHeight: '100vh', background: '#fff', fontFamily: 'system-ui, -apple-system, sans-serif' }}>
+        <div className="dm-root">
 
-            {/* Nav */}
-            <nav style={{
-                borderBottom: '1px solid #e5e7eb', padding: '16px 32px',
-                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-            }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <div style={{ width: 28, height: 28, background: '#4f46e5', borderRadius: 6 }} />
-                    <span style={{ fontWeight: 600, color: '#111827', fontSize: '18px' }}>Flowboard</span>
-                </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '24px' }}>
-                    <NavLink href="#features">Features</NavLink>
-                    <NavLink href="#pricing">Pricing</NavLink>
-                    <NavLink href="#">Docs</NavLink>
-                    <a href="/dashboard" style={{ fontSize: '13px', color: '#6b7280', textDecoration: 'none' }}>← Back to app</a>
-                    <button style={{
-                        background: '#4f46e5', color: '#fff', padding: '6px 16px',
-                        borderRadius: '8px', border: 'none', cursor: 'pointer', fontSize: '14px',
-                    }}>
-                        Sign in
-                    </button>
+            {/* ── Nav ─────────────────────────────────────────────────── */}
+            <nav className="dm-nav">
+                <div className="dm-nav-inner">
+
+                    {/* Brand */}
+                    <a href="#" className="dm-nav-brand" aria-label="Flowboard home">
+                        <div className="dm-nav-logo" aria-hidden="true" />
+                        <span className="dm-nav-name">Flowboard</span>
+                    </a>
+
+                    {/* Center links (hidden on mobile) */}
+                    <div className="dm-nav-links" aria-label="Site sections">
+                        <a href="#features" className="dm-nav-link">Features</a>
+                        <a href="#pricing"  className="dm-nav-link">Pricing</a>
+                        <a href="#"         className="dm-nav-link">Docs</a>
+                    </div>
+
+                    {/* Actions */}
+                    <div className="dm-nav-actions">
+                        <a href="/dashboard" className="dm-nav-back">← Back to app</a>
+                        <button className="dm-nav-signin">Sign in</button>
+                    </div>
+
                 </div>
             </nav>
 
-            {/* Hero */}
-            <section style={{ maxWidth: 720, margin: '0 auto', textAlign: 'center', padding: '96px 24px 64px' }}>
-                <span style={{
-                    display: 'inline-block', background: '#eef2ff', color: '#4f46e5',
-                    fontSize: '12px', fontWeight: 500, padding: '4px 12px',
-                    borderRadius: '999px', marginBottom: '16px',
-                }}>
-                    Now in public beta
-                </span>
-                <h1 style={{ fontSize: '48px', fontWeight: 700, color: '#111827', lineHeight: 1.15, margin: '0 0 20px' }}>
+            {/* ── Hero ────────────────────────────────────────────────── */}
+            <section id="hero" className="dm-hero">
+                <span className="dm-hero-badge">Now in public beta</span>
+                <h1 className="dm-hero-h1">
                     Ship faster.<br />Scale further.
                 </h1>
-                <p style={{ fontSize: '20px', color: '#6b7280', margin: '0 auto 32px', maxWidth: 480 }}>
-                    Flowboard gives your team the deployment infrastructure used by the world's fastest-growing startups.
+                <p className="dm-hero-sub">
+                    Flowboard gives your team the deployment infrastructure used by the
+                    world's fastest-growing startups.
                 </p>
-                <div style={{ display: 'flex', justifyContent: 'center', gap: '12px' }}>
+                <div className="dm-hero-btns">
                     <button
+                        className="dm-hero-btn-primary"
                         onClick={() => document.getElementById('pricing')?.scrollIntoView({ behavior: 'smooth' })}
-                        style={{
-                            background: '#4f46e5', color: '#fff', padding: '12px 24px',
-                            borderRadius: '12px', border: 'none', fontWeight: 500, cursor: 'pointer', fontSize: '15px',
-                        }}
                     >
                         Start free trial
                     </button>
-                    <button style={{
-                        padding: '12px 24px', borderRadius: '12px',
-                        border: '1px solid #e5e7eb', background: 'none',
-                        fontWeight: 500, cursor: 'pointer', fontSize: '15px', color: '#374151',
-                    }}>
-                        View demo
-                    </button>
+                    <button className="dm-hero-btn-secondary">View demo</button>
                 </div>
             </section>
 
-            {/* Features */}
-            <section id="features" style={{ maxWidth: 800, margin: '0 auto', padding: '0 24px 96px' }}>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
-                    {features.map(f => (
-                        <div key={f.title} style={{
-                            border: '1px solid #e5e7eb', borderRadius: '16px',
-                            padding: '24px',
-                        }}>
-                            <div style={{ fontSize: '24px', marginBottom: '12px' }}>{f.icon}</div>
-                            <h3 style={{ fontWeight: 600, color: '#111827', margin: '0 0 6px' }}>{f.title}</h3>
-                            <p style={{ fontSize: '14px', color: '#6b7280', margin: 0 }}>{f.description}</p>
+            {/* ── Features ────────────────────────────────────────────── */}
+            <section id="features" className="dm-features">
+                <div className="dm-features-grid">
+                    {FEATURES.map(({ Icon, title, description }) => (
+                        <div key={title} className="dm-feature-card">
+                            <div className="dm-feature-icon" aria-hidden="true">
+                                <Icon size={20} />
+                            </div>
+                            <h3 className="dm-feature-title">{title}</h3>
+                            <p className="dm-feature-desc">{description}</p>
                         </div>
                     ))}
                 </div>
             </section>
 
-            {/* Pricing */}
-            <section id="pricing" style={{ background: '#f9fafb', padding: '80px 24px' }}>
-                <div style={{ maxWidth: 900, margin: '0 auto' }}>
-                    <div style={{ textAlign: 'center', marginBottom: '48px' }}>
-                        <h2 style={{ fontSize: '30px', fontWeight: 700, color: '#111827', margin: '0 0 12px' }}>
-                            Simple, transparent pricing
-                        </h2>
-                        <p style={{ color: '#6b7280', margin: 0 }}>No seat fees. No surprise bills. Cancel any time.</p>
+            {/* ── Pricing ─────────────────────────────────────────────── */}
+            <section id="pricing" className="dm-pricing">
+                <div className="dm-pricing-inner">
+
+                    <div className="dm-pricing-hd">
+                        <h2>Simple, transparent pricing</h2>
+                        <p>No seat fees. No surprise bills. Cancel any time.</p>
                     </div>
 
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '20px', alignItems: 'start' }}>
+                    <div className="dm-pricing-grid">
+
                         <PlanCard
-                            name="Hobby" price="$0" sub="Forever free"
-                            features={hobbyFeatures} cta="Get started"
+                            name="Hobby"
+                            price="$0"
+                            sub="Forever free"
+                            features={HOBBY_FEATURES}
+                            cta="Get started"
                         />
 
-                        {/* Pro — Cyclo widget embedded here */}
-                        <div style={{
-                            background: '#fff',
-                            border: '2px solid #4f46e5',
-                            borderRadius: '16px',
-                            padding: '24px',
-                            boxShadow: '0 4px 24px rgba(79,70,229,0.12)',
-                            position: 'relative',
-                        }}>
-                            <span style={{
-                                position: 'absolute', top: '-12px', left: '50%', transform: 'translateX(-50%)',
-                                background: '#4f46e5', color: '#fff', fontSize: '11px',
-                                padding: '3px 12px', borderRadius: '999px',
-                            }}>
-                                Most popular
-                            </span>
-                            <p style={{ fontWeight: 600, color: '#111827', margin: '0 0 8px' }}>Pro</p>
-                            <p style={{ fontSize: '30px', fontWeight: 700, margin: '0 0 4px' }}>$5.99</p>
-                            <p style={{ fontSize: '13px', color: '#9ca3af', margin: '0 0 20px' }}>per month, billed on-chain</p>
-                            <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 24px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                                {proFeatures.map(f => (
-                                    <li key={f} style={{ fontSize: '14px', color: '#374151' }}>✓ {f}</li>
-                                ))}
-                            </ul>
-                            {!billingOpen ? (
-                                <button
-                                    onClick={() => setBillingOpen(true)}
-                                    style={{
-                                        width: '100%', padding: '10px', borderRadius: '10px',
-                                        fontWeight: 500, fontSize: '14px', cursor: 'pointer',
-                                        border: 'none', background: '#4f46e5', color: '#fff',
-                                    }}
-                                >
-                                    Start 7-day free trial
-                                </button>
-                            ) : (
-                                <div style={{ marginTop: '8px' }}>
+                        {/* Pro — embeds CycloCheckout when the user clicks the CTA */}
+                        <PlanCard
+                            name="Pro"
+                            price="$5.99"
+                            sub="per month, billed on-chain"
+                            features={PRO_FEATURES}
+                            featured
+                            cta="Start 7-day free trial"
+                            onCta={billingOpen ? undefined : () => setBillingOpen(true)}
+                        >
+                            {billingOpen ? (
+                                <div style={{ marginTop: 8 }}>
                                     <CycloCheckout
                                         planId={DEMO_PLAN_ID}
                                         contractAddress={CONTRACT_ADDRESS}
@@ -223,46 +216,49 @@ export function DemoPage() {
                                         rpcUrl="/rpc"
                                     />
                                 </div>
+                            ) : (
+                                <button
+                                    onClick={() => setBillingOpen(true)}
+                                    className="dm-plan-btn dm-plan-btn--primary"
+                                >
+                                    Start 7-day free trial
+                                </button>
                             )}
-                        </div>
+                        </PlanCard>
 
                         <PlanCard
-                            name="Enterprise" price="Custom" sub="Contact us"
-                            features={enterpriseFeatures} cta="Talk to sales"
+                            name="Enterprise"
+                            price="Custom"
+                            sub="Contact us"
+                            features={ENTERPRISE_FEATURES}
+                            cta="Talk to sales"
                         />
+
                     </div>
 
-                    {/* Powered by badge */}
-                    <div style={{ textAlign: 'center', marginTop: '40px' }}>
-                        <p style={{ fontSize: '12px', color: '#9ca3af', margin: 0 }}>
+                    <div className="dm-powered">
+                        <p>
                             Payments powered by{' '}
-                            <a
-                                href="/"
-                                style={{ fontWeight: 500, color: '#818cf8', textDecoration: 'none' }}
-                                target="_blank"
-                                rel="noreferrer"
-                            >
-                                Cyclo
-                            </a>
+                            <a href="/" target="_blank" rel="noreferrer">Cyclo</a>
                             {' '}— on-chain recurring billing on Arc testnet
                         </p>
                     </div>
+
                 </div>
             </section>
 
-            {/* Footer */}
-            <footer style={{
-                borderTop: '1px solid #e5e7eb', padding: '24px 32px',
-                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                fontSize: '14px', color: '#9ca3af',
-            }}>
-                <span>© 2026 Flowboard, Inc.</span>
-                <div style={{ display: 'flex', gap: '24px' }}>
-                    {['Privacy', 'Terms', 'Status'].map(l => (
-                        <a key={l} href="#" style={{ color: '#9ca3af', textDecoration: 'none' }}>{l}</a>
-                    ))}
+            {/* ── Footer ──────────────────────────────────────────────── */}
+            <footer className="dm-footer">
+                <div className="dm-footer-inner">
+                    <span>© 2026 Flowboard, Inc.</span>
+                    <div className="dm-footer-links">
+                        {['Privacy', 'Terms', 'Status'].map(l => (
+                            <a key={l} href="#" className="dm-footer-link">{l}</a>
+                        ))}
+                    </div>
                 </div>
             </footer>
+
         </div>
     )
 }
