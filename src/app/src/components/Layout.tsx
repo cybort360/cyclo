@@ -14,7 +14,7 @@ import {
     IconLayoutDashboard, IconUsers, IconAlertTriangle, IconStack2,
     IconReceipt, IconBuildingBank, IconChartBar, IconWebhook,
     IconCode, IconBook, IconPlayerPlay, IconSearch, IconLayoutSidebarRight,
-    IconPlugConnected, IconPlugConnectedX,
+    IconPlugConnected, IconPlugConnectedX, IconMenu2,
 } from '@tabler/icons-react'
 import { useMerchantProfile } from '../context/MerchantProfileContext'
 import { useSubscriptionManager } from '../hooks/useSubscriptionManager'
@@ -226,9 +226,13 @@ export function Layout({ children }: { children: ReactNode }) {
     const [showAI, setShowAI]                     = useState(false)
     const [rightPanelContent, setRightPanel]      = useState<ReactNode>(null)
     const [isPanelOpen, setIsPanelOpen]           = useState(false)
+    const [isNavOpen, setIsNavOpen]               = useState(false)
 
-    // Close the right panel drawer whenever the route changes
-    useEffect(() => { setIsPanelOpen(false) }, [location])
+    // Close both drawers whenever the route changes
+    useEffect(() => {
+        setIsPanelOpen(false)
+        setIsNavOpen(false)
+    }, [location])
 
     // Prompt merchant to complete their profile 1 s after connecting
     useEffect(() => {
@@ -253,8 +257,8 @@ export function Layout({ children }: { children: ReactNode }) {
 
             <div className="sl-root">
 
-                {/* ── Column 1: Left sidebar ──────────────────────────── */}
-                <aside className="sl-sidebar">
+                {/* ── Column 1: Left sidebar — desktop fixed, mobile slide-in drawer */}
+                <aside className={`sl-sidebar${isNavOpen ? ' sl-sidebar--open' : ''}`}>
 
                     {/* ── Top section: logo + merchant info ────────────── */}
                     <div className="sl-top">
@@ -328,8 +332,17 @@ export function Layout({ children }: { children: ReactNode }) {
                     {/* ── Sticky top bar ───────────────────────────────── */}
                     <header className="sl-topbar">
 
-                        {/* Left: Logo on mobile (sidebar hidden) / page title on desktop */}
+                        {/* Left: hamburger (mobile) + Logo / page title */}
                         <div className="sl-topbar-left">
+                            {/* Hamburger — opens the nav drawer on mobile only */}
+                            <button
+                                onClick={() => setIsNavOpen(v => !v)}
+                                className="sl-nav-toggle"
+                                aria-label={isNavOpen ? 'Close navigation' : 'Open navigation'}
+                                aria-expanded={isNavOpen}
+                            >
+                                <IconMenu2 size={18} aria-hidden="true" />
+                            </button>
                             <Link href="/dashboard">
                                 <a className="sl-topbar-logo" aria-label="Cyclo dashboard">
                                     <Logo size={22} wordmarkSize={12} />
@@ -374,6 +387,13 @@ export function Layout({ children }: { children: ReactNode }) {
                         {children}
                     </div>
                 </main>
+
+                {/* Mobile backdrop — closes the nav drawer on tap */}
+                <div
+                    className={`sl-nav-backdrop${isNavOpen ? ' sl-nav-backdrop--open' : ''}`}
+                    onClick={() => setIsNavOpen(false)}
+                    aria-hidden="true"
+                />
 
                 {/* Mobile backdrop — closes the right panel on tap */}
                 <div
