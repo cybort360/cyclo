@@ -20,6 +20,49 @@
 @media (max-width: 767px) {
     /* 4-col KPI grid → 2-col on mobile so each card has breathing room */
     .oc-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+
+    /*
+     * The 2-col grid leaves each card ≈ 108 px of inner content width on a
+     * 375 px phone (card padding 24 → 24 consumed 48 px, gap takes 6 px each
+     * side). At those widths:
+     *   - The 32 px value + "USDC" suffix overflow or force a line break.
+     *   - "vs last month" wraps mid-phrase into two lines.
+     *   - The icon stays vertically centred against a 2-line label, floating
+     *     awkwardly between the two text lines.
+     *
+     * Fixes below address all three.
+     */
+
+    /* Tighter padding → more horizontal space for content */
+    .oc-card { padding: 16px; gap: 8px; }
+
+    /* Icon aligns to top of the label so it sits beside the first line */
+    .oc-top { align-items: flex-start; }
+
+    /* Label line-height lets two-line wrapping breathe */
+    .oc-label { line-height: 1.35; }
+
+    /* Smaller value + suffix so "0.00 USDC" stays on one line */
+    .oc-value  { font-size: 24px; }
+    .oc-suffix { font-size: 11px; }
+
+    /*
+     * Prevent "vs last month" splitting across two lines.
+     * Font knocked down to 10 px so the pill + text fits in ≈ 125 px.
+     */
+    .oc-period {
+        white-space: nowrap;
+        font-size:   10px;
+    }
+
+    /*
+     * Sparkline bleed uses -24 px margins to match the card's 24 px padding.
+     * With padding reduced to 16 px the bleed values must match.
+     */
+    .oc-spark {
+        width:  calc(100% + 32px); /* 16 px bleed on each side */
+        margin: 0 -16px -16px;
+    }
 }
 
 /* ── Card base ───────────────────────────────────────────────────────────────── */
