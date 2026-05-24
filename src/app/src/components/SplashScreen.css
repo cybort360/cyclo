@@ -22,7 +22,12 @@
 /* ── Exit animation ──────────────────────────────────────────────────────────── */
 
 .sp-root--exit {
-    animation: sp-exit 300ms ease-in forwards;
+    animation:      sp-exit 300ms ease-in forwards;
+    /*
+     * Defence-in-depth: if onAnimationEnd is ever delayed, this prevents the
+     * invisible overlay from blocking clicks while the animation is playing.
+     */
+    pointer-events: none;
 }
 
 @keyframes sp-exit {
