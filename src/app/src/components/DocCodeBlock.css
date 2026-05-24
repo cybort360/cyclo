@@ -65,6 +65,13 @@
     padding:    16px;
     overflow-x: auto;
     background: #0d1117;
+    /*
+     * Fallback text colour for the plain-text state before highlight.js loads.
+     * Matches the github-dark theme's base colour (#e6edf3) so the code is
+     * readable even if the CDN is slow or the Solidity grammar hasn't arrived yet.
+     * highlight.js overwrites individual token colours once it runs.
+     */
+    color:      #e6edf3;
     font-size:  13px;
     line-height: 1.6;
 }
