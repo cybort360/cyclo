@@ -1,0 +1,76 @@
+/*
+ * Branded loading screen — shown during initial app hydration.
+ * Class prefix: sp-
+ *
+ * Mounts immediately, exits with a 300ms fade+scale animation,
+ * then removes itself from the DOM.
+ */
+
+/* ── Root overlay ────────────────────────────────────────────────────────────── */
+
+.sp-root {
+    position:        fixed;
+    inset:           0;
+    z-index:         9999;
+    background:      var(--bg-base);
+    display:         flex;
+    align-items:     center;
+    justify-content: center;
+    flex-direction:  column;
+}
+
+/* ── Exit animation ──────────────────────────────────────────────────────────── */
+
+.sp-root--exit {
+    animation: sp-exit 300ms ease-in forwards;
+}
+
+@keyframes sp-exit {
+    from { opacity: 1; transform: scale(1);    }
+    to   { opacity: 0; transform: scale(1.04); }
+}
+
+/* ── Center content ──────────────────────────────────────────────────────────── */
+
+.sp-center {
+    display:        flex;
+    flex-direction: column;
+    align-items:    center;
+}
+
+/* ── Wordmark ────────────────────────────────────────────────────────────────── */
+
+.sp-wordmark {
+    font-size:      14px;
+    font-weight:    700;
+    font-family:    ui-monospace, 'Cascadia Code', Consolas, monospace;
+    letter-spacing: 0.12em;
+    color:          var(--text-primary);
+    margin:         16px 0 0;
+    user-select:    none;
+}
+
+/* ── Loading bar ─────────────────────────────────────────────────────────────── */
+
+.sp-bar-track {
+    width:         120px;
+    height:        2px;
+    background:    var(--accent-light);
+    border-radius: var(--radius-pill);
+    margin-top:    32px;
+    overflow:      hidden;
+    position:      relative;
+}
+
+.sp-bar-fill {
+    height:        100%;
+    border-radius: var(--radius-pill);
+    background:    linear-gradient(90deg, #818CF8 0%, #4F46E5 100%);
+    animation:     sp-loading 1s ease-in-out infinite;
+}
+
+@keyframes sp-loading {
+    0%   { width: 0%;   margin-left: 0%;   }
+    50%  { width: 60%;  margin-left: 20%;  }
+    100% { width: 0%;   margin-left: 100%; }
+}

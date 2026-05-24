@@ -1,6 +1,7 @@
 /**
  * Root component — provider stack, routing, and layout composition.
  */
+import { useState, useEffect } from 'react'
 import { Router, Route, Switch } from 'wouter'
 import { CycloProvider } from '@cyclo/react'
 import { CONTRACT_ADDRESS, USDC_ADDRESS } from './constants/addresses'
@@ -24,6 +25,10 @@ import { PortalPage } from './pages/PortalPage'
 import { ArcEconomicsPage } from './pages/ArcEconomicsPage'
 import { OnboardingPage } from './pages/OnboardingPage'
 import { LandingPage } from './pages/LandingPage'
+import { SplashScreen } from './components/SplashScreen'
+
+/** Minimum time (ms) the splash stays visible, regardless of how fast the app loads. */
+const SPLASH_MIN_MS = 800
 
 function SubscribeRoute({ params }: { params: { planId: string } }) {
     const planId = BigInt(params.planId || '0')
@@ -31,8 +36,20 @@ function SubscribeRoute({ params }: { params: { planId: string } }) {
 }
 
 export default function App() {
+    const [splashVisible, setSplashVisible] = useState(true)
+
+    useEffect(() => {
+        // Wait for both the minimum display time and the current microtask queue
+        // (providers mounted) before revealing the app.
+        const minimumDelay = new Promise<void>(resolve => setTimeout(resolve, SPLASH_MIN_MS))
+        const appReady     = Promise.resolve()
+        void Promise.all([minimumDelay, appReady]).then(() => setSplashVisible(false))
+    }, [])
+
     return (
-        <CycloProvider
+        <>
+            <SplashScreen visible={splashVisible} />
+            <CycloProvider
             contractAddress={CONTRACT_ADDRESS as `0x${string}`}
             usdcAddress={USDC_ADDRESS as `0x${string}`}
         >
@@ -71,5 +88,6 @@ export default function App() {
                 </ToastProvider>
             </MerchantProfileProvider>
         </CycloProvider>
+        </>
     )
 }
