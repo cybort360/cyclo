@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { WebhooksTab } from '../components/WebhooksTab'
+import { AiMagicIcon } from 'hugeicons-react'
 
 const FRAMEWORKS = ['Express.js', 'Next.js', 'Fastify', 'Hono', 'Flask', 'Django', 'Laravel']
 
@@ -28,9 +29,10 @@ export function WebhooksPage() {
   const generateButton = (
     <button
       onClick={() => setShowCodeGen(true)}
-      className="border border-indigo-200 text-indigo-600 px-4 py-2 rounded-lg text-sm font-medium hover:bg-indigo-50"
+      className="inline-flex items-center gap-1.5 border border-indigo-200 text-indigo-600 px-4 py-2 rounded-lg text-sm font-medium hover:bg-indigo-50 whitespace-nowrap"
     >
-      ✦ Generate handler
+      <AiMagicIcon size={14} />
+      Generate handler
     </button>
   )
 
@@ -78,9 +80,9 @@ export function WebhooksPage() {
                 <button
                   onClick={generateCode}
                   disabled={generating || !codeDesc.trim()}
-                  className="w-full bg-indigo-600 text-white py-2.5 rounded-xl text-sm font-medium hover:bg-indigo-700 disabled:opacity-40"
+                  className="w-full inline-flex items-center justify-center gap-2 bg-indigo-600 text-white py-2.5 rounded-xl text-sm font-medium hover:bg-indigo-700 disabled:opacity-40"
                 >
-                  {generating ? 'Generating...' : '✦ Generate code'}
+                  {generating ? 'Generating…' : <><AiMagicIcon size={14} /> Generate code</>}
                 </button>
               </>
             ) : (

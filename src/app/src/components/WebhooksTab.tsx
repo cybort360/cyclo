@@ -3,6 +3,7 @@ import { useAccount } from 'wagmi'
 import { useWebhooks } from '../hooks/useWebhooks'
 import { EmptyState } from './EmptyState'
 import { IconWebhook } from '@tabler/icons-react'
+import { BookOpen01Icon } from 'hugeicons-react'
 
 const EVENT_TYPES = [
   'payment.charged',
@@ -59,18 +60,18 @@ export function WebhooksTab({ actions }: WebhooksTabProps) {
     <div className="space-y-6 mt-4">
 
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-lg font-semibold text-gray-900">Webhooks</h2>
-          <p className="text-sm text-gray-500 mt-0.5">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <div className="min-w-0">
+          <h2 className="text-xl font-semibold text-gray-900 tracking-tight">Webhooks</h2>
+          <p className="text-sm text-gray-500 mt-1 leading-relaxed max-w-sm">
             Receive real-time events in your backend when subscriptions are charged, created, or cancelled.
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-shrink-0">
           {actions}
           <button
             onClick={() => setShowForm(v => !v)}
-            className="bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-indigo-700"
+            className="bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-indigo-700 whitespace-nowrap"
           >
             {showForm ? 'Cancel' : '+ Add endpoint'}
           </button>
@@ -219,7 +220,7 @@ export function WebhooksTab({ actions }: WebhooksTabProps) {
 
       {/* Docs callout */}
       <div className="bg-gray-50 border rounded-xl p-4 flex items-start gap-3">
-        <span className="text-lg">📖</span>
+        <BookOpen01Icon className="text-indigo-500 flex-shrink-0 mt-0.5" size={18} />
         <div>
           <p className="text-sm font-medium text-gray-700">Verifying webhook signatures</p>
           <p className="text-sm text-gray-500 mt-0.5">
