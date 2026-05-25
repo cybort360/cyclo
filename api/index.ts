@@ -1,7 +1,11 @@
 import 'dotenv/config'
+import { readFileSync } from 'fs'
+import { fileURLToPath } from 'url'
+import { resolve } from 'path'
 import { createServer } from 'http'
 import express from 'express'
 import cors from 'cors'
+import { pool } from './db.js'
 import { initIo } from './socket.js'
 import { merchantsRouter } from './routes/merchants.js'
 import { pastDueRouter } from './routes/past-due.js'
@@ -13,6 +17,18 @@ import { subdomainRouter } from './middleware/subdomainRouter.js'
 
 const PORT = 3001
 const FRONTEND_ORIGIN = process.env.FRONTEND_ORIGIN ?? 'http://localhost:5173'
+
+/**
+ * Applies the keeper schema SQL against the connected database.
+ * All statements use CREATE TABLE IF NOT EXISTS so this is safe to run on
+ * every startup — it is a no-op when the schema is already current.
+ */
+async function runMigrations(): Promise<void> {
+    const schemaPath = resolve(fileURLToPath(import.meta.url), '../../keeper/db/schema.sql')
+    const sql = readFileSync(schemaPath, 'utf8')
+    await pool.query(sql)
+    console.log('[migrations] schema applied successfully')
+}
 
 const app = express()
 app.use(cors())
@@ -41,6 +57,14 @@ io.on('connection', (socket) => {
     })
 })
 
-httpServer.listen(PORT, () => {
-    console.log(`API server listening on port ${PORT}`)
+async function main(): Promise<void> {
+    await runMigrations()
+    httpServer.listen(PORT, () => {
+        console.log(`API server listening on port ${PORT}`)
+    })
+}
+
+main().catch((err) => {
+    console.error('[startup] fatal error:', err)
+    process.exit(1)
 })
