@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useAccount, useSignMessage } from 'wagmi'
+import { API_BASE } from '../utils/apiBase'
 
 export interface Webhook {
   id: string
@@ -17,7 +18,7 @@ export function useWebhooks() {
 
   const fetchWebhooks = useCallback(async () => {
     if (!address) return
-    const res = await fetch(`/api/merchants/${address}/webhooks`)
+    const res = await fetch(`${API_BASE}/api/merchants/${address}/webhooks`)
     if (res.ok) setWebhooks(await res.json())
   }, [address])
 
@@ -35,7 +36,7 @@ export function useWebhooks() {
     setLoading(true)
     try {
       const { signature, timestamp } = await buildSignature()
-      const res = await fetch(`/api/merchants/${address}/webhooks`, {
+      const res = await fetch(`${API_BASE}/api/merchants/${address}/webhooks`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ signature, timestamp, planId, url, secret }),
@@ -52,7 +53,7 @@ export function useWebhooks() {
     setLoading(true)
     try {
       const { signature, timestamp } = await buildSignature()
-      await fetch(`/api/merchants/${address}/webhooks/${id}`, {
+      await fetch(`${API_BASE}/api/merchants/${address}/webhooks/${id}`, {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ signature, timestamp }),

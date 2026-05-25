@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useAccount } from 'wagmi'
+import { API_BASE } from '../utils/apiBase'
 
 export function InsightsCard() {
   const { address } = useAccount()
@@ -9,7 +10,7 @@ export function InsightsCard() {
   useEffect(() => {
     if (!address) return
     setLoading(true)
-    fetch('/api/ai/insights', {
+    fetch(`${API_BASE}/api/ai/insights`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ walletAddress: address }),

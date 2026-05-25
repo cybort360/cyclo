@@ -10,6 +10,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { useAccount } from 'wagmi'
 import './AIChatPanel.css'
+import { API_BASE } from '../utils/apiBase'
 
 interface Message {
     role:    'user' | 'assistant'
@@ -45,7 +46,7 @@ export function AIChatPanel({ onClose }: { onClose: () => void }) {
         setLoading(true)
 
         try {
-            const res  = await fetch('/api/ai/chat', {
+            const res  = await fetch(`${API_BASE}/api/ai/chat`, {
                 method:  'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body:    JSON.stringify({

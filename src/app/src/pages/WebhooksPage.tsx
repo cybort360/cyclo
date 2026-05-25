@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { WebhooksTab } from '../components/WebhooksTab'
 import { AiMagicIcon } from 'hugeicons-react'
+import { API_BASE } from '../utils/apiBase'
 
 const FRAMEWORKS = ['Express.js', 'Next.js', 'Fastify', 'Hono', 'Flask', 'Django', 'Laravel']
 
@@ -14,7 +15,7 @@ export function WebhooksPage() {
   const generateCode = async () => {
     setGenerating(true)
     try {
-      const res = await fetch('/api/ai/webhook-code', {
+      const res = await fetch(`${API_BASE}/api/ai/webhook-code`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ description: codeDesc, framework }),

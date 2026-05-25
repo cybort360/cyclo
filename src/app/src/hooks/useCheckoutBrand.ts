@@ -8,6 +8,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { fromUsdcUnits, intervalToLabel } from '../utils/formatting'
 import type { PlanStruct } from './useSubscriptionManager'
+import { API_BASE } from '../utils/apiBase'
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
@@ -30,7 +31,7 @@ export function useCheckoutBrand(planId: bigint): { brand: CheckoutBrand | null;
     const [loading, setLoading] = useState(true)
 
     useEffect(() => {
-        fetch(`/api/checkout-brand?planId=${planId.toString()}`)
+        fetch(`${API_BASE}/api/checkout-brand?planId=${planId.toString()}`)
             .then(r => r.ok ? (r.json() as Promise<CheckoutBrand>) : null)
             .then(data => setBrand(data))
             .catch(() => setBrand(null))

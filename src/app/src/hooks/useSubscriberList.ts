@@ -20,6 +20,7 @@ import { useQuery } from '@tanstack/react-query'
 import { useAccount, usePublicClient } from 'wagmi'
 import { SUBSCRIPTION_MANAGER_ABI } from '../constants/abis'
 import { CONTRACT_ADDRESS, DEPLOY_BLOCK } from '../constants/addresses'
+import { API_BASE } from '../utils/apiBase'
 
 type Address = `0x${string}`
 
@@ -44,7 +45,7 @@ interface PastDueApiItem {
 
 async function fetchPastDue(address: string): Promise<PastDueApiItem[]> {
     try {
-        const res = await fetch(`/api/merchants/${address}/past-due`)
+        const res = await fetch(`${API_BASE}/api/merchants/${address}/past-due`)
         if (!res.ok) return []
         return res.json() as Promise<PastDueApiItem[]>
     } catch {

@@ -8,6 +8,7 @@
  */
 import { useState, useEffect, useCallback } from 'react'
 import { useAccount } from 'wagmi'
+import { API_BASE } from '../utils/apiBase'
 
 const POLL_INTERVAL_MS = 60_000
 
@@ -18,7 +19,7 @@ export function usePastDueCount(): number {
     const fetchCount = useCallback(async () => {
         if (!address) return
         try {
-            const res = await fetch(`/api/merchants/${address.toLowerCase()}/past-due/count`)
+            const res = await fetch(`${API_BASE}/api/merchants/${address.toLowerCase()}/past-due/count`)
             if (!res.ok) return
             const data = await res.json() as { count: number }
             setCount(data.count)

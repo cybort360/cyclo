@@ -13,6 +13,7 @@
  */
 import { useState, useEffect, useCallback } from 'react'
 import { useAccount } from 'wagmi'
+import { API_BASE } from '../utils/apiBase'
 
 interface PastDueListItem {
     amount: string  // human-readable USDC, e.g. "9.99"
@@ -36,7 +37,7 @@ export function useAtRiskRevenue(): AtRiskRevenue {
             return
         }
         try {
-            const res = await fetch(`/api/merchants/${address.toLowerCase()}/past-due`)
+            const res = await fetch(`${API_BASE}/api/merchants/${address.toLowerCase()}/past-due`)
             if (!res.ok) return
             const items = await res.json() as PastDueListItem[]
             setCount(items.length)

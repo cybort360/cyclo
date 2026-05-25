@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect, type ReactNode } from 'react'
 import { useAccount, useSignMessage } from 'wagmi'
+import { API_BASE } from '../utils/apiBase'
 
 export interface MerchantProfile {
   wallet_address:   string
@@ -41,7 +42,7 @@ export function MerchantProfileProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     if (!address) { setProfile(null); return }
-    fetch(`/api/merchants/${address}`)
+    fetch(`${API_BASE}/api/merchants/${address}`)
       .then(r => r.ok ? r.json() : null)
       .then(data => setProfile(data))
       .catch(() => setProfile(null))
@@ -55,7 +56,7 @@ export function MerchantProfileProvider({ children }: { children: ReactNode }) {
       const message   = buildSignMessage(address, timestamp)
       const signature = await signMessageAsync({ message })
 
-      const res = await fetch('/api/merchants', {
+      const res = await fetch(`${API_BASE}/api/merchants`, {
         method:  'POST',
         headers: { 'Content-Type': 'application/json' },
         body:    JSON.stringify({ address, signature, timestamp, businessName, email, logoUrl }),
@@ -82,7 +83,7 @@ export function MerchantProfileProvider({ children }: { children: ReactNode }) {
       const message   = buildSignMessage(address, timestamp)
       const signature = await signMessageAsync({ message })
 
-      const res = await fetch(`/api/merchants/${address}`, {
+      const res = await fetch(`${API_BASE}/api/merchants/${address}`, {
         method:  'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body:    JSON.stringify({

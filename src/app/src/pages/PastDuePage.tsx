@@ -13,6 +13,7 @@ import { PastDueDrawer } from '../components/PastDueDrawer'
 import { useRightPanel } from '../context/RightPanelContext'
 import { PastDuePanel } from '../components/PastDuePanel'
 import './PastDuePage.css'
+import { API_BASE } from '../utils/apiBase'
 
 // ── API shape ─────────────────────────────────────────────────────────────────
 
@@ -63,7 +64,7 @@ function usePastDue(): FetchState {
 
     const fetchItems = useCallback(async (): Promise<PastDueItem[]> => {
         if (!address) return []
-        const res = await fetch(`/api/merchants/${address.toLowerCase()}/past-due`)
+        const res = await fetch(`${API_BASE}/api/merchants/${address.toLowerCase()}/past-due`)
         if (!res.ok) throw new Error(`Server error: ${res.status}`)
         return res.json() as Promise<PastDueItem[]>
     }, [address])

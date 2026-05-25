@@ -9,6 +9,7 @@ import { useState, useEffect } from 'react'
 import { useAccount } from 'wagmi'
 import './PanelShared.css'
 import './PastDuePanel.css'
+import { API_BASE } from '../utils/apiBase'
 
 // ── Type (mirrors PastDuePage.PastDueItem to avoid circular import) ────────────
 
@@ -81,7 +82,7 @@ export function PastDuePanel() {
 
     useEffect(() => {
         if (!address) return
-        fetch(`/api/merchants/${address.toLowerCase()}/past-due`)
+        fetch(`${API_BASE}/api/merchants/${address.toLowerCase()}/past-due`)
             .then(r => (r.ok ? r.json() as Promise<PastDueItem[]> : []))
             .then(setItems)
             .catch(() => {})

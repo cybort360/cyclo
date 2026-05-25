@@ -13,6 +13,7 @@
 import { useState, useEffect, type FormEvent } from 'react'
 import { toUsdcUnits, INTERVAL_WEEKLY, INTERVAL_MONTHLY, INTERVAL_YEARLY } from '../utils/formatting'
 import './CreatePlanForm.css'
+import { API_BASE } from '../utils/apiBase'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -73,7 +74,7 @@ export function CreatePlanForm({ isPending, onCreate, initialValues }: CreatePla
         if (!nlInput.trim()) return
         setParsing(true)
         try {
-            const res  = await fetch('/api/ai/parse-plan', {
+            const res  = await fetch(`${API_BASE}/api/ai/parse-plan`, {
                 method:  'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body:    JSON.stringify({ input: nlInput }),

@@ -6,6 +6,7 @@
  *   value (e.g. 30_000) to enable periodic background refreshes.
  */
 import { useState, useEffect, useCallback } from 'react'
+import { API_BASE } from '../utils/apiBase'
 
 export interface ProtocolStats {
     totalPlans:          number
@@ -38,7 +39,7 @@ export function useProtocolStats(
 
     const fetchStats = useCallback(async () => {
         try {
-            const res = await fetch('/api/stats')
+            const res = await fetch(`${API_BASE}/api/stats`)
             if (!res.ok) throw new Error(`Server error: ${res.status}`)
             const data = await res.json() as ProtocolStats
             setStats(data)
