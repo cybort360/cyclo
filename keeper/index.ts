@@ -9,7 +9,6 @@
 
 import dotenv from 'dotenv';
 import { readFileSync } from 'fs';
-import { join } from 'path';
 import { Contract, JsonRpcProvider, Wallet } from 'ethers';
 import { logger } from './logger.js';
 import { Scheduler } from './scheduler.js';
@@ -22,7 +21,7 @@ dotenv.config();
 
 const artifact = JSON.parse(
     readFileSync(
-        join(process.cwd(), 'out/SubscriptionManager.sol/SubscriptionManager.json'),
+        new URL('./abi/SubscriptionManager.json', import.meta.url),
         'utf-8'
     )
 );
