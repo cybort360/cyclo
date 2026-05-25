@@ -171,7 +171,13 @@ export function CheckoutCard({ planId, contractAddress, usdcAddress }: CheckoutC
             )}
 
             <div style={{ fontSize: '13px', color: '#6b6375' }}>
-                Merchant: <code style={{ fontSize: '12px' }}>{plan!.merchant}</code>
+                Merchant:{' '}
+                <code
+                    title={plan!.merchant}
+                    style={{ fontSize: '12px' }}
+                >
+                    {plan!.merchant.slice(0, 6)}…{plan!.merchant.slice(-4)}
+                </code>
             </div>
 
             {!plan!.active && (
