@@ -12,7 +12,8 @@
  */
 import { useState, useEffect, useRef, type FormEvent } from 'react'
 import { useConfig } from 'wagmi'
-import { getWalletClient } from '@wagmi/core'
+import { getWalletClient, switchChain } from '@wagmi/core'
+import { arcTestnet } from '../wagmi'
 import { ConnectButton }   from './WalletStatus'
 import { fromUsdcUnits }  from '../utils/formatting'
 import { useCycloClient } from '@cyclo/react'
@@ -121,9 +122,10 @@ export function CreatePlanStepContent({ onSuccess }: CreatePlanStepContentProps)
         setError(null)
         setIsPending(true)
         try {
-            // Fetch walletClient imperatively so it's always current regardless
-            // of whether useWalletClient() has resolved in CycloProvider yet.
-            const wc = await getWalletClient(wagmiConfig)
+            // Switch to Arc Testnet (no-op if already there), then fetch a
+            // fresh WalletClient bound to that chain.
+            await switchChain(wagmiConfig, { chainId: arcTestnet.id })
+            const wc = await getWalletClient(wagmiConfig, { chainId: arcTestnet.id })
             cyclo.setWalletClient(wc)
 
             // parseFloat is safe: step="0.01" constrains price to 2 decimal places,

@@ -5,9 +5,10 @@
  */
 import { useState } from 'react';
 import { useAccount, usePublicClient, useReadContract, useReadContracts, useConfig } from 'wagmi';
-import { getWalletClient } from '@wagmi/core';
+import { getWalletClient, switchChain } from '@wagmi/core';
 import { useQuery } from '@tanstack/react-query';
 import { useCycloClient } from '@cyclo/react';
+import { arcTestnet } from '../wagmi';
 import { SUBSCRIPTION_MANAGER_ABI, USDC_ABI } from '../constants/abis';
 import { CONTRACT_ADDRESS, DEPLOY_BLOCK, USDC_ADDRESS } from '../constants/addresses';
 
@@ -128,12 +129,16 @@ export function useSubscriptionManager() {
     const [pendingPlanId, setPendingPlanId] = useState<bigint | null>(null);
 
     /**
-     * Fetches the current WalletClient imperatively at write time.
-     * This is more reliable than relying on useWalletClient() hook state,
-     * which may not have resolved yet when the user triggers a write.
+     * Ensures the wallet is on Arc Testnet and injects a fresh WalletClient
+     * into the CycloClient before any write operation.
+     *
+     * Calling switchChain first guarantees the chain matches the target,
+     * preventing viem's "chain mismatch" error. If the wallet is already on
+     * Arc Testnet the switch is a no-op (no popup shown to the user).
      */
     async function ensureWallet(): Promise<void> {
-        const wc = await getWalletClient(wagmiConfig);
+        await switchChain(wagmiConfig, { chainId: arcTestnet.id });
+        const wc = await getWalletClient(wagmiConfig, { chainId: arcTestnet.id });
         cyclo.setWalletClient(wc);
     }
 
