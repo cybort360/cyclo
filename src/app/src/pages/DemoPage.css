@@ -9,11 +9,12 @@
 /* ── Root ─────────────────────────────────────────────────────────────────── */
 
 .dm-root {
+    width:       100%;
+    max-width:   100vw;   /* never wider than the viewport */
     min-height:  100vh;
     background:  #fff;
     font-family: system-ui, -apple-system, sans-serif;
     color:       #111827;
-    /* Prevent any sub-pixel or fixed-width element from creating a sideways scroll */
     overflow-x:  hidden;
 }
 
@@ -84,6 +85,7 @@
     align-items: center;
     gap:         16px;
     flex-shrink: 0;
+    min-width:   0;  /* let it compress instead of pushing the nav wider */
 }
 
 .dm-nav-back {
@@ -144,7 +146,7 @@
     font-size:   18px;
     color:       #6b7280;
     margin:      0 auto 36px;
-    max-width:   480px;
+    max-width:   min(480px, 100%);  /* shrinks gracefully on narrow viewports */
     line-height: 1.65;
 }
 
@@ -195,6 +197,14 @@
     display:               grid;
     grid-template-columns: 1fr 1fr;
     gap:                   20px;
+}
+
+/* Prevent grid children from expanding the track beyond the container.
+   By default grid items have min-width: auto (= their content width),
+   which can push the grid wider than 100% of its parent. */
+.dm-features-grid > *,
+.dm-pricing-grid > * {
+    min-width: 0;
 }
 
 .dm-feature-card {

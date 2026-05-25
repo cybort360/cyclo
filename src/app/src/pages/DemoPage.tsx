@@ -5,7 +5,7 @@
  *
  * Class prefix: dm-   Styles: DemoPage.css   Icons: hugeicons-react
  */
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import {
     FlashIcon,
     AnalyticsUpIcon,
@@ -112,6 +112,20 @@ function PlanCard({ name, price, sub, features, featured, cta, onCta, children }
 
 export function DemoPage() {
     const [billingOpen, setBillingOpen] = useState(false)
+
+    // Prevent the document body from growing wider than the viewport while
+    // this page is mounted. overflow-x: hidden on .dm-root alone isn't enough
+    // because the browser still allows the document itself to scroll sideways
+    // if any element expands beyond 100vw. Resetting on unmount avoids leaking
+    // the style into other routes.
+    useEffect(() => {
+        document.documentElement.style.overflowX = 'hidden'
+        document.body.style.overflowX = 'hidden'
+        return () => {
+            document.documentElement.style.overflowX = ''
+            document.body.style.overflowX = ''
+        }
+    }, [])
 
     return (
         <div className="dm-root">
