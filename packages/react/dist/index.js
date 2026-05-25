@@ -1,5 +1,5 @@
 // src/context.tsx
-import { createContext, useContext, useRef } from "react";
+import { createContext, useContext, useRef, useEffect } from "react";
 import { usePublicClient, useWalletClient } from "wagmi";
 import { CycloClient } from "@cyclo/sdk";
 import { jsx } from "react/jsx-runtime";
@@ -8,17 +8,18 @@ function CycloProvider({ contractAddress, usdcAddress, children }) {
   const publicClient = usePublicClient();
   const { data: walletClient } = useWalletClient();
   const clientRef = useRef(null);
-  if (!publicClient) return null;
-  if (!clientRef.current) {
+  if (publicClient && !clientRef.current) {
     clientRef.current = new CycloClient({
       contractAddress,
       usdcAddress,
-      publicClient,
-      walletClient: walletClient ?? void 0
+      publicClient
     });
-  } else {
-    if (walletClient) clientRef.current.setWalletClient(walletClient);
   }
+  useEffect(() => {
+    if (!clientRef.current || !walletClient) return;
+    clientRef.current.setWalletClient(walletClient);
+  }, [walletClient]);
+  if (!publicClient || !clientRef.current) return null;
   return /* @__PURE__ */ jsx(CycloContext.Provider, { value: clientRef.current, children });
 }
 function useCycloClient() {
@@ -102,7 +103,7 @@ function useMigratePlan() {
 }
 
 // src/hooks/useIsSubscribed.ts
-import { useEffect } from "react";
+import { useEffect as useEffect2 } from "react";
 import { useQuery as useQuery3, useQueryClient as useQueryClient5 } from "@tanstack/react-query";
 var DISABLED_RESULT = {
   isSubscribed: false,
@@ -125,7 +126,7 @@ function useIsSubscribed(subscriber, planId) {
     },
     enabled
   });
-  useEffect(() => {
+  useEffect2(() => {
     if (!subscriber || planId === void 0) return;
     const sub = subscriber;
     const plan = planId;

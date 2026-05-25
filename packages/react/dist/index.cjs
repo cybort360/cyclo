@@ -42,17 +42,18 @@ function CycloProvider({ contractAddress, usdcAddress, children }) {
   const publicClient = (0, import_wagmi.usePublicClient)();
   const { data: walletClient } = (0, import_wagmi.useWalletClient)();
   const clientRef = (0, import_react.useRef)(null);
-  if (!publicClient) return null;
-  if (!clientRef.current) {
+  if (publicClient && !clientRef.current) {
     clientRef.current = new import_sdk.CycloClient({
       contractAddress,
       usdcAddress,
-      publicClient,
-      walletClient: walletClient ?? void 0
+      publicClient
     });
-  } else {
-    if (walletClient) clientRef.current.setWalletClient(walletClient);
   }
+  (0, import_react.useEffect)(() => {
+    if (!clientRef.current || !walletClient) return;
+    clientRef.current.setWalletClient(walletClient);
+  }, [walletClient]);
+  if (!publicClient || !clientRef.current) return null;
   return /* @__PURE__ */ (0, import_jsx_runtime.jsx)(CycloContext.Provider, { value: clientRef.current, children });
 }
 function useCycloClient() {
