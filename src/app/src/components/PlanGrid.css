@@ -236,6 +236,21 @@
     line-height: 1.5;
 }
 
+.plg-empty-cta {
+    display:     inline-block;
+    font-size:   13px;
+    font-weight: 500;
+    color:       var(--accent);
+    background:  transparent;
+    border:      none;
+    cursor:      pointer;
+    padding:     0;
+    line-height: 1.5;
+    transition:  opacity 150ms ease;
+}
+
+.plg-empty-cta:hover { opacity: 0.75; }
+
 .plg-skeleton-card {
     background:    var(--bg-surface);
     border:        0.5px solid var(--bg-border);

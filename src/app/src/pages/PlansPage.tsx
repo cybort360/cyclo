@@ -8,6 +8,7 @@
  * Class prefix: plp-
  */
 import { useState, useEffect, useRef, useMemo } from 'react'
+import { createPortal } from 'react-dom'
 import { IconPlus, IconX } from '@tabler/icons-react'
 import { useSubscriptionManager } from '../hooks/useSubscriptionManager'
 import { PlanGrid } from '../components/PlanGrid'
@@ -95,7 +96,10 @@ export function PlansPage() {
             />
 
             {/* ── Create plan modal ──────────────────────────── */}
-            {showCreate && (
+            {/* Rendered via a Portal into document.body so the overlay always
+                escapes any parent stacking context (transforms, overflow, etc.)
+                and covers the full viewport at z-index 200. */}
+            {showCreate && createPortal(
                 <div
                     className="plp-overlay"
                     ref={overlayRef}
@@ -122,7 +126,8 @@ export function PlansPage() {
                             initialValues={formValues}
                         />
                     </div>
-                </div>
+                </div>,
+                document.body
             )}
         </div>
     )

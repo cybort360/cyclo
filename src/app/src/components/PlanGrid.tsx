@@ -216,7 +216,7 @@ export function PlanGrid({
                 <p className="plg-empty-sub">
                     Create your first subscription plan to start accepting recurring USDC payments.
                 </p>
-                <button className="plg-kebab-btn" onClick={onCreatePlan} style={{ color: 'var(--accent)', fontSize: 13 }}>
+                <button className="plg-empty-cta" onClick={onCreatePlan}>
                     Create your first plan →
                 </button>
             </div>
