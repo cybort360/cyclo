@@ -11,6 +11,8 @@
  * CSS: onb- classes from OnboardingPage.css (loaded by parent OnboardingPage.tsx).
  */
 import { useState, useEffect, useRef, type FormEvent } from 'react'
+import { useConfig } from 'wagmi'
+import { getWalletClient } from '@wagmi/core'
 import { ConnectButton }   from './WalletStatus'
 import { fromUsdcUnits }  from '../utils/formatting'
 import { useCycloClient } from '@cyclo/react'
@@ -111,13 +113,19 @@ export function CreatePlanStepContent({ onSuccess }: CreatePlanStepContentProps)
     const [isPending, setIsPending] = useState(false)
     const [error,     setError]     = useState<string | null>(null)
 
-    const cyclo = useCycloClient()
+    const cyclo       = useCycloClient()
+    const wagmiConfig = useConfig()
 
     async function handleSubmit(e: FormEvent): Promise<void> {
         e.preventDefault()
         setError(null)
         setIsPending(true)
         try {
+            // Fetch walletClient imperatively so it's always current regardless
+            // of whether useWalletClient() has resolved in CycloProvider yet.
+            const wc = await getWalletClient(wagmiConfig)
+            cyclo.setWalletClient(wc)
+
             // parseFloat is safe: step="0.01" constrains price to 2 decimal places,
             // which Math.round(x * 1_000_000) handles without precision loss.
             const id = await cyclo.createPlan({

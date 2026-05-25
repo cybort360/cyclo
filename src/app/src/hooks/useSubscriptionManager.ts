@@ -4,7 +4,8 @@
  * event-log reads use viem directly (the SDK does not yet expose historical event fetching).
  */
 import { useState } from 'react';
-import { useAccount, usePublicClient, useReadContract, useReadContracts } from 'wagmi';
+import { useAccount, usePublicClient, useReadContract, useReadContracts, useConfig } from 'wagmi';
+import { getWalletClient } from '@wagmi/core';
 import { useQuery } from '@tanstack/react-query';
 import { useCycloClient } from '@cyclo/react';
 import { SUBSCRIPTION_MANAGER_ABI, USDC_ABI } from '../constants/abis';
@@ -122,8 +123,19 @@ function usePlanStatuses(planIds: bigint[]) {
 export function useSubscriptionManager() {
     const { address }  = useAccount();
     const cyclo        = useCycloClient();
+    const wagmiConfig  = useConfig();
     const [isPending,    setIsPending]    = useState(false);
     const [pendingPlanId, setPendingPlanId] = useState<bigint | null>(null);
+
+    /**
+     * Fetches the current WalletClient imperatively at write time.
+     * This is more reliable than relying on useWalletClient() hook state,
+     * which may not have resolved yet when the user triggers a write.
+     */
+    async function ensureWallet(): Promise<void> {
+        const wc = await getWalletClient(wagmiConfig);
+        cyclo.setWalletClient(wc);
+    }
 
     const usdcBalance       = useUsdcBalance(address);
     const planEvents        = usePlanEvents(address);
@@ -143,6 +155,7 @@ export function useSubscriptionManager() {
     });
 
     async function createPlan(price: bigint, interval: bigint, trialDuration: bigint): Promise<void> {
+        await ensureWallet();
         setIsPending(true);
         try {
             await cyclo.createPlan({
@@ -157,6 +170,7 @@ export function useSubscriptionManager() {
     }
 
     async function deactivatePlan(planId: bigint): Promise<void> {
+        await ensureWallet();
         setPendingPlanId(planId);
         try {
             await cyclo.deactivatePlan(planId);
@@ -167,6 +181,7 @@ export function useSubscriptionManager() {
     }
 
     async function subscribeToPlan(planId: bigint, onBroadcast?: () => void): Promise<void> {
+        await ensureWallet();
         setIsPending(true);
         try {
             await cyclo.subscribe(planId, onBroadcast);
@@ -176,6 +191,7 @@ export function useSubscriptionManager() {
     }
 
     async function cancelSubscription(planId: bigint): Promise<void> {
+        await ensureWallet();
         setIsPending(true);
         try {
             await cyclo.cancelSubscription(planId);
@@ -185,6 +201,7 @@ export function useSubscriptionManager() {
     }
 
     async function migratePlan(currentPlanId: bigint, newPlanId: bigint): Promise<void> {
+        await ensureWallet();
         setIsPending(true);
         try {
             await cyclo.migratePlan(currentPlanId, newPlanId);
