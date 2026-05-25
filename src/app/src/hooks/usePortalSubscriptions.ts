@@ -155,40 +155,34 @@ export function usePortalSubscriptions() {
             const activePlanIds = deriveActivePlanIds(allEvents)
             if (activePlanIds.length === 0) return []
 
-            // ── 3. Batch-read subscription struct + plan in one multicall ─────
-            // Interleave: [sub_0, plan_0, sub_1, plan_1, ...]
-            const reads = await publicClient!.multicall({
-                contracts: activePlanIds.flatMap(planId => [
-                    {
-                        address:      CONTRACT_ADDRESS as Address,
-                        abi:          SUBSCRIPTION_MANAGER_ABI,
-                        functionName: 'getSubscription' as const,
-                        args:         [planId, address as Address] as const,
-                    },
-                    {
-                        address:      CONTRACT_ADDRESS as Address,
-                        abi:          SUBSCRIPTION_MANAGER_ABI,
-                        functionName: 'getPlan' as const,
-                        args:         [planId] as const,
-                    },
-                ]),
-            })
+            // ── 3. Read subscription struct + plan for each active planId ────
+            // Arc Testnet does not have Multicall3, so we fire individual
+            // eth_call requests in parallel via Promise.all instead.
+            const pairs = await Promise.all(
+                activePlanIds.map(async planId => {
+                    const [sub, plan] = await Promise.all([
+                        publicClient!.readContract({
+                            address:      CONTRACT_ADDRESS as Address,
+                            abi:          SUBSCRIPTION_MANAGER_ABI,
+                            functionName: 'getSubscription',
+                            args:         [planId, address as Address],
+                        }) as Promise<RawSub>,
+                        publicClient!.readContract({
+                            address:      CONTRACT_ADDRESS as Address,
+                            abi:          SUBSCRIPTION_MANAGER_ABI,
+                            functionName: 'getPlan',
+                            args:         [planId],
+                        }) as Promise<RawPlan>,
+                    ])
+                    return { planId, sub, plan }
+                })
+            )
 
             // ── 4. Build typed result array ───────────────────────────────────
             const now = BigInt(Math.floor(Date.now() / 1000))
             const result: PortalSubscription[] = []
 
-            for (let i = 0; i < activePlanIds.length; i++) {
-                const subRead  = reads[i * 2]
-                const planRead = reads[i * 2 + 1]
-
-                // Skip if either call reverted (e.g. plan was erased — should not happen
-                // given the contract never deletes plan storage, but guard defensively).
-                if (subRead.status !== 'success' || planRead.status !== 'success') continue
-
-                const sub  = subRead.result  as RawSub
-                const plan = planRead.result as RawPlan
-
+            for (const { planId, sub, plan } of pairs) {
                 // Cross-check: event derivation is the primary source of truth, but
                 // if the struct says inactive (e.g. a cancel that post-dates our last
                 // indexed event), trust the struct.
@@ -201,7 +195,7 @@ export function usePortalSubscriptions() {
                 const isInTrial = trialDuration > 0n && nextCharge > now
 
                 result.push({
-                    planId: activePlanIds[i],
+                    planId,
                     plan: {
                         price:         plan.price,
                         interval:      plan.interval,

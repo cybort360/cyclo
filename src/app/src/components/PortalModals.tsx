@@ -131,21 +131,23 @@ export function SwitchPlanModal({ subscription, isPending, onConfirm, onDismiss 
             }
             if (planIds.length === 0) return []
 
-            const reads = await publicClient!.multicall({
-                contracts: planIds.map(planId => ({
-                    address:      CONTRACT_ADDRESS as Address,
-                    abi:          SUBSCRIPTION_MANAGER_ABI,
-                    functionName: 'getPlan' as const,
-                    args:         [planId] as const,
-                })),
-            })
+            // Arc Testnet does not have Multicall3 — use individual readContract
+            // calls in parallel instead.
+            const planResults = await Promise.all(
+                planIds.map(planId =>
+                    publicClient!.readContract({
+                        address:      CONTRACT_ADDRESS as Address,
+                        abi:          SUBSCRIPTION_MANAGER_ABI,
+                        functionName: 'getPlan',
+                        args:         [planId],
+                    }) as Promise<RawPlan>
+                )
+            )
 
             const result: AlternatePlan[] = []
             for (let i = 0; i < planIds.length; i++) {
-                const read = reads[i]
-                if (read.status !== 'success' || !read.result) continue
-                const plan = read.result as RawPlan
-                if (!plan.active) continue
+                const plan = planResults[i]
+                if (!plan || !plan.active) continue
                 result.push({ planId: planIds[i]!, price: plan.price, interval: plan.interval, trialDuration: BigInt(plan.trialDuration) })
             }
             return result

@@ -31,4 +31,8 @@ export const wagmiConfig = createConfig({
     transports: {
         [arcTestnet.id]: http('/rpc'),
     },
+    // Arc Testnet does not have the Multicall3 contract deployed at the
+    // standard address. Disabling multicall batching globally causes wagmi
+    // and viem to fall back to individual eth_call requests instead.
+    batch: { multicall: false },
 });
