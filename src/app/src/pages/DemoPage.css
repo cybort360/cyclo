@@ -13,6 +13,8 @@
     background:  #fff;
     font-family: system-ui, -apple-system, sans-serif;
     color:       #111827;
+    /* Prevent any sub-pixel or fixed-width element from creating a sideways scroll */
+    overflow-x:  hidden;
 }
 
 /* ── Nav ──────────────────────────────────────────────────────────────────── */
@@ -420,28 +422,39 @@
 
 .dm-footer-link:hover { color: #6b7280; }
 
-/* ── Mobile ───────────────────────────────────────────────────────────────── */
+/* ── Responsive — three tiers ─────────────────────────────────────────────── */
 
+/*
+ * ≤ 900px  Tablet / large phone landscape
+ *   Pricing folds to 1 column; 3 cards at ≤900 px are ~227 px each — too narrow
+ *   for "Start 7-day free trial" and the feature list. Collapse early.
+ *   Nav tightens its horizontal padding.
+ */
+@media (max-width: 900px) {
+    .dm-nav-inner    { padding: 0 20px; gap: 12px; }
+    .dm-nav-links    { gap: 20px; }
+    .dm-pricing-grid { grid-template-columns: 1fr; }
+}
+
+/*
+ * ≤ 767px  Phone portrait / small tablet
+ *   Hide nav center links and back-link so only brand + sign-in show.
+ *   Features collapse to 1 column. Typography scales down. Footer stacks.
+ */
 @media (max-width: 767px) {
-    /* Nav: hide center links, keep brand + sign-in */
     .dm-nav-links { display: none; }
     .dm-nav-back  { display: none; }
 
-    /* Hero: scale down typography */
     .dm-hero          { padding: 72px 20px 48px; }
     .dm-hero-h1       { font-size: 34px; }
-    .dm-hero-sub      { font-size: 16px; }
+    .dm-hero-sub      { font-size: 16px; max-width: 100%; }
 
-    /* Features: single column */
     .dm-features      { padding: 0 20px 64px; }
     .dm-features-grid { grid-template-columns: 1fr; }
 
-    /* Pricing: single column, stacked */
     .dm-pricing       { padding: 60px 20px; }
-    .dm-pricing-grid  { grid-template-columns: 1fr; }
     .dm-pricing-hd h2 { font-size: 24px; }
 
-    /* Footer: stack */
     .dm-footer-inner {
         flex-direction: column;
         align-items:    flex-start;
@@ -449,10 +462,23 @@
     }
 }
 
+/*
+ * ≤ 480px  Small phones (iPhone SE, Galaxy A series)
+ *   Headline drops to 28 px. Buttons stack full-width so neither wraps mid-word.
+ */
 @media (max-width: 480px) {
-    .dm-hero-h1  { font-size: 28px; }
-    .dm-hero-sub { font-size: 15px; }
-    .dm-hero-btns { flex-direction: column; }
+    .dm-hero          { padding: 64px 16px 40px; }
+    .dm-hero-h1       { font-size: 28px; }
+    .dm-hero-sub      { font-size: 15px; }
+    .dm-hero-btns     { flex-direction: column; }
     .dm-hero-btn-primary,
     .dm-hero-btn-secondary { width: 100%; }
+
+    .dm-features      { padding: 0 16px 56px; }
+    .dm-feature-card  { padding: 20px; }
+
+    .dm-pricing       { padding: 48px 16px; }
+    .dm-plan-card     { padding: 20px; }
+
+    .dm-footer        { padding: 20px 16px; }
 }
