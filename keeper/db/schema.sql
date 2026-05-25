@@ -16,6 +16,8 @@ CREATE TABLE IF NOT EXISTS subscriptions (
     failed_at               BIGINT,
     retry_count             INTEGER NOT NULL DEFAULT 0,
     last_retry              BIGINT,
+    next_retry_at           BIGINT,
+    failure_reason          TEXT,
     created_at              TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at              TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     PRIMARY KEY (plan_id, subscriber)
