@@ -254,16 +254,22 @@ merchantsRouter.patch('/:address', async (req: Request, res: Response): Promise<
     })
     if (brandErr) { res.status(400).json({ error: brandErr }); return }
 
-    // Only update the four brand columns; business_name / email are unchanged.
+    // Upsert: insert a stub row if none exists, then update brand columns.
+    // business_name / email default to '' on the insert path so the NOT NULL
+    // constraint is satisfied; they are never overwritten on conflict.
     // Empty string is stored as NULL so callers can clear fields by sending ''.
     const result = await pool.query(
-        `UPDATE merchant_profiles
-         SET brand_name       = $2,
-             brand_logo_url   = $3,
-             brand_color      = $4,
-             custom_subdomain = $5,
+        `INSERT INTO merchant_profiles
+             (wallet_address, business_name, email,
+              brand_name, brand_logo_url, brand_color, custom_subdomain,
+              updated_at)
+         VALUES ($1, '', '', $2, $3, $4, $5, NOW())
+         ON CONFLICT (wallet_address) DO UPDATE SET
+             brand_name       = EXCLUDED.brand_name,
+             brand_logo_url   = EXCLUDED.brand_logo_url,
+             brand_color      = EXCLUDED.brand_color,
+             custom_subdomain = EXCLUDED.custom_subdomain,
              updated_at       = NOW()
-         WHERE wallet_address = $1
          RETURNING
              wallet_address, business_name, email, logo_url,
              brand_name, brand_logo_url, brand_color, custom_subdomain`,
@@ -275,11 +281,6 @@ merchantsRouter.patch('/:address', async (req: Request, res: Response): Promise<
             custom_subdomain  || null,
         ]
     )
-
-    if (result.rows.length === 0) {
-        res.status(404).json({ error: 'Profile not found — create it first via POST /api/merchants' })
-        return
-    }
     res.json(result.rows[0])
 })
 

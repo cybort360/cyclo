@@ -49,7 +49,17 @@ export async function subdomainRouter(
     // Strip port number so "checkout.acme.com:3001" → "checkout.acme.com"
     const host = rawHost.split(':')[0].toLowerCase()
 
-    if (!host || isSystemHost(host)) {
+    // API, internal, and health routes are never subject to subdomain routing —
+    // pass them through regardless of the Host header so the API can be called
+    // cross-origin from any domain (e.g. Vercel frontend → Railway API).
+    const path = req.path
+    if (
+        !host                          ||
+        isSystemHost(host)             ||
+        path.startsWith('/api')        ||
+        path.startsWith('/internal')   ||
+        path === '/health'
+    ) {
         next()
         return
     }
