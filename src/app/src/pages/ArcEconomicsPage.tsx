@@ -8,9 +8,11 @@
 import { useState, useEffect, useRef, memo } from 'react'
 import { usePublicClient } from 'wagmi'
 import { Link } from 'wouter'
+import { ChartIncreaseIcon, Image01Icon, Building03Icon } from 'hugeicons-react'
 import { COMPOSABILITY_SOLIDITY_CODE } from '../constants/codeSnippets'
 import { SUBSCRIPTION_MANAGER_ABI } from '../constants/abis'
 import { CONTRACT_ADDRESS, DEPLOY_BLOCK } from '../constants/addresses'
+import './ArcEconomicsPage.css'
 
 // ── Calculator constants ──────────────────────────────────────────────────────
 
@@ -209,6 +211,9 @@ interface CostCalculatorProps {
  * below can read the same value without prop-drilling duplication.
  */
 function CostCalculator({ subscribers, onSubscribersChange }: CostCalculatorProps) {
+    /** Percentage of track filled — drives the indigo→gray gradient. */
+    const fillPct = ((subscribers - SLIDER_MIN) / (SLIDER_MAX - SLIDER_MIN)) * 100
+
     function handleSlider(e: React.ChangeEvent<HTMLInputElement>) {
         onSubscribersChange(Number(e.target.value))
     }
@@ -225,7 +230,7 @@ function CostCalculator({ subscribers, onSubscribersChange }: CostCalculatorProp
         <div className="space-y-5">
 
             {/* Slider + number input */}
-            <div className="bg-white border border-gray-100 rounded-xl p-5 space-y-4">
+            <div className="bg-white border border-gray-100 rounded-xl p-5 space-y-5">
                 <div className="flex items-center justify-between gap-4">
                     <label htmlFor="sub-count" className="text-sm font-medium text-gray-700 shrink-0">
                         Number of subscribers
@@ -237,21 +242,31 @@ function CostCalculator({ subscribers, onSubscribersChange }: CostCalculatorProp
                         max={SLIDER_MAX}
                         value={subscribers}
                         onChange={handleNumberInput}
-                        className="w-32 text-right text-sm font-mono border border-gray-200 rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                        className="w-32 text-right text-sm font-mono border border-gray-200 rounded-xl px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                     />
                 </div>
-                <input
-                    id="sub-count"
-                    type="range"
-                    min={SLIDER_MIN}
-                    max={SLIDER_MAX}
-                    value={subscribers}
-                    onChange={handleSlider}
-                    className="w-full accent-indigo-600 cursor-pointer"
-                />
-                <div className="flex justify-between text-xs text-gray-400 select-none">
+
+                {/* Fancy styled range input.
+                    The linear-gradient gives the filled (indigo) / unfilled (gray) split.
+                    Thumb + track appearance overridden in ArcEconomicsPage.css (.ep-slider). */}
+                <div className="pt-1 pb-2">
+                    <input
+                        id="sub-count"
+                        type="range"
+                        min={SLIDER_MIN}
+                        max={SLIDER_MAX}
+                        value={subscribers}
+                        onChange={handleSlider}
+                        className="ep-slider"
+                        style={{
+                            background: `linear-gradient(to right, #4f46e5 ${fillPct}%, #e5e7eb ${fillPct}%)`,
+                        }}
+                    />
+                </div>
+
+                <div className="flex justify-between text-xs text-gray-400 select-none -mt-2">
                     <span>100</span>
-                    <span className="font-medium text-gray-500">
+                    <span className="font-medium text-indigo-600">
                         {subscribers.toLocaleString('en-US')} subscribers
                     </span>
                     <span>1,000,000</span>
@@ -511,7 +526,7 @@ const SolidityCodeBlock = memo(function SolidityCodeBlock({ code }: { code: stri
 })
 
 interface UseCaseCardProps {
-    icon:        string
+    icon:        React.ReactNode
     title:       string
     description: string
 }
@@ -519,8 +534,8 @@ interface UseCaseCardProps {
 function UseCaseCard({ icon, title, description }: UseCaseCardProps) {
     return (
         <div className="bg-white border border-gray-100 rounded-xl p-5 space-y-2">
-            <span className="text-2xl leading-none" aria-hidden="true">{icon}</span>
-            <p className="font-semibold text-gray-900 text-sm mt-3">{title}</p>
+            <div className="ep-usecase-icon" aria-hidden="true">{icon}</div>
+            <p className="font-semibold text-gray-900 text-sm">{title}</p>
             <p className="text-sm text-gray-500 leading-relaxed">{description}</p>
         </div>
     )
@@ -992,17 +1007,17 @@ export function ArcEconomicsPage() {
 
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                         <UseCaseCard
-                            icon="📈"
+                            icon={<ChartIncreaseIcon size={20} />}
                             title="DeFi Protocol"
                             description="Gate yield strategies to paying subscribers"
                         />
                         <UseCaseCard
-                            icon="🖼️"
+                            icon={<Image01Icon size={20} />}
                             title="NFT Project"
                             description="Reserve mints for active plan holders"
                         />
                         <UseCaseCard
-                            icon="🏛️"
+                            icon={<Building03Icon size={20} />}
                             title="DAO"
                             description="Weight voting power by subscription tier"
                         />

@@ -1,0 +1,102 @@
+/*
+ * ArcEconomicsPage — supplemental styles.
+ * Most of this page uses Tailwind; this file covers the things Tailwind can't
+ * reach: custom range-input thumb/track across browsers.
+ *
+ * Class: .ep-slider  (economics-page slider)
+ */
+
+/* ── Range slider ─────────────────────────────────────────────────────────── */
+
+.ep-slider {
+    /* Reset browser defaults */
+    -webkit-appearance: none;
+    appearance:         none;
+    width:              100%;
+    height:             6px;
+    border-radius:      3px;
+    /* Track fill injected via inline style (linear-gradient).
+       This rule just ensures no default background bleeds through. */
+    background:         #e5e7eb;
+    outline:            none;
+    cursor:             pointer;
+}
+
+/* ── Thumb — Chrome / Safari / Edge ──────────────────────────────────────── */
+
+.ep-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance:         none;
+    width:              22px;
+    height:             22px;
+    border-radius:      50%;
+    background:         #fff;
+    border:             2.5px solid #4f46e5;
+    box-shadow:         0 2px 8px rgba(79, 70, 229, 0.30),
+                        0 1px 3px rgba(0, 0, 0, 0.10);
+    cursor:             pointer;
+    transition:         transform 130ms ease, box-shadow 130ms ease;
+}
+
+.ep-slider::-webkit-slider-thumb:hover {
+    transform:  scale(1.18);
+    box-shadow: 0 4px 16px rgba(79, 70, 229, 0.42),
+                0 2px 4px  rgba(0, 0, 0, 0.12);
+}
+
+.ep-slider::-webkit-slider-thumb:active {
+    transform:  scale(1.06);
+    box-shadow: 0 2px 10px rgba(79, 70, 229, 0.50);
+}
+
+/* ── Thumb — Firefox ─────────────────────────────────────────────────────── */
+
+.ep-slider::-moz-range-thumb {
+    width:         22px;
+    height:        22px;
+    border-radius: 50%;
+    background:    #fff;
+    border:        2.5px solid #4f46e5;
+    box-shadow:    0 2px 8px rgba(79, 70, 229, 0.30),
+                   0 1px 3px rgba(0, 0, 0, 0.10);
+    cursor:        pointer;
+    transition:    transform 130ms ease, box-shadow 130ms ease;
+}
+
+.ep-slider::-moz-range-thumb:hover {
+    transform:  scale(1.18);
+    box-shadow: 0 4px 16px rgba(79, 70, 229, 0.42);
+}
+
+/* Firefox track — the fill is still handled by inline linear-gradient */
+.ep-slider::-moz-range-track {
+    height:        6px;
+    border-radius: 3px;
+    background:    transparent; /* let the inline gradient show through */
+}
+
+/* ── Focus ring (keyboard accessibility) ─────────────────────────────────── */
+
+.ep-slider:focus-visible::-webkit-slider-thumb {
+    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.22),
+                0 2px 8px rgba(79, 70, 229, 0.30);
+}
+
+.ep-slider:focus-visible::-moz-range-thumb {
+    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.22),
+                0 2px 8px rgba(79, 70, 229, 0.30);
+}
+
+/* ── Use-case icon container ──────────────────────────────────────────────── */
+
+.ep-usecase-icon {
+    display:         flex;
+    align-items:     center;
+    justify-content: center;
+    width:           40px;
+    height:          40px;
+    border-radius:   10px;
+    background:      #eef2ff;
+    color:           #4f46e5;
+    margin-bottom:   12px;
+}
