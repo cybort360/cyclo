@@ -12,8 +12,15 @@ function CycloProvider({ contractAddress, usdcAddress, children }) {
     clientRef.current = new CycloClient({
       contractAddress,
       usdcAddress,
-      publicClient
+      publicClient,
+      // Pass walletClient here if it's already resolved (wallet was connected
+      // before this provider mounted). If it's still undefined the effect below
+      // will inject it once useWalletClient() resolves asynchronously.
+      walletClient: walletClient ?? void 0
     });
+  }
+  if (clientRef.current && walletClient) {
+    clientRef.current.setWalletClient(walletClient);
   }
   useEffect(() => {
     if (!clientRef.current || !walletClient) return;

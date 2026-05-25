@@ -19,20 +19,27 @@ export function CycloProvider({ contractAddress, usdcAddress, children }: CycloP
   const clientRef = useRef<CycloClient | null>(null)
 
   // Create the SDK client once when publicClient first becomes available.
-  // walletClient is intentionally omitted here; it is injected via
-  // setWalletClient() in the effect below once useWalletClient() resolves.
   if (publicClient && !clientRef.current) {
     clientRef.current = new CycloClient({
       contractAddress,
       usdcAddress,
       publicClient,
+      // Pass walletClient here if it's already resolved (wallet was connected
+      // before this provider mounted). If it's still undefined the effect below
+      // will inject it once useWalletClient() resolves asynchronously.
+      walletClient: walletClient ?? undefined,
     })
   }
 
-  // Synchronise walletClient into the SDK client after every render in which
-  // it changes. useEffect runs after the render is committed, so it reliably
-  // picks up the resolved value from useWalletClient() regardless of whether
-  // the wallet was connected before or after the provider mounted.
+  // Belt-and-suspenders: also update synchronously on every render where
+  // walletClient is available. Covers the case where walletClient resolves on
+  // the same render tick that the client was just created.
+  if (clientRef.current && walletClient) {
+    clientRef.current.setWalletClient(walletClient)
+  }
+
+  // useEffect path: catches the async resolution of useWalletClient() which
+  // often arrives one render after mount (wagmi fetches it via a query).
   useEffect(() => {
     if (!clientRef.current || !walletClient) return
     clientRef.current.setWalletClient(walletClient)

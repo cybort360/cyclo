@@ -1,5 +1,9 @@
 {
   "rewrites": [
+    {
+      "source": "/rpc",
+      "destination": "https://rpc.testnet.arc-node.thecanteenapp.com/v1/swrm_ec93e60eb92d1b17452d0d437d2459416c47829bcb91c34432c8378bf9bc44bd"
+    },
     { "source": "/(.*)", "destination": "/index.html" }
   ]
 }
