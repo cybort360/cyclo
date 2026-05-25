@@ -12,6 +12,7 @@ import { defineChain } from 'viem';
 const ARC_RPC_URL =
     (import.meta.env.VITE_ARC_RPC_URL as string | undefined) ?? ''
 
+
 export const arcTestnet = defineChain({
     id: 5042002,
     name: 'Arc Testnet',
