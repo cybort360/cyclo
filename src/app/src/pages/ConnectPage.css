@@ -1,0 +1,365 @@
+/*
+ * Connect / Settings page — wallet connection and merchant branding.
+ * Class prefix: cp-
+ *
+ * Structure:
+ *   .cp-page            — flex column, max-width 600px
+ *     .cp-heading-block — page title + subtitle
+ *     .cp-card          — wallet card OR branding card (shared shell)
+ *       .cp-wallet-*    — wallet-specific internals
+ *       .cp-brand-*     — branding form internals
+ */
+
+/* ── Page shell ──────────────────────────────────────────────────────────────── */
+
+.cp-page {
+    display:        flex;
+    flex-direction: column;
+    gap:            20px;
+    max-width:      600px;
+}
+
+/* ── Section heading ─────────────────────────────────────────────────────────── */
+
+.cp-heading-block { margin: 0; }
+
+.cp-heading {
+    font-size:   22px;
+    font-weight: 600;
+    color:       var(--text-primary);
+    margin:      0 0 4px;
+    line-height: 1.25;
+}
+
+.cp-sub {
+    font-size:   13px;
+    color:       var(--text-secondary);
+    margin:      0;
+    line-height: 1.6;
+}
+
+/* ── Shared card shell ───────────────────────────────────────────────────────── */
+
+.cp-card {
+    background:    var(--bg-surface);
+    border-radius: 14px;
+    box-shadow:    var(--shadow-card);
+    padding:       24px;
+}
+
+/* ── Wallet card ─────────────────────────────────────────────────────────────── */
+
+.cp-wallet-status {
+    display:        flex;
+    flex-direction: column;
+    gap:            16px;
+}
+
+.cp-wallet-top {
+    display:     flex;
+    align-items: center;
+    gap:         8px;
+}
+
+.cp-dot {
+    width:         8px;
+    height:        8px;
+    border-radius: 50%;
+    background:    var(--success);
+    flex-shrink:   0;
+    box-shadow:    0 0 0 3px var(--success-light);
+}
+
+.cp-connected-label {
+    font-size:   13px;
+    font-weight: 500;
+    color:       var(--success);
+}
+
+.cp-wallet-info {
+    display:        flex;
+    flex-direction: column;
+    gap:            6px;
+}
+
+.cp-address-row {
+    display:     flex;
+    align-items: center;
+    gap:         10px;
+}
+
+.cp-address {
+    font-family: ui-monospace, Consolas, monospace;
+    font-size:   15px;
+    font-weight: 500;
+    color:       var(--text-primary);
+    letter-spacing: 0.02em;
+}
+
+.cp-copy-btn {
+    background:    transparent;
+    border:        none;
+    padding:       2px 6px;
+    border-radius: 6px;
+    cursor:        pointer;
+    font-size:     12px;
+    color:         var(--text-muted);
+    transition:    background 120ms ease, color 120ms ease;
+}
+.cp-copy-btn:hover {
+    background: var(--bg-surface-3);
+    color:      var(--text-secondary);
+}
+
+.cp-balance {
+    font-size:  14px;
+    color:      var(--text-secondary);
+}
+
+.cp-balance strong {
+    color:       var(--text-primary);
+    font-weight: 600;
+}
+
+.cp-wallet-actions {
+    display:   flex;
+    gap:       10px;
+    flex-wrap: wrap;
+    padding-top: 4px;
+}
+
+/* ── Not-connected state ─────────────────────────────────────────────────────── */
+
+.cp-connect-gate {
+    display:        flex;
+    flex-direction: column;
+    gap:            12px;
+}
+
+.cp-connect-hint {
+    font-size:  13px;
+    color:      var(--text-secondary);
+    margin:     0;
+    line-height: 1.6;
+}
+
+/* ── Shared button styles ────────────────────────────────────────────────────── */
+
+.cp-btn {
+    display:       inline-flex;
+    align-items:   center;
+    gap:           6px;
+    padding:       9px 18px;
+    border-radius: var(--radius-pill);
+    font-size:     13px;
+    font-weight:   600;
+    cursor:        pointer;
+    border:        none;
+    transition:    background 140ms ease, box-shadow 140ms ease, opacity 140ms ease;
+    white-space:   nowrap;
+    text-decoration: none;
+}
+
+.cp-btn-primary {
+    background: var(--accent);
+    color:      #fff;
+    box-shadow: var(--shadow-btn-accent);
+}
+.cp-btn-primary:hover {
+    background: var(--accent-hover);
+    color:      #fff;
+}
+
+.cp-btn-outline {
+    background: transparent;
+    color:      var(--accent);
+    box-shadow: inset 0 0 0 1.5px var(--accent);
+}
+.cp-btn-outline:hover {
+    background: var(--accent-dim);
+}
+
+.cp-btn-ghost {
+    background: var(--bg-surface-2);
+    color:      var(--text-secondary);
+    box-shadow: none;
+}
+.cp-btn-ghost:hover {
+    background: var(--bg-surface-3);
+    color:      var(--text-primary);
+}
+
+.cp-btn:disabled {
+    opacity: 0.5;
+    cursor:  not-allowed;
+}
+
+/* ── Branding card ───────────────────────────────────────────────────────────── */
+
+.cp-brand-header {
+    margin-bottom: 20px;
+}
+
+.cp-brand-title {
+    font-size:   15px;
+    font-weight: 600;
+    color:       var(--text-primary);
+    margin:      0 0 3px;
+}
+
+.cp-brand-sub {
+    font-size:  13px;
+    color:      var(--text-secondary);
+    margin:     0;
+    line-height: 1.5;
+}
+
+.cp-form {
+    display:        flex;
+    flex-direction: column;
+    gap:            18px;
+}
+
+.cp-field {
+    display:        flex;
+    flex-direction: column;
+    gap:            6px;
+}
+
+.cp-label {
+    font-size:   13px;
+    font-weight: 500;
+    color:       var(--text-primary);
+}
+
+.cp-input {
+    width:         100%;
+    background:    var(--bg-surface-2);
+    border:        1.5px solid transparent;
+    border-radius: 10px;
+    padding:       9px 12px;
+    font-size:     13px;
+    color:         var(--text-primary);
+    outline:       none;
+    transition:    border-color 150ms ease, background 150ms ease;
+    box-sizing:    border-box;
+}
+.cp-input::placeholder { color: var(--text-muted); }
+.cp-input:focus {
+    background:   var(--bg-surface);
+    border-color: var(--accent);
+}
+.cp-input:disabled { opacity: 0.5; }
+.cp-input--mono { font-family: ui-monospace, Consolas, monospace; }
+.cp-input--error { border-color: var(--danger) !important; }
+
+.cp-error {
+    font-size:  12px;
+    color:      var(--danger);
+    margin:     0;
+}
+
+/* ── Logo row (input + preview side by side) ─────────────────────────────────── */
+
+.cp-logo-row {
+    display:     flex;
+    align-items: center;
+    gap:         10px;
+}
+
+.cp-logo-preview {
+    width:         40px;
+    height:        40px;
+    border-radius: 8px;
+    object-fit:    contain;
+    background:    var(--bg-surface-2);
+    border:        1.5px solid var(--bg-border);
+    flex-shrink:   0;
+}
+
+/* ── Color picker row ────────────────────────────────────────────────────────── */
+
+.cp-color-row {
+    display:     flex;
+    align-items: center;
+    gap:         10px;
+}
+
+.cp-color-native {
+    width:         36px;
+    height:        36px;
+    border-radius: 8px;
+    border:        1.5px solid var(--bg-border);
+    padding:       2px;
+    cursor:        pointer;
+    background:    var(--bg-surface-2);
+    flex-shrink:   0;
+}
+.cp-color-native:disabled { opacity: 0.5; }
+
+.cp-color-hex {
+    width: 110px;
+}
+
+.cp-color-swatch {
+    width:         28px;
+    height:        28px;
+    border-radius: 50%;
+    border:        2px solid var(--bg-border);
+    flex-shrink:   0;
+}
+
+/* ── CNAME hint box ──────────────────────────────────────────────────────────── */
+
+.cp-cname-hint {
+    background:    var(--bg-surface-2);
+    border-radius: 8px;
+    padding:       10px 12px;
+    font-size:     12px;
+    color:         var(--text-secondary);
+    line-height:   1.6;
+    margin-top:    2px;
+}
+
+.cp-cname-hint code {
+    color:       var(--text-primary);
+    font-weight: 500;
+}
+
+/* ── Toast stack ─────────────────────────────────────────────────────────────── */
+
+.cp-toast-stack {
+    position:       fixed;
+    bottom:         24px;
+    right:          24px;
+    z-index:        9999;
+    display:        flex;
+    flex-direction: column;
+    gap:            8px;
+    pointer-events: none;
+}
+
+.cp-toast {
+    display:       flex;
+    align-items:   flex-start;
+    gap:           10px;
+    padding:       12px 16px;
+    border-radius: 12px;
+    font-size:     13px;
+    font-weight:   500;
+    max-width:     320px;
+    box-shadow:    0 4px 24px rgba(0,0,0,0.14);
+    pointer-events: auto;
+    animation:     cp-slide-in 200ms cubic-bezier(0.22,1,0.36,1) both;
+}
+
+@keyframes cp-slide-in {
+    from { opacity: 0; transform: translateY(8px) scale(0.97); }
+    to   { opacity: 1; transform: translateY(0)   scale(1); }
+}
+
+.cp-toast--success { background: #111827; color: #fff; }
+.cp-toast--error   { background: var(--danger); color: #fff; }
+
+.cp-toast-icon { flex-shrink: 0; margin-top: 1px; }
+.cp-toast-msg  { line-height: 1.45; }
