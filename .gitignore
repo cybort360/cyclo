@@ -1,5 +1,31 @@
-.env
+# ── Environment variables ─────────────────────────────────────────────────────
+# Match .env at any depth so src/app/.env, keeper/.env, api/.env etc. are all
+# ignored. .env.example files are explicitly allowed (they contain no secrets).
+**/.env
+**/.env.local
+**/.env.*.local
+!**/.env.example
+
+# ── Dependencies ──────────────────────────────────────────────────────────────
 node_modules/
+
+# ── Build outputs ─────────────────────────────────────────────────────────────
+# Vite / React app
+src/app/dist/
+
+# Coverage reports
+coverage/
+.nyc_output/
+
+# ── Foundry ───────────────────────────────────────────────────────────────────
 out/
 cache/
 broadcast/
+
+# ── OS / editor ───────────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+.vscode/settings.json
+.idea/
