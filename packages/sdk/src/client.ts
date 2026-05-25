@@ -83,7 +83,7 @@ export class CycloClient {
       functionName: 'createPlan',
       args: [price, interval, Number(trial)],
       account,
-      chain: wallet.chain,
+      chain: this.resolveChain(wallet),
     })
 
     const receipt = await this.publicClient.waitForTransactionReceipt({ hash })
@@ -107,7 +107,7 @@ export class CycloClient {
       functionName: 'deactivatePlan',
       args: [planId],
       account,
-      chain: wallet.chain,
+      chain: this.resolveChain(wallet),
     })
 
     await this.publicClient.waitForTransactionReceipt({ hash })
@@ -157,7 +157,7 @@ export class CycloClient {
       functionName: 'subscribe',
       args: [planId],
       account,
-      chain: wallet.chain,
+      chain: this.resolveChain(wallet),
     })
 
     onBroadcast?.()
@@ -175,7 +175,7 @@ export class CycloClient {
       functionName: 'cancelSubscription',
       args: [planId],
       account,
-      chain: wallet.chain,
+      chain: this.resolveChain(wallet),
     })
 
     await this.publicClient.waitForTransactionReceipt({ hash })
@@ -191,7 +191,7 @@ export class CycloClient {
       functionName: 'migratePlan',
       args: [currentPlanId, newPlanId],
       account,
-      chain: wallet.chain,
+      chain: this.resolveChain(wallet),
     })
 
     await this.publicClient.waitForTransactionReceipt({ hash })
@@ -272,6 +272,17 @@ export class CycloClient {
   }
 
   /**
+   * Returns the chain to use for write operations.
+   *
+   * wagmi's getWalletClient() returns a WalletClient with `chain: null` when the
+   * chain is not embedded in the connector client. In that case we fall back to
+   * publicClient.chain, which is always set (it's configured at wagmi setup time).
+   */
+  private resolveChain(wallet: WalletClient) {
+    return wallet.chain ?? this.publicClient.chain
+  }
+
+  /**
    * Resolves the SubscriptionNFT contract address.
    * Uses the config-provided address when available. Otherwise reads from the
    * SubscriptionManager and caches any non-zero result for subsequent calls.
@@ -312,7 +323,7 @@ export class CycloClient {
       functionName: 'approve',
       args: [this.contractAddress, required],
       account,
-      chain: wallet.chain,
+      chain: this.resolveChain(wallet),
     })
     await this.publicClient.waitForTransactionReceipt({ hash })
   }

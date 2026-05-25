@@ -90,6 +90,14 @@ declare class CycloClient {
     destroy(): void;
     private requireWallet;
     /**
+     * Returns the chain to use for write operations.
+     *
+     * wagmi's getWalletClient() returns a WalletClient with `chain: null` when the
+     * chain is not embedded in the connector client. In that case we fall back to
+     * publicClient.chain, which is always set (it's configured at wagmi setup time).
+     */
+    private resolveChain;
+    /**
      * Resolves the SubscriptionNFT contract address.
      * Uses the config-provided address when available. Otherwise reads from the
      * SubscriptionManager and caches any non-zero result for subsequent calls.
