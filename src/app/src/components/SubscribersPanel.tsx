@@ -91,16 +91,16 @@ function ChurnMeter({ pct }: { pct: number }) {
                     strokeLinecap="round"
                     strokeDasharray={`${filled} ${ARC_LEN}`}
                 />
-                {/* Center value */}
+                {/* Center value — currentColor inherits from .sp-meter-wrap via CSS */}
                 <text
                     x={CX}
                     y={CY - 4}
                     textAnchor="middle"
                     dominantBaseline="middle"
-                    fill="#F0F6FF"
+                    fill="currentColor"
                     fontSize={18}
                     fontFamily="ui-monospace, 'Cascadia Code', Consolas, monospace"
-                    fontWeight={500}
+                    fontWeight={600}
                 >
                     {pct}%
                 </text>

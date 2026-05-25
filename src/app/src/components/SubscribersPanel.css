@@ -86,6 +86,8 @@
 .sp-meter-wrap {
     display:         flex;
     justify-content: center;
+    /* SVG text uses currentColor — inherit from design tokens */
+    color:           var(--text-primary);
 }
 
 .sp-meter-svg {
