@@ -244,9 +244,6 @@ export function Layout({ children }: { children: ReactNode }) {
     }, [isConnected, address, profile])
 
     const pageTitle = PAGE_TITLES[location] ?? 'Dashboard'
-    const shortAddr = address ? `${address.slice(0, 6)}…${address.slice(-4)}` : null
-    /** Two-character initials derived from the wallet address. */
-    const avatarInitials = address ? address.slice(2, 4).toUpperCase() : null
 
     return (
         <RightPanelCtx.Provider value={setRightPanel}>
