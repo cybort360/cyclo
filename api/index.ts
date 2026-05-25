@@ -1,7 +1,7 @@
 import 'dotenv/config'
 import { readFileSync } from 'fs'
 import { fileURLToPath } from 'url'
-import { resolve } from 'path'
+import { dirname, resolve } from 'path'
 import { createServer } from 'http'
 import express from 'express'
 import cors from 'cors'
@@ -24,7 +24,7 @@ const FRONTEND_ORIGIN = process.env.FRONTEND_ORIGIN ?? 'http://localhost:5173'
  * every startup — it is a no-op when the schema is already current.
  */
 async function runMigrations(): Promise<void> {
-    const schemaPath = resolve(fileURLToPath(import.meta.url), '../../keeper/db/schema.sql')
+    const schemaPath = resolve(dirname(fileURLToPath(import.meta.url)), '../keeper/db/schema.sql')
     const sql = readFileSync(schemaPath, 'utf8')
     await pool.query(sql)
     console.log('[migrations] schema applied successfully')
