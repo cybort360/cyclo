@@ -209,6 +209,7 @@ export function OverviewPage() {
                         activeSubscribers={activeSubscribers}
                         totalCharges={data?.totalCharges ?? 0}
                         liveRevenueDelta={liveUsdcProcessed}
+                        dailyRevenue={data?.dailyRevenue ?? []}
                     />
 
                     {/* ── Live settlements table ─────────────────────────── */}

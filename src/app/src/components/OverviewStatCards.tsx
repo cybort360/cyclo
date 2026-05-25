@@ -149,9 +149,12 @@ interface StatCardProps {
     decimals?: number
     /** Text appended after the value, e.g. " USDC". Include leading space. */
     suffix?:  string
-    /** Delta string including the arrow glyph, e.g. "↑ 12%". */
-    delta:    string
-    /** Secondary period label, e.g. "vs last month". */
+    /**
+     * Delta string including arrow glyph (e.g. "↑ 12%").
+     * Omit or pass undefined to hide the delta pill entirely.
+     */
+    delta?:   string
+    /** Secondary period label, e.g. "all time". */
     period:   string
     theme:    Theme
     Icon:     NavIcon
@@ -199,7 +202,9 @@ function StatCard({
 
             {/* ── Delta pill + period ──────────────────────────── */}
             <div className="oc-delta-row">
-                <span className={`oc-delta oc-delta--${theme}`}>{delta}</span>
+                {delta && (
+                    <span className={`oc-delta oc-delta--${theme}`}>{delta}</span>
+                )}
                 <span className="oc-period">{period}</span>
             </div>
 
@@ -245,6 +250,8 @@ interface OverviewStatCardsProps {
     totalCharges:      number
     /** Triggered when a live socket payment fires — causes Revenue + Fees pulse. */
     liveRevenueDelta:  number
+    /** Real per-day revenue from on-chain events — used as the Revenue sparkline. */
+    dailyRevenue:      { date: string; revenue: number }[]
 }
 
 export function OverviewStatCards({
@@ -252,9 +259,16 @@ export function OverviewStatCards({
     activeSubscribers,
     totalCharges,
     liveRevenueDelta,
+    dailyRevenue,
 }: OverviewStatCardsProps) {
-    const revenue  = totalRevenue + liveRevenueDelta
-    const fees     = revenue * 0.03
+    const revenue = totalRevenue + liveRevenueDelta
+    const fees    = revenue * 0.03   // Cyclo protocol fee is 3 %
+
+    // Build sparkline from real daily data when available; fall back to synthetic
+    // when there are fewer than 2 data points (e.g. no charges yet).
+    const revenueSpark = dailyRevenue.length >= 2
+        ? dailyRevenue.map(d => d.revenue)
+        : syntheticSpark(revenue)
 
     return (
         <div className="oc-grid">
@@ -265,19 +279,17 @@ export function OverviewStatCards({
                 value={revenue}
                 decimals={2}
                 suffix=" USDC"
-                delta="↑ 12%"
-                period="vs last month"
+                period="all time"
                 theme="accent"
                 Icon={IconTrendingUp}
-                spark={syntheticSpark(revenue)}
+                spark={revenueSpark}
             />
 
             <StatCard
                 id="subscribers"
                 label="ACTIVE SUBSCRIBERS"
                 value={activeSubscribers}
-                delta="↑ 38"
-                period="this week"
+                period="on-chain"
                 theme="success"
                 Icon={IconUsers}
                 spark={syntheticSpark(activeSubscribers)}
@@ -285,10 +297,9 @@ export function OverviewStatCards({
 
             <StatCard
                 id="charges"
-                label="CHARGES THIS MONTH"
+                label="TOTAL CHARGES"
                 value={totalCharges}
-                delta="↑ 214"
-                period="this month"
+                period="all time"
                 theme="info"
                 Icon={IconBolt}
                 spark={syntheticSpark(totalCharges)}
@@ -300,8 +311,7 @@ export function OverviewStatCards({
                 value={fees}
                 decimals={2}
                 suffix=" USDC"
-                delta="↑ 3%"
-                period="vs last month"
+                period="3% of revenue"
                 theme="warning"
                 Icon={IconCoin}
                 spark={syntheticSpark(fees)}
