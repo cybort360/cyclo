@@ -185,6 +185,13 @@ export class CycloClient {
     const wallet = this.requireWallet()
     const [account] = await wallet.getAddresses()
 
+    // Ensure the caller has sufficient USDC allowance for the new (possibly
+    // more expensive) plan before attempting the migration. Without this,
+    // migrating from a cheap plan to an expensive one can revert on-chain
+    // with InsufficientAllowance. subscribe() calls ensureAllowance; so
+    // should migratePlan().
+    await this.ensureAllowance(account, newPlanId)
+
     const hash = await wallet.writeContract({
       address: this.contractAddress,
       abi: SUBSCRIPTION_MANAGER_ABI,
@@ -317,6 +324,24 @@ export class CycloClient {
     if (allowance >= plan.price * 2n) return
 
     const wallet = this.requireWallet()
+
+    // ERC-20 approval front-running: reset to 0 before setting a new non-zero
+    // value. Without this, an attacker watching the mempool could spend the
+    // existing allowance and then the new 12-month allowance in sequence.
+    // The SubscriptionManager contract's time-gating already limits exploitability,
+    // but zeroing first is the standard safe pattern (see EIP-20 security notes).
+    if (allowance > 0n) {
+      const zeroHash = await wallet.writeContract({
+        address: this.usdcAddress,
+        abi: USDC_ABI,
+        functionName: 'approve',
+        args: [this.contractAddress, 0n],
+        account,
+        chain: this.resolveChain(wallet),
+      })
+      await this.publicClient.waitForTransactionReceipt({ hash: zeroHash })
+    }
+
     const hash = await wallet.writeContract({
       address: this.usdcAddress,
       abi: USDC_ABI,
