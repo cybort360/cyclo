@@ -177,6 +177,19 @@ contract SubscriptionManager is ISubscriptionManager, ReentrancyGuard, Ownable {
         emit SubscriptionCancelled(currentPlanId, msg.sender);
         emit SubscriptionCreated(newPlanId, msg.sender, chargeStart);
         emit PlanMigrated(currentPlanId, newPlanId, msg.sender);
+
+        // Sync NFT state to match the subscription state change.
+        // subscribe() mints and cancelSubscription() burns, but migratePlan()
+        // previously skipped both steps, leaving isSubscribed() returning wrong
+        // values for both the old and new plan after a migration.
+        if (subscriptionNFT != address(0)) {
+            try ISubscriptionNFT(subscriptionNFT).burn(msg.sender, currentPlanId) {} catch {
+                emit NFTBurnFailed(msg.sender, currentPlanId);
+            }
+            try ISubscriptionNFT(subscriptionNFT).mint(msg.sender, newPlanId) {} catch {
+                emit NFTMintFailed(msg.sender, newPlanId);
+            }
+        }
     }
 
     // -------------------------------------------------------------------------
