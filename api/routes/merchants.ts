@@ -6,6 +6,19 @@ export const merchantsRouter = Router()
 
 const SIGNATURE_TTL_MS = 5 * 60 * 1000
 
+// ── Signature replay prevention ───────────────────────────────────────────────
+// Track used (address:timestamp) pairs for the TTL window so a captured
+// signature cannot be replayed. In-memory only — server restart clears it,
+// but signatures expire quickly enough to bound the exposure window.
+const usedSignatures = new Map<string, number>() // key → expiresAt ms
+
+function pruneUsedSignatures(): void {
+    const now = Date.now()
+    for (const [key, exp] of usedSignatures) {
+        if (now > exp) usedSignatures.delete(key)
+    }
+}
+
 // ── Validation ────────────────────────────────────────────────────────────────
 
 const HEX_COLOR_RE = /^#[0-9A-Fa-f]{6}$/
@@ -31,12 +44,35 @@ function isValidHostname(value: string): boolean {
     return value.length <= 253 && HOSTNAME_RE.test(value)
 }
 
-// ── Auth helper ───────────────────────────────────────────────────────────────
+// ── Auth helpers ──────────────────────────────────────────────────────────────
 
 interface AuthBody {
     address:   string
     timestamp: number
     signature: string
+}
+
+/**
+ * Read-only auth: verifies TTL + signature but does NOT mark the signature
+ * as used. This lets the frontend cache a single signature and reuse it for
+ * polling GET endpoints within the 4-minute client cache window.
+ */
+function checkGetAuth(body: AuthBody, res: Response): boolean {
+    const { address, timestamp, signature } = body
+    if (!address || !timestamp || !signature) {
+        res.status(401).json({ error: 'timestamp and signature query params required' })
+        return false
+    }
+    if (Date.now() - timestamp > SIGNATURE_TTL_MS) {
+        res.status(401).json({ error: 'Signature expired' })
+        return false
+    }
+    const message = buildMessage(address, timestamp)
+    if (!verifySignature(address, message, signature)) {
+        res.status(401).json({ error: 'Invalid signature' })
+        return false
+    }
+    return true
 }
 
 function checkAuth(body: AuthBody, res: Response): boolean {
@@ -49,11 +85,24 @@ function checkAuth(body: AuthBody, res: Response): boolean {
         res.status(401).json({ error: 'Signature expired' })
         return false
     }
+
+    // Replay prevention: reject signatures that have already been accepted
+    // within the current TTL window.
+    pruneUsedSignatures()
+    const sigKey = `${address.toLowerCase()}:${timestamp}`
+    if (usedSignatures.has(sigKey)) {
+        res.status(401).json({ error: 'Signature already used' })
+        return false
+    }
+
     const message = buildMessage(address, timestamp)
     if (!verifySignature(address, message, signature)) {
         res.status(401).json({ error: 'Invalid signature' })
         return false
     }
+
+    // Mark signature as used for the remainder of its TTL
+    usedSignatures.set(sigKey, Date.now() + SIGNATURE_TTL_MS)
     return true
 }
 
@@ -152,9 +201,21 @@ merchantsRouter.post('/', async (req: Request, res: Response): Promise<void> => 
 /**
  * GET /api/merchants/:address
  * Returns the full merchant profile including brand fields.
+ * Requires signature auth (query params: timestamp, signature) because
+ * the response contains PII (email address).
+ *
+ * Uses TTL-only verification (no replay prevention) so the frontend can
+ * poll with a cached signature without being rejected on the second call.
  */
 merchantsRouter.get('/:address', async (req: Request, res: Response): Promise<void> => {
     const { address } = req.params
+    const timestamp = Number(req.query.timestamp)
+    const signature = req.query.signature as string | undefined
+
+    // Require auth so the email field is only served to the profile owner.
+    // Read-only → TTL check + sig verify only; no replay prevention.
+    if (!checkGetAuth({ address, timestamp, signature: signature ?? '' }, res)) return
+
     const result = await pool.query(
         `SELECT
              wallet_address, business_name, email, logo_url,
@@ -286,8 +347,18 @@ merchantsRouter.patch('/:address', async (req: Request, res: Response): Promise<
 
 // ── Webhook routes (unchanged) ────────────────────────────────────────────────
 
+// ── Webhook routes ────────────────────────────────────────────────────────────
+
 merchantsRouter.get('/:address/webhooks', async (req: Request, res: Response): Promise<void> => {
     const { address } = req.params
+    const timestamp = Number(req.query.timestamp)
+    const signature = req.query.signature as string | undefined
+
+    // Require auth: webhook URLs are sensitive (attackers with them can send
+    // forged webhook deliveries and bypass signature checks if secrets leak).
+    // Read-only → use TTL-only check so cached signatures can be reused.
+    if (!checkGetAuth({ address, timestamp, signature: signature ?? '' }, res)) return
+
     const result = await pool.query(
         'SELECT id, plan_id, url, active, created_at FROM merchant_webhooks WHERE wallet_address = $1 ORDER BY created_at ASC',
         [address.toLowerCase()]

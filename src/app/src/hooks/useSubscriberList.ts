@@ -17,10 +17,11 @@
  * correctly restores active status.
  */
 import { useQuery } from '@tanstack/react-query'
-import { useAccount, usePublicClient } from 'wagmi'
+import { useAccount, usePublicClient, useSignMessage } from 'wagmi'
 import { SUBSCRIPTION_MANAGER_ABI } from '../constants/abis'
 import { CONTRACT_ADDRESS, DEPLOY_BLOCK } from '../constants/addresses'
 import { API_BASE } from '../utils/apiBase'
+import { getCachedAuth } from '../utils/authCache'
 
 type Address = `0x${string}`
 
@@ -43,9 +44,17 @@ interface PastDueApiItem {
     subscriber: string
 }
 
-async function fetchPastDue(address: string): Promise<PastDueApiItem[]> {
+async function fetchPastDue(
+    address: string,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    signMessageAsync: (...args: any[]) => Promise<string>
+): Promise<PastDueApiItem[]> {
     try {
-        const res = await fetch(`${API_BASE}/api/merchants/${address}/past-due`)
+        const { timestamp, signature } = await getCachedAuth(address, signMessageAsync)
+        const res = await fetch(
+            `${API_BASE}/api/merchants/${address}/past-due` +
+            `?timestamp=${timestamp}&signature=${encodeURIComponent(signature)}`
+        )
         if (!res.ok) return []
         return res.json() as Promise<PastDueApiItem[]>
     } catch {
@@ -58,11 +67,13 @@ async function fetchPastDue(address: string): Promise<PastDueApiItem[]> {
 export function useSubscriberList() {
     const { address }  = useAccount()
     const publicClient = usePublicClient()
+    const { signMessageAsync } = useSignMessage()
 
     return useQuery<SubscriberRow[]>({
         queryKey:        ['subscriberList', address],
         enabled:         !!address && !!publicClient,
         refetchInterval: 30_000,
+        // signMessageAsync is stable across renders; not needed in queryKey.
         queryFn: async (): Promise<SubscriberRow[]> => {
             if (!address || !publicClient) return []
 
@@ -90,7 +101,7 @@ export function useSubscriberList() {
                         fromBlock: DEPLOY_BLOCK,
                         toBlock:   'latest',
                     }),
-                    fetchPastDue(address.toLowerCase()),
+                    fetchPastDue(address.toLowerCase(), signMessageAsync),
                 ])
 
             const myPlanIds = new Set(

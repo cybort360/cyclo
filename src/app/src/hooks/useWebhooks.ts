@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useAccount, useSignMessage } from 'wagmi'
 import { API_BASE } from '../utils/apiBase'
+import { getCachedAuth } from '../utils/authCache'
 
 export interface Webhook {
   id: string
@@ -18,9 +19,12 @@ export function useWebhooks() {
 
   const fetchWebhooks = useCallback(async () => {
     if (!address) return
-    const res = await fetch(`${API_BASE}/api/merchants/${address}/webhooks`)
+    const { timestamp, signature } = await getCachedAuth(address, signMessageAsync)
+    const res = await fetch(
+      `${API_BASE}/api/merchants/${address}/webhooks?timestamp=${timestamp}&signature=${encodeURIComponent(signature)}`
+    )
     if (res.ok) setWebhooks(await res.json())
-  }, [address])
+  }, [address, signMessageAsync])
 
   useEffect(() => { fetchWebhooks() }, [fetchWebhooks])
 

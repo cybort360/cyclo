@@ -13,6 +13,7 @@
  */
 import { Router, type Request, type Response } from 'express'
 import { pool } from '../db.js'
+import { buildMessage, verifySignature } from '../verify.js'
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
@@ -83,6 +84,35 @@ function toFailureReason(raw: string | null): 'low_balance' | 'low_allowance' | 
     return 'unknown'
 }
 
+// ── Auth helper ───────────────────────────────────────────────────────────────
+
+const SIGNATURE_TTL_MS = 5 * 60 * 1000
+
+/**
+ * Validates timestamp + signature query params for GET endpoints.
+ * Past-due data contains subscriber billing info — it must only be
+ * accessible to the merchant who owns those plans.
+ */
+function checkGetAuth(address: string, req: Request, res: Response): boolean {
+    const timestamp = Number(req.query.timestamp)
+    const signature = (req.query.signature as string | undefined) ?? ''
+
+    if (!timestamp || !signature) {
+        res.status(401).json({ error: 'timestamp and signature query params required' })
+        return false
+    }
+    if (Date.now() - timestamp > SIGNATURE_TTL_MS) {
+        res.status(401).json({ error: 'Signature expired' })
+        return false
+    }
+    const message = buildMessage(address, timestamp)
+    if (!verifySignature(address, message, signature)) {
+        res.status(401).json({ error: 'Invalid signature' })
+        return false
+    }
+    return true
+}
+
 // ── Router ────────────────────────────────────────────────────────────────────
 
 export const pastDueRouter = Router()
@@ -111,6 +141,8 @@ pastDueRouter.get(
     async (req: Request, res: Response): Promise<void> => {
         try {
             const merchantAddress = req.params.merchantAddress.toLowerCase()
+
+            if (!checkGetAuth(merchantAddress, req, res)) return
 
             const result = await pool.query<PastDueRow>(
                 `SELECT
@@ -182,6 +214,8 @@ pastDueRouter.get(
     async (req: Request, res: Response): Promise<void> => {
         try {
             const merchantAddress = req.params.merchantAddress.toLowerCase()
+
+            if (!checkGetAuth(merchantAddress, req, res)) return
 
             const cached = countCache.get(merchantAddress)
             if (cached && Date.now() < cached.expiresAt) {

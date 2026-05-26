@@ -1,9 +1,48 @@
 import { Router } from 'express'
 import Anthropic from '@anthropic-ai/sdk'
 import { pool } from '../db.js'
+import { buildMessage, verifySignature } from '../verify.js'
 
 const router = Router()
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
+
+// ─── Auth helpers ──────────────────────────────────────────────────────────────
+
+const SIGNATURE_TTL_MS = 5 * 60 * 1000
+
+/**
+ * Verifies the wallet-signature proof supplied with every AI request.
+ * Uses TTL-only verification (no replay prevention) because the chat
+ * endpoint is called on every message and the frontend reuses a cached
+ * signature. The tools are scoped to the authenticated wallet, so a
+ * replayed signature within the TTL window can only access the same
+ * merchant's own data — not another merchant's.
+ * Returns false and writes the error response when auth fails.
+ */
+function verifyAiAuth(
+  address: string,
+  timestamp: number | undefined,
+  signature: string | undefined,
+  res: ReturnType<typeof router['use']> extends never ? never : Parameters<Parameters<typeof router['post']>[1]>[1]
+): boolean {
+  if (!timestamp || !signature) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    ;(res as any).status(401).json({ error: 'timestamp and signature required' })
+    return false
+  }
+  if (Date.now() - timestamp > SIGNATURE_TTL_MS) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    ;(res as any).status(401).json({ error: 'Signature expired' })
+    return false
+  }
+  const message = buildMessage(address.toLowerCase(), timestamp)
+  if (!verifySignature(address, message, signature)) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    ;(res as any).status(401).json({ error: 'Invalid signature' })
+    return false
+  }
+  return true
+}
 
 // ─── Tool definitions ─────────────────────────────────────────────────────────
 
@@ -49,29 +88,56 @@ const tools: Anthropic.Tool[] = [
     input_schema: {
       type: 'object' as const,
       properties: {
+        wallet_address: { type: 'string', description: 'Merchant wallet address (ownership check)' },
         plan_id: { type: 'string' },
       },
-      required: ['plan_id'],
+      required: ['wallet_address', 'plan_id'],
     },
   },
 ]
 
 // ─── Tool execution ───────────────────────────────────────────────────────────
 
-async function executeTool(name: string, input: Record<string, unknown>): Promise<string> {
+/**
+ * Executes an AI tool.
+ * @param authenticatedWallet - The wallet address that was verified via signature.
+ *   All queries are scoped to this address so one merchant cannot read another's data.
+ */
+async function executeTool(
+  name: string,
+  input: Record<string, unknown>,
+  authenticatedWallet: string
+): Promise<string> {
+  // Ensure the tool's wallet_address matches the authenticated caller.
+  // This guards against a prompt-injection scenario where Claude is tricked
+  // into passing a different address to a tool.
+  const toolWallet = (input.wallet_address as string | undefined)?.toLowerCase()
+  if (toolWallet && toolWallet !== authenticatedWallet) {
+    return JSON.stringify({ error: 'wallet_address mismatch — access denied' })
+  }
+  const wallet = authenticatedWallet
+
   switch (name) {
     case 'get_analytics': {
+      // Scoped to this merchant's plans only
       const subs = await pool.query(
-        `SELECT plan_id, COUNT(*) as count, status
+        `SELECT s.plan_id, COUNT(*) as count, s.status
          FROM subscriptions s
-         WHERE status IN ('active', 'past_due')
-         GROUP BY plan_id, status`
+         JOIN plans p ON s.plan_id = p.plan_id
+         WHERE s.status IN ('active', 'past_due')
+           AND p.merchant = $1
+         GROUP BY s.plan_id, s.status`,
+        [wallet]
       )
       const revenue = await pool.query(
-        `SELECT plan_id, SUM(CAST(amount AS NUMERIC)) as total, COUNT(*) as charges
-         FROM execution_logs
-         WHERE status = 'success' AND amount IS NOT NULL
-         GROUP BY plan_id`
+        `SELECT el.plan_id, SUM(CAST(el.amount AS NUMERIC)) as total, COUNT(*) as charges
+         FROM execution_logs el
+         JOIN plans p ON el.plan_id = p.plan_id
+         WHERE el.status = 'success'
+           AND el.amount IS NOT NULL
+           AND p.merchant = $1
+         GROUP BY el.plan_id`,
+        [wallet]
       )
       return JSON.stringify({ subscribers: subs.rows, revenue: revenue.rows })
     }
@@ -80,28 +146,45 @@ async function executeTool(name: string, input: Record<string, unknown>): Promis
       const status = input.status === 'all' ? null : (input.status ?? 'active')
       const result = await pool.query(
         status
-          ? `SELECT plan_id, subscriber, status, retry_count, failed_at, next_charge_timestamp
-             FROM subscriptions WHERE status = $1 ORDER BY created_at DESC LIMIT 50`
-          : `SELECT plan_id, subscriber, status, retry_count, failed_at, next_charge_timestamp
-             FROM subscriptions ORDER BY created_at DESC LIMIT 50`,
-        status ? [status] : []
+          ? `SELECT s.plan_id, s.subscriber, s.status, s.retry_count, s.failed_at, s.next_charge_timestamp
+             FROM subscriptions s
+             JOIN plans p ON s.plan_id = p.plan_id
+             WHERE p.merchant = $1 AND s.status = $2
+             ORDER BY s.created_at DESC LIMIT 50`
+          : `SELECT s.plan_id, s.subscriber, s.status, s.retry_count, s.failed_at, s.next_charge_timestamp
+             FROM subscriptions s
+             JOIN plans p ON s.plan_id = p.plan_id
+             WHERE p.merchant = $1
+             ORDER BY s.created_at DESC LIMIT 50`,
+        status ? [wallet, status] : [wallet]
       )
       return JSON.stringify(result.rows)
     }
 
     case 'get_execution_logs': {
-      const limit = (input.limit as number | undefined) ?? 20
+      const limit = Math.min((input.limit as number | undefined) ?? 20, 100)
       const result = await pool.query(
-        `SELECT plan_id, subscriber, status, amount, error, created_at
-         FROM execution_logs
-         ORDER BY created_at DESC
-         LIMIT $1`,
-        [limit]
+        `SELECT el.plan_id, el.subscriber, el.status, el.amount, el.error, el.created_at
+         FROM execution_logs el
+         JOIN plans p ON el.plan_id = p.plan_id
+         WHERE p.merchant = $1
+         ORDER BY el.created_at DESC
+         LIMIT $2`,
+        [wallet, limit]
       )
       return JSON.stringify(result.rows)
     }
 
     case 'get_plan_details': {
+      // Verify merchant owns the plan before returning details
+      const ownership = await pool.query(
+        `SELECT 1 FROM plans WHERE plan_id = $1 AND merchant = $2`,
+        [input.plan_id, wallet]
+      )
+      if (ownership.rows.length === 0) {
+        return JSON.stringify({ error: 'Plan not found or not owned by this merchant' })
+      }
+
       const result = await pool.query(
         `SELECT s.plan_id,
                 COUNT(*) FILTER (WHERE s.status = 'active') as active_subscribers,
@@ -124,16 +207,22 @@ async function executeTool(name: string, input: Record<string, unknown>): Promis
 // ─── Chat endpoint ────────────────────────────────────────────────────────────
 
 router.post('/chat', async (req, res) => {
-  const { messages, walletAddress } = req.body
+  const { messages, walletAddress, timestamp, signature } = req.body
 
   if (!messages || !walletAddress) {
     res.status(400).json({ error: 'messages and walletAddress required' })
     return
   }
 
+  // Require signature proof that the caller controls walletAddress.
+  // Without this any user could query any merchant's billing data.
+  if (!verifyAiAuth(walletAddress, timestamp, signature, res as never)) return
+
+  const authenticatedWallet = (walletAddress as string).toLowerCase()
+
   const systemPrompt = `You are Cyclo AI, an intelligent billing assistant for the Cyclo on-chain subscription protocol.
 You help merchants understand their revenue, subscribers, and payment performance.
-The merchant's wallet address is ${walletAddress}.
+The merchant's wallet address is ${authenticatedWallet}.
 All payments are in USDC with 6 decimal places (divide raw amounts by 1,000,000 to get USD).
 Be concise, specific, and data-driven. When you have numbers, use them.
 You can read data using tools. Always fetch data before answering questions about metrics.
@@ -156,7 +245,11 @@ Format currency as USD. Format dates as human-readable.`
         toolUseBlocks.map(async block => ({
           type: 'tool_result' as const,
           tool_use_id: block.id,
-          content: await executeTool(block.name, block.input as Record<string, unknown>),
+          content: await executeTool(
+            block.name,
+            block.input as Record<string, unknown>,
+            authenticatedWallet
+          ),
         }))
       )
 
@@ -187,15 +280,31 @@ Format currency as USD. Format dates as human-readable.`
 // ─── Insights endpoint ────────────────────────────────────────────────────────
 
 router.post('/insights', async (req, res) => {
-  const { walletAddress } = req.body
+  const { walletAddress, timestamp, signature } = req.body
   if (!walletAddress) { res.status(400).json({ error: 'walletAddress required' }); return }
+
+  if (!verifyAiAuth(walletAddress, timestamp, signature, res as never)) return
+
+  const wallet = (walletAddress as string).toLowerCase()
 
   try {
     const [subs, logs] = await Promise.all([
-      pool.query(`SELECT status, COUNT(*) as count FROM subscriptions GROUP BY status`),
       pool.query(
-        `SELECT status, COUNT(*) as count FROM execution_logs
-         WHERE created_at > NOW() - INTERVAL '7 days' GROUP BY status`
+        `SELECT s.status, COUNT(*) as count
+         FROM subscriptions s
+         JOIN plans p ON s.plan_id = p.plan_id
+         WHERE p.merchant = $1
+         GROUP BY s.status`,
+        [wallet]
+      ),
+      pool.query(
+        `SELECT el.status, COUNT(*) as count
+         FROM execution_logs el
+         JOIN plans p ON el.plan_id = p.plan_id
+         WHERE p.merchant = $1
+           AND el.created_at > NOW() - INTERVAL '7 days'
+         GROUP BY el.status`,
+        [wallet]
       ),
     ])
 
@@ -225,8 +334,11 @@ Only return the JSON array, nothing else.`,
 // ─── Parse plan endpoint ──────────────────────────────────────────────────────
 
 router.post('/parse-plan', async (req, res) => {
-  const { input } = req.body
+  const { input, walletAddress, timestamp, signature } = req.body
   if (!input) { res.status(400).json({ error: 'input required' }); return }
+  if (!walletAddress) { res.status(400).json({ error: 'walletAddress required' }); return }
+
+  if (!verifyAiAuth(walletAddress, timestamp, signature, res as never)) return
 
   try {
     const response = await anthropic.messages.create({
@@ -258,7 +370,10 @@ Return only the JSON object.`,
 // ─── Dunning email endpoint ───────────────────────────────────────────────────
 
 router.post('/dunning', async (req, res) => {
-  const { subscriber, planId, businessName, retryCount } = req.body
+  const { subscriber, planId, businessName, retryCount, walletAddress, timestamp, signature } = req.body
+  if (!walletAddress) { res.status(400).json({ error: 'walletAddress required' }); return }
+
+  if (!verifyAiAuth(walletAddress, timestamp, signature, res as never)) return
 
   try {
     const response = await anthropic.messages.create({
@@ -284,7 +399,10 @@ Return only the email body text.`,
 // ─── Webhook code generator ───────────────────────────────────────────────────
 
 router.post('/webhook-code', async (req, res) => {
-  const { description, framework } = req.body
+  const { description, framework, walletAddress, timestamp, signature } = req.body
+  if (!walletAddress) { res.status(400).json({ error: 'walletAddress required' }); return }
+
+  if (!verifyAiAuth(walletAddress, timestamp, signature, res as never)) return
 
   try {
     const response = await anthropic.messages.create({

@@ -262,6 +262,18 @@ contract SubscriptionManager is ISubscriptionManager, ReentrancyGuard, Ownable {
     /// @dev Attempts a single charge inline. Returns false on any failure instead of reverting,
     /// so batchCharge can continue to the next pair. Does not call this.charge() to avoid
     /// adding an extra external call depth, which breaks the USDC precompile on Arc.
+    ///
+    /// Partial-charge protection: the subscriber's balance is checked against the full
+    /// plan price BEFORE any transfer is attempted. This ensures both transfers can
+    /// succeed before we start, preventing a scenario where the merchant transfer
+    /// succeeds but the fee transfer fails (which would roll back the timestamp and
+    /// allow the merchant to be paid again on the next cycle).
+    ///
+    /// If the merchant transfer somehow succeeds but the fee transfer then fails
+    /// (possible only if balance drains between the check and the second call),
+    /// the timestamp is NOT rolled back — the subscriber has already been charged
+    /// and rolling back would cause a double-charge. The protocol accepts the rare
+    /// fee loss in this edge case as safer than double-charging a subscriber.
     function _chargeOne(uint256 planId, address subscriber) private returns (bool) {
         SubscriptionLib.Subscription storage sub = _subscriptions[planId][subscriber];
         SubscriptionLib.Plan storage plan = _plans[planId];
@@ -270,6 +282,10 @@ contract SubscriptionManager is ISubscriptionManager, ReentrancyGuard, Ownable {
         // forge-lint: disable-next-line(block-timestamp)
         if (block.timestamp < sub.nextChargeTimestamp) return false;
 
+        // Pre-check: subscriber must hold the full plan price so both transfers
+        // can succeed. Skip entirely (no state change, no transfers) if not.
+        if (IUSDC(_usdcAddress).balanceOf(subscriber) < plan.price) return false;
+
         uint256 fee            = plan.price * FEE_BPS / 10_000;
         uint256 merchantAmount = plan.price - fee;
         uint256 newNextCharge  = uint256(sub.nextChargeTimestamp) + plan.interval;
@@ -277,13 +293,16 @@ contract SubscriptionManager is ISubscriptionManager, ReentrancyGuard, Ownable {
         sub.nextChargeTimestamp = uint48(newNextCharge);
 
         if (!IUSDC(_usdcAddress).transferFrom(subscriber, plan.merchant, merchantAmount)) {
+            // No funds moved yet — safe to roll back.
             // forge-lint: disable-next-line(unsafe-typecast)
             sub.nextChargeTimestamp = uint48(uint256(sub.nextChargeTimestamp) - plan.interval);
             return false;
         }
         if (!IUSDC(_usdcAddress).transferFrom(subscriber, _feeRecipient, fee)) {
-            // forge-lint: disable-next-line(unsafe-typecast)
-            sub.nextChargeTimestamp = uint48(uint256(sub.nextChargeTimestamp) - plan.interval);
+            // Merchant transfer already succeeded. Do NOT roll back the timestamp;
+            // doing so would allow the keeper to re-charge the subscriber for the
+            // same billing period, resulting in a double-charge.
+            // The fee is lost in this edge case — acceptable vs. double-charging.
             return false;
         }
 

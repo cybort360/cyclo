@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useEffect, type ReactNode } from 'react'
 import { useAccount, useSignMessage } from 'wagmi'
 import { API_BASE } from '../utils/apiBase'
+import { getCachedAuth, buildSignMessage } from '../utils/authCache'
 
 export interface MerchantProfile {
   wallet_address:   string
@@ -29,11 +30,6 @@ interface MerchantProfileContextValue {
 
 const MerchantProfileContext = createContext<MerchantProfileContextValue | null>(null)
 
-/** Shared signature message — must match what the API's verify.ts expects. */
-function buildSignMessage(address: string, timestamp: number): string {
-  return `Sign this message to set up your Cyclo merchant profile.\n\nWallet: ${address}\nTimestamp: ${timestamp}`
-}
-
 export function MerchantProfileProvider({ children }: { children: ReactNode }) {
   const { address } = useAccount()
   const { signMessageAsync } = useSignMessage()
@@ -41,11 +37,23 @@ export function MerchantProfileProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(false)
 
   useEffect(() => {
-    if (!address) { setProfile(null); return }
-    fetch(`${API_BASE}/api/merchants/${address}`)
+    if (!address) {
+      setProfile(null)
+      return
+    }
+    // Profile contains PII (email) — require a wallet signature so only the
+    // owner can read their own data. getCachedAuth reuses the signature for
+    // 4 minutes so the user isn't prompted on every re-render.
+    getCachedAuth(address, signMessageAsync)
+      .then(({ timestamp, signature }) =>
+        fetch(
+          `${API_BASE}/api/merchants/${address}?timestamp=${timestamp}&signature=${encodeURIComponent(signature)}`
+        )
+      )
       .then(r => r.ok ? r.json() : null)
       .then(data => setProfile(data))
       .catch(() => setProfile(null))
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [address])
 
   const saveProfile = async (businessName: string, email: string, logoUrl?: string): Promise<MerchantProfile> => {

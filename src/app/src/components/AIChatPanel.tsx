@@ -8,9 +8,10 @@
  * Class prefix: ai-  (CSS in AIChatPanel.css)
  */
 import { useState, useRef, useEffect } from 'react'
-import { useAccount } from 'wagmi'
+import { useAccount, useSignMessage } from 'wagmi'
 import './AIChatPanel.css'
 import { API_BASE } from '../utils/apiBase'
+import { getCachedAuth } from '../utils/authCache'
 
 interface Message {
     role:    'user' | 'assistant'
@@ -27,6 +28,7 @@ const SUGGESTIONS = [
 
 export function AIChatPanel({ onClose }: { onClose: () => void }) {
     const { address }                   = useAccount()
+    const { signMessageAsync }          = useSignMessage()
     const [messages, setMessages]       = useState<Message[]>([])
     const [input,    setInput]          = useState('')
     const [loading,  setLoading]        = useState(false)
@@ -46,11 +48,18 @@ export function AIChatPanel({ onClose }: { onClose: () => void }) {
         setLoading(true)
 
         try {
+            // Require a wallet-signature proof so the server can verify this
+            // caller owns `address` before querying their billing data.
+            // getCachedAuth reuses the signature for 4 minutes to avoid
+            // prompting the user on every message.
+            const { timestamp, signature } = await getCachedAuth(address, signMessageAsync)
             const res  = await fetch(`${API_BASE}/api/ai/chat`, {
                 method:  'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body:    JSON.stringify({
                     walletAddress: address,
+                    timestamp,
+                    signature,
                     messages:      updated.map(m => ({ role: m.role, content: m.content })),
                 }),
             })

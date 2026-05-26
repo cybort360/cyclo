@@ -15,7 +15,10 @@ const PORT = 3001
 const FRONTEND_ORIGIN = process.env.FRONTEND_ORIGIN ?? 'http://localhost:5173'
 
 const app = express()
-app.use(cors())
+// Restrict CORS to the configured frontend origin only.
+// Using cors() without options would allow every origin, undermining
+// same-origin protections on authenticated endpoints.
+app.use(cors({ origin: FRONTEND_ORIGIN }))
 app.use(express.json())
 
 // Subdomain routing must run before all route handlers so custom domains are
