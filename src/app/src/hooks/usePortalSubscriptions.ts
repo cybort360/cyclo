@@ -1,29 +1,21 @@
 /**
  * usePortalSubscriptions — fetches all active on-chain subscriptions for the
- * connected wallet by reading contract events and struct data via viem.
+ * connected wallet using only direct contract view calls (no eth_getLogs).
  *
  * Algorithm:
- *   1. Fetch SubscriptionCreated + SubscriptionCancelled events in parallel,
- *      both filtered by the connected subscriber address.
- *   2. Sort all events chronologically (blockNumber, then logIndex) and walk
- *      forward to determine the latest state for each planId.
- *      "SubscriptionCreated with no subsequent SubscriptionCancelled" = active.
- *   3. For all event-derived active planIds, call multicall to read
- *      getSubscription(planId, address) and getPlan(planId) in one round-trip.
- *   4. Cross-check: discard any entry where the on-chain struct returns
- *      active === false (handles edge cases where events are partially indexed).
+ *   1. Call planCount() to get the total number of plans ever created.
+ *   2. For each planId in [1, planCount], call getSubscription(planId, address)
+ *      in batches of 20 concurrent calls to avoid overwhelming the RPC.
+ *   3. Filter results where sub.active === true.
+ *   4. For active subscriptions, call getPlan(planId) to fetch plan metadata.
  *
- * isInTrial heuristic:
- *   plan.trialDuration > 0  AND  nextChargeTimestamp > now
- *   This is accurate for the common case: the first charge hasn't fired yet.
- *   A subscriber who resubscribes to a plan with a trial, gets charged, and is
- *   now waiting for the second charge could be misidentified, but this is an
- *   acceptable approximation for the portal display.
+ * This approach makes zero eth_getLogs calls and is not subject to the Arc
+ * testnet 100,000-block range restriction.
  */
 import { useAccount, usePublicClient } from 'wagmi'
 import { useQuery } from '@tanstack/react-query'
 import { SUBSCRIPTION_MANAGER_ABI } from '../constants/abis'
-import { CONTRACT_ADDRESS, DEPLOY_BLOCK } from '../constants/addresses'
+import { CONTRACT_ADDRESS } from '../constants/addresses'
 
 type Address = `0x${string}`
 
@@ -60,15 +52,6 @@ export interface PortalSubscription {
     trialEndDate:        bigint | null
 }
 
-// ── Internal types ─────────────────────────────────────────────────────────────
-
-type EventEntry = {
-    planId:      bigint
-    type:        'created' | 'cancelled'
-    blockNumber: bigint
-    logIndex:    number
-}
-
 // Viem decodes uint48 as number at runtime; uint256 as bigint.
 type RawSub  = { nextChargeTimestamp: number; active: boolean }
 type RawPlan = {
@@ -79,21 +62,16 @@ type RawPlan = {
     interval:      bigint   // uint256
 }
 
-// ── Helper ─────────────────────────────────────────────────────────────────────
+const BATCH_SIZE = 20
 
-/**
- * Derives the set of currently active planIds from the merged, sorted event
- * stream. The final state per planId is whichever event type appeared last.
- */
-function deriveActivePlanIds(events: EventEntry[]): bigint[] {
-    // Walk in chronological order so later events overwrite earlier ones.
-    const latest = new Map<string, 'created' | 'cancelled'>()
-    for (const ev of events) {
-        latest.set(ev.planId.toString(), ev.type)
+/** Run an array of async thunks with at most `limit` concurrent at a time. */
+async function batchedAll<T>(thunks: (() => Promise<T>)[], limit: number): Promise<T[]> {
+    const results: T[] = []
+    for (let i = 0; i < thunks.length; i += limit) {
+        const chunk = await Promise.all(thunks.slice(i, i + limit).map(fn => fn()))
+        results.push(...chunk)
     }
-    return [...latest.entries()]
-        .filter(([, state]) => state === 'created')
-        .map(([key]) => BigInt(key))
+    return results
 }
 
 // ── Hook ───────────────────────────────────────────────────────────────────────
@@ -107,94 +85,64 @@ export function usePortalSubscriptions() {
     const publicClient = usePublicClient()
 
     const query = useQuery<PortalSubscription[]>({
-        queryKey:       ['portal', 'subscriptions', address],
-        enabled:        !!address && !!publicClient,
+        queryKey:        ['portal', 'subscriptions', address],
+        enabled:         !!address && !!publicClient,
         refetchInterval: 30_000,
         queryFn: async () => {
-            // ── 1. Fetch Created + Cancelled events in parallel ──────────────
-            const [createdLogs, cancelledLogs] = await Promise.all([
-                publicClient!.getContractEvents({
-                    address:   CONTRACT_ADDRESS as Address,
-                    abi:       SUBSCRIPTION_MANAGER_ABI,
-                    eventName: 'SubscriptionCreated',
-                    args:      { subscriber: address as Address },
-                    fromBlock: DEPLOY_BLOCK,
-                    toBlock:   'latest',
-                }),
-                publicClient!.getContractEvents({
-                    address:   CONTRACT_ADDRESS as Address,
-                    abi:       SUBSCRIPTION_MANAGER_ABI,
-                    eventName: 'SubscriptionCancelled',
-                    args:      { subscriber: address as Address },
-                    fromBlock: DEPLOY_BLOCK,
-                    toBlock:   'latest',
-                }),
-            ])
+            // ── 1. Get total plan count ──────────────────────────────────────
+            const count = await publicClient!.readContract({
+                address:      CONTRACT_ADDRESS as Address,
+                abi:          SUBSCRIPTION_MANAGER_ABI,
+                functionName: 'planCount',
+                args:         [],
+            }) as bigint
 
-            // ── 2. Sort events chronologically and derive active planIds ──────
-            const allEvents: EventEntry[] = [
-                ...createdLogs.map(l => ({
-                    planId:      (l.args as { planId: bigint }).planId,
-                    type:        'created' as const,
-                    // blockNumber is null only for pending txs; we query to 'latest'
-                    blockNumber: l.blockNumber ?? 0n,
-                    logIndex:    l.logIndex    ?? 0,
-                })),
-                ...cancelledLogs.map(l => ({
-                    planId:      (l.args as { planId: bigint }).planId,
-                    type:        'cancelled' as const,
-                    blockNumber: l.blockNumber ?? 0n,
-                    logIndex:    l.logIndex    ?? 0,
-                })),
-            ].sort((a, b) =>
-                a.blockNumber !== b.blockNumber
-                    ? Number(a.blockNumber - b.blockNumber)
-                    : a.logIndex - b.logIndex
+            if (count === 0n) return []
+
+            // ── 2. Fetch subscription struct for every planId in batches ─────
+            const planIds = Array.from({ length: Number(count) }, (_, i) => BigInt(i + 1))
+
+            const subs = await batchedAll(
+                planIds.map(planId => () =>
+                    publicClient!.readContract({
+                        address:      CONTRACT_ADDRESS as Address,
+                        abi:          SUBSCRIPTION_MANAGER_ABI,
+                        functionName: 'getSubscription',
+                        args:         [planId, address as Address],
+                    }) as Promise<RawSub>
+                ),
+                BATCH_SIZE,
             )
 
-            const activePlanIds = deriveActivePlanIds(allEvents)
-            if (activePlanIds.length === 0) return []
+            // ── 3. Filter to active subscriptions ────────────────────────────
+            const activePairs = planIds
+                .map((planId, i) => ({ planId, sub: subs[i] }))
+                .filter(({ sub }) => sub.active)
 
-            // ── 3. Read subscription struct + plan for each active planId ────
-            // Arc Testnet does not have Multicall3, so we fire individual
-            // eth_call requests in parallel via Promise.all instead.
-            const pairs = await Promise.all(
-                activePlanIds.map(async planId => {
-                    const [sub, plan] = await Promise.all([
-                        publicClient!.readContract({
-                            address:      CONTRACT_ADDRESS as Address,
-                            abi:          SUBSCRIPTION_MANAGER_ABI,
-                            functionName: 'getSubscription',
-                            args:         [planId, address as Address],
-                        }) as Promise<RawSub>,
-                        publicClient!.readContract({
-                            address:      CONTRACT_ADDRESS as Address,
-                            abi:          SUBSCRIPTION_MANAGER_ABI,
-                            functionName: 'getPlan',
-                            args:         [planId],
-                        }) as Promise<RawPlan>,
-                    ])
-                    return { planId, sub, plan }
-                })
+            if (activePairs.length === 0) return []
+
+            // ── 4. Fetch plan metadata for active subscriptions ──────────────
+            const plans = await batchedAll(
+                activePairs.map(({ planId }) => () =>
+                    publicClient!.readContract({
+                        address:      CONTRACT_ADDRESS as Address,
+                        abi:          SUBSCRIPTION_MANAGER_ABI,
+                        functionName: 'getPlan',
+                        args:         [planId],
+                    }) as Promise<RawPlan>
+                ),
+                BATCH_SIZE,
             )
 
-            // ── 4. Build typed result array ───────────────────────────────────
+            // ── 5. Build typed result array ───────────────────────────────────
             const now = BigInt(Math.floor(Date.now() / 1000))
-            const result: PortalSubscription[] = []
-
-            for (const { planId, sub, plan } of pairs) {
-                // Cross-check: event derivation is the primary source of truth, but
-                // if the struct says inactive (e.g. a cancel that post-dates our last
-                // indexed event), trust the struct.
-                if (!sub.active) continue
-
-                const nextCharge    = BigInt(sub.nextChargeTimestamp)
+            return activePairs.map(({ planId, sub }, i) => {
+                const plan         = plans[i]
+                const nextCharge   = BigInt(sub.nextChargeTimestamp)
                 const trialDuration = BigInt(plan.trialDuration)
-                // In trial when: plan has a trial AND the next charge is still in the
-                // future (meaning the first charge — which ends the trial — hasn't fired).
-                const isInTrial = trialDuration > 0n && nextCharge > now
+                const isInTrial    = trialDuration > 0n && nextCharge > now
 
-                result.push({
+                return {
                     planId,
                     plan: {
                         price:         plan.price,
@@ -206,10 +154,8 @@ export function usePortalSubscriptions() {
                     nextChargeTimestamp: nextCharge,
                     isInTrial,
                     trialEndDate: isInTrial ? nextCharge : null,
-                })
-            }
-
-            return result
+                } satisfies PortalSubscription
+            })
         },
     })
 

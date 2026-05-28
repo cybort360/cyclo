@@ -22,6 +22,7 @@ import { SUBSCRIPTION_MANAGER_ABI } from '../constants/abis'
 import { CONTRACT_ADDRESS, DEPLOY_BLOCK } from '../constants/addresses'
 import { API_BASE } from '../utils/apiBase'
 import { getCachedAuth } from '../utils/authCache'
+import { getContractEventsChunked } from '../utils/getLogsChunked'
 
 type Address = `0x${string}`
 
@@ -79,7 +80,7 @@ export function useSubscriberList() {
 
             const [planCreatedLogs, subCreatedLogs, subCancelledLogs, pastDueItems] =
                 await Promise.all([
-                    publicClient.getContractEvents({
+                    getContractEventsChunked(publicClient, {
                         address:   CONTRACT_ADDRESS as Address,
                         abi:       SUBSCRIPTION_MANAGER_ABI,
                         eventName: 'PlanCreated',
@@ -87,14 +88,14 @@ export function useSubscriberList() {
                         fromBlock: DEPLOY_BLOCK,
                         toBlock:   'latest',
                     }),
-                    publicClient.getContractEvents({
+                    getContractEventsChunked(publicClient, {
                         address:   CONTRACT_ADDRESS as Address,
                         abi:       SUBSCRIPTION_MANAGER_ABI,
                         eventName: 'SubscriptionCreated',
                         fromBlock: DEPLOY_BLOCK,
                         toBlock:   'latest',
                     }),
-                    publicClient.getContractEvents({
+                    getContractEventsChunked(publicClient, {
                         address:   CONTRACT_ADDRESS as Address,
                         abi:       SUBSCRIPTION_MANAGER_ABI,
                         eventName: 'SubscriptionCancelled',

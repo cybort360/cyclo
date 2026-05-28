@@ -4,6 +4,7 @@ import { parseEventLogs } from 'viem'
 import { SUBSCRIPTION_MANAGER_ABI } from '../constants/abis'
 import { CONTRACT_ADDRESS, DEPLOY_BLOCK } from '../constants/addresses'
 import { fromUsdcUnits } from '../utils/formatting'
+import { getLogsChunked } from '../utils/getLogsChunked'
 
 export interface DailyRevenue {
     date:    string
@@ -40,25 +41,25 @@ export function useAnalytics() {
         queryFn:  async () => {
             const [planCreatedLogs, paymentChargedLogs, subCreatedLogs, subCancelledLogs] =
                 await Promise.all([
-                    publicClient!.getLogs({
+                    getLogsChunked(publicClient!, {
                         address: CONTRACT_ADDRESS as Address,
                         event:   SUBSCRIPTION_MANAGER_ABI.find(e => e.type === 'event' && e.name === 'PlanCreated') as never,
                         fromBlock: DEPLOY_BLOCK,
                         toBlock:  'latest',
                     }),
-                    publicClient!.getLogs({
+                    getLogsChunked(publicClient!, {
                         address: CONTRACT_ADDRESS as Address,
                         event:   SUBSCRIPTION_MANAGER_ABI.find(e => e.type === 'event' && e.name === 'PaymentCharged') as never,
                         fromBlock: DEPLOY_BLOCK,
                         toBlock:  'latest',
                     }),
-                    publicClient!.getLogs({
+                    getLogsChunked(publicClient!, {
                         address: CONTRACT_ADDRESS as Address,
                         event:   SUBSCRIPTION_MANAGER_ABI.find(e => e.type === 'event' && e.name === 'SubscriptionCreated') as never,
                         fromBlock: DEPLOY_BLOCK,
                         toBlock:  'latest',
                     }),
-                    publicClient!.getLogs({
+                    getLogsChunked(publicClient!, {
                         address: CONTRACT_ADDRESS as Address,
                         event:   SUBSCRIPTION_MANAGER_ABI.find(e => e.type === 'event' && e.name === 'SubscriptionCancelled') as never,
                         fromBlock: DEPLOY_BLOCK,

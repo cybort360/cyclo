@@ -11,6 +11,7 @@ import { useCycloClient } from '@cyclo/react';
 import { arcTestnet } from '../wagmi';
 import { SUBSCRIPTION_MANAGER_ABI, USDC_ABI } from '../constants/abis';
 import { CONTRACT_ADDRESS, DEPLOY_BLOCK, USDC_ADDRESS } from '../constants/addresses';
+import { getContractEventsChunked } from '../utils/getLogsChunked';
 
 type Address = `0x${string}`;
 
@@ -60,7 +61,7 @@ function usePlanEvents(merchant: Address | undefined) {
         queryKey: ['planEvents', merchant],
         queryFn:  async (): Promise<PlanEvent[]> => {
             if (!client || !merchant) return [];
-            const logs = await client.getContractEvents({
+            const logs = await getContractEventsChunked(client, {
                 address:   CONTRACT_ADDRESS as Address,
                 abi:       SUBSCRIPTION_MANAGER_ABI,
                 eventName: 'PlanCreated',
@@ -87,7 +88,7 @@ function useSettlementEvents(merchant: Address | undefined) {
         queryKey: ['settlementEvents', merchant],
         queryFn:  async (): Promise<PaymentEvent[]> => {
             if (!client || !merchant) return [];
-            const logs = await client.getContractEvents({
+            const logs = await getContractEventsChunked(client, {
                 address:   CONTRACT_ADDRESS as Address,
                 abi:       SUBSCRIPTION_MANAGER_ABI,
                 eventName: 'PaymentCharged',

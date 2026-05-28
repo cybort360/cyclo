@@ -345,6 +345,11 @@ contract SubscriptionManager is ISubscriptionManager, ReentrancyGuard, Ownable {
     // View functions
     // -------------------------------------------------------------------------
 
+    /// @notice Returns the total number of plans ever created (highest assigned planId).
+    function planCount() external view returns (uint256) {
+        return _nextPlanId - 1;
+    }
+
     /// @notice Returns the plan details for a given plan ID.
     /// @param planId The plan ID to look up
     /// @return The Plan struct
